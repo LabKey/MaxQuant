@@ -16,13 +16,18 @@
 
 package org.labkey.mq;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.collections.CaseInsensitiveHashSet;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
+import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.DbSchemaType;
+import org.labkey.api.data.DisplayColumn;
+import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.JdbcType;
+import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.dialect.SqlDialect;
@@ -34,10 +39,18 @@ import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.LookupForeignKey;
+import org.labkey.api.query.QueryAction;
 import org.labkey.api.query.QuerySchema;
+import org.labkey.api.query.QueryService;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
+import org.labkey.api.view.ActionURL;
+import org.labkey.mq.query.EvidenceTable;
+import org.labkey.mq.query.PeptideTable;
+import org.labkey.mq.query.ProteinGroupPeptideTable;
+import org.labkey.mq.query.ProteinGroupTable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +75,8 @@ public class MqSchema extends UserSchema
     public static final String TABLE_EVIDENCE_INETNSITY_SILAC = "EvidenceIntensitySilac";
     public static final String TABLE_EVIDENCE_RATIO_SILAC = "EvidenceRatioSilac";
 
+    public static final String TABLE_PG_INTENSITY_COVERAGE = "ProteinGroupIntensityAndCoverage";
+
     private static final String PROTOCOL_PATTERN_PREFIX = "urn:lsid:%:Protocol.%:";
 
     private ExpSchema _expSchema;
@@ -79,7 +94,7 @@ public class MqSchema extends UserSchema
 
     public MqSchema(User user, Container container)
     {
-        super(NAME, SCHEMA_DESCR, user, container, MqManager.getSchema());
+        super(NAME, SCHEMA_DESCR, user, container, getSchema());
         _expSchema = new ExpSchema(user, container);
     }
 
@@ -101,16 +116,45 @@ public class MqSchema extends UserSchema
         {
             return getExperimentGroupTable();
         }
+        else if (TABLE_PROTEIN_GROUP.equalsIgnoreCase(name))
+        {
+            return new ProteinGroupTable(this);
+        }
+        else if(TABLE_PROTEIN_GROUP_PEPTIDE.equalsIgnoreCase(name))
+        {
+            return new ProteinGroupPeptideTable(this);
+        }
+        else if(TABLE_PEPTIDE.equalsIgnoreCase(name))
+        {
+            return new PeptideTable(this);
+        }
+        else if(TABLE_EVIDENCE.equalsIgnoreCase(name))
+        {
+            return new EvidenceTable(this);
+        }
+        else if(TABLE_PROTEIN_GROUP_SEQUENCE_COVERAGE.equalsIgnoreCase(name)
+                || TABLE_PROTEIN_GROUP_INTENSITY.equalsIgnoreCase(name)
+                || TABLE_PG_INTENSITY_COVERAGE.equalsIgnoreCase(name))
+        {
+            FilteredTable table = new FilteredTable<>(getSchema().getTable(name), this);
+            table.wrapAllColumns(true);
+            List<FieldKey> defaultVisible = table.getDefaultVisibleColumns();
+            List<FieldKey> visibleColumns = new ArrayList<>();
+            for(FieldKey fk: defaultVisible)
+            {
+                if(fk.getName().equalsIgnoreCase("ProteinGroupId"))
+                {
+                    continue;
+                }
+                visibleColumns.add(fk);
+            }
+            table.setDefaultVisibleColumns(visibleColumns);
+            return table;
+        }
         else if(TABLE_EXPERIMENT.equalsIgnoreCase(name)
                 || TABLE_RAW_FILE.equalsIgnoreCase(name)
-                || TABLE_PROTEIN_GROUP.equalsIgnoreCase(name)
-                || TABLE_PROTEIN_GROUP_SEQUENCE_COVERAGE.equalsIgnoreCase(name)
-                || TABLE_PROTEIN_GROUP_INTENSITY.equalsIgnoreCase(name)
                 || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name)
-                || TABLE_PEPTIDE.equalsIgnoreCase(name)
-                || TABLE_PROTEIN_GROUP_PEPTIDE.equalsIgnoreCase(name)
                 || TABLE_MODIFIED_PEPTIDE.equalsIgnoreCase(name)
-                || TABLE_EVIDENCE.equalsIgnoreCase(name)
                 || TABLE_EVIDENCE_INETNSITY_SILAC.equalsIgnoreCase(name)
                 || TABLE_EVIDENCE_RATIO_SILAC.equalsIgnoreCase(name)
                 )
@@ -127,6 +171,7 @@ public class MqSchema extends UserSchema
     {
         // Start with a standard experiment run table
         ExpRunTable result = _expSchema.getRunsTable();
+
         result.setDescription("Contains a row per MaxQuant experiment loaded in this folder.");
 
         // Filter to just the runs with the Targeted MS protocol
@@ -138,19 +183,48 @@ public class MqSchema extends UserSchema
                 "\nWHERE expgrp.ExperimentRunLSID = " + ExprColumn.STR_TABLE_ALIAS + ".LSID AND expgrp.Deleted = ?)");
         sql.add(Boolean.FALSE);
         ColumnInfo mqDetailColumn = new ExprColumn(result, "ExperimentGroup", sql, JdbcType.INTEGER);
-
-        //ActionURL url = TargetedMSController.getShowRunURL(getContainer());
-        //final ActionURL downloadUrl = new ActionURL(TargetedMSController.DownloadDocumentAction.class, getContainer());
-        mqDetailColumn.setFk(new LookupForeignKey(null, "id", "Id", "Description")
+        mqDetailColumn.setFk(new LookupForeignKey(MqSchema.TABLE_EXPERIMENT_GROUP, "Id", "Id")
         {
             public TableInfo getLookupTableInfo()
             {
                 FilteredTable result = new FilteredTable<>(MqManager.getTableInfoExperimentGroup(), MqSchema.this);
                 result.addWrapColumn(result.getRealTable().getColumn("Id"));
-                result.addWrapColumn(result.getRealTable().getColumn("Created"));
-                result.addWrapColumn(result.getRealTable().getColumn("CreatedBy"));
                 result.addWrapColumn(result.getRealTable().getColumn("Filename"));
                 result.addWrapColumn(result.getRealTable().getColumn("LocationOnFileSystem"));
+                ColumnInfo folderName = result.addWrapColumn("FolderName", result.getRealTable().getColumn("LocationOnFileSystem"));
+                folderName.setDisplayColumnFactory(new DisplayColumnFactory()
+                {
+                    @Override
+                    public DisplayColumn createRenderer(ColumnInfo colInfo)
+                    {
+                        return new DataColumn(colInfo)
+                        {
+                            @Override
+                            @NotNull
+                            public String getFormattedValue(RenderContext ctx)
+                            {
+                                String result = h(getValue(ctx));
+                                return new File(result).getName();
+                            }
+                        };
+                    }
+                });
+
+                // ProteinGroup count column
+                SQLFragment sql = new SQLFragment("(").append(getRunProteinGroupCountSQL(ExprColumn.STR_TABLE_ALIAS + ".Id")).append(")");
+                ColumnInfo countCol = new ExprColumn(result, "ProteinGroups", sql, JdbcType.INTEGER);
+                countCol.setFormat("#,###");
+                countCol.setDisplayColumnFactory(new CountColumnDisplayFactory(TABLE_PROTEIN_GROUP));
+                result.addColumn(countCol);
+
+                // Peptide count
+                sql = new SQLFragment("(").append(getRunPeptideCountSQL(ExprColumn.STR_TABLE_ALIAS + ".Id")).append(")");
+                countCol = new ExprColumn(result, "Peptides", sql, JdbcType.INTEGER);
+                countCol.setFormat("#,###");
+                countCol.setDisplayColumnFactory(new CountColumnDisplayFactory(TABLE_PEPTIDE));
+                result.addColumn(countCol);
+
+                result.setTitleColumn("Id");
                 return result;
             }
         });
@@ -162,17 +236,70 @@ public class MqSchema extends UserSchema
         List<FieldKey> columns = new ArrayList<>(result.getDefaultVisibleColumns());
         columns.remove(FieldKey.fromParts("File"));
         columns.remove(FieldKey.fromParts("Protocol"));
-        columns.remove(FieldKey.fromParts("CreatedBy"));
         columns.remove(FieldKey.fromParts("RunGroups"));
         columns.remove(FieldKey.fromParts("Name"));
 
         columns.add(2, FieldKey.fromParts("ExperimentGroup"));
-        columns.add(FieldKey.fromParts("ExperimentGroup", "Filename"));
-        columns.add(FieldKey.fromParts("ExperimentGroup", "LocationOnFileSystem"));
+        columns.add(3, FieldKey.fromParts("ExperimentGroup", "FolderName"));
+        columns.add(4, FieldKey.fromParts("ExperimentGroup", "Filename"));
+        columns.add(5, FieldKey.fromParts("ExperimentGroup", "ProteinGroups"));
+        columns.add(6, FieldKey.fromParts("ExperimentGroup", "Peptides"));
 
         result.setDefaultVisibleColumns(columns);
 
         return result;
+    }
+
+
+
+    public static SQLFragment getRunProteinGroupCountSQL(String runAlias)
+    {
+        SQLFragment sqlFragment = new SQLFragment("SELECT COUNT(pg.id) FROM ");
+        sqlFragment.append(MqManager.getTableInfoProteinGroup(), "pg");
+        sqlFragment.append(" WHERE pg.ExperimentGroupId = ");
+        sqlFragment.append(runAlias != null ? runAlias : "?");
+        return sqlFragment;
+    }
+
+    public static SQLFragment getRunPeptideCountSQL(String runAlias)
+    {
+        SQLFragment sqlFragment = new SQLFragment("SELECT COUNT(p.id) FROM ");
+        sqlFragment.append(MqManager.getTableInfoPeptide(), "p");
+        sqlFragment.append(" WHERE p.ExperimentGroupId = ");
+        sqlFragment.append(runAlias != null ? runAlias : "?");
+        return sqlFragment;
+    }
+
+    public static class CountColumnDisplayFactory implements DisplayColumnFactory
+    {
+        private final String _tableName;
+
+        public CountColumnDisplayFactory(String tableName)
+        {
+            _tableName = tableName;
+        }
+
+        @Override
+        public DisplayColumn createRenderer(ColumnInfo colInfo)
+        {
+            return new DataColumn(colInfo)
+            {
+                @Override
+                public String renderURL(RenderContext ctx)
+                {
+                    ActionURL url = getQueryURL(ctx, _tableName);
+                    return url.getLocalURIString();
+                }
+            };
+        }
+
+        private ActionURL getQueryURL(RenderContext ctx, String tableName)
+        {
+            Integer exptGrpId = (Integer)ctx.get(FieldKey.fromParts("ExperimentGroup"));
+            ActionURL url = QueryService.get().urlDefault(ctx.getContainer(), QueryAction.executeQuery, NAME, tableName);
+            url.addParameter("query.ExperimentGroupId~eq", String.valueOf(exptGrpId));
+            return url;
+        }
     }
 
     public Set<String> getTableNames()

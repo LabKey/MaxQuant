@@ -36,33 +36,27 @@ public class MaxQuantTsvParser extends TsvParser
         }
     }
 
-    protected Integer getIntValue(TsvRow row, String column, Integer defaultVal)
+    protected Integer tryGetIntValue(TsvRow row, String column)
     {
-        String val = getValue(row, column);
-        if(StringUtils.isBlank(val))
-        {
-            return defaultVal;
-        }
-        try
-        {
-            return Integer.parseInt(val);
-        }
-        catch (NumberFormatException e)
-        {
-            return defaultVal;
-        }
+        return getIntValue(row, column, null);
     }
 
-    protected Integer tryGetIntValue(TsvRow row, String column)
+    protected Integer getIntValue(TsvRow row, String column, Integer defaultVal)
     {
         String val = tryGetValue(row, column);
         if(val == null)
         {
-            return null;
+            return defaultVal;
+        }
+
+        int idx = val.indexOf(".");
+        if (idx != -1)
+        {
+            val = val.substring(0, idx);
         }
         try
         {
-            return Integer.parseInt(val);
+            return Integer.valueOf(val);
         }
         catch (NumberFormatException e)
         {
@@ -83,13 +77,25 @@ public class MaxQuantTsvParser extends TsvParser
         }
     }
 
+    protected Long tryGetLongValue(TsvRow row, String column)
+    {
+        return getLongValue(row, column, null);
+    }
+
     protected Long getLongValue(TsvRow row, String column, Long defaultVal)
     {
-        String val = getValue(row, column);
-        if(StringUtils.isBlank(val))
+        String val = tryGetValue(row, column);
+        if(val == null)
         {
             return defaultVal;
         }
+
+        int idx = val.indexOf(".");
+        if (idx != -1)
+        {
+            val = val.substring(0, idx);
+        }
+
         try
         {
             return Long.parseLong(val);
@@ -144,11 +150,7 @@ public class MaxQuantTsvParser extends TsvParser
     protected String tryGetValue(TsvRow row, String column)
     {
         String val = row.getValue(column);
-        if (val == null)
-        {
-            return null;
-        }
-        return val;
+        return StringUtils.isBlank(val) ? null : val.trim();
     }
 
 

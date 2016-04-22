@@ -3,6 +3,7 @@ package org.labkey.mq.parser;
 import org.labkey.mq.model.Experiment;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -126,7 +127,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         private Map<Experiment, Long> _experimentIntensity = new HashMap<Experiment, Long>();
 
         // Ratios for SILAC experiment
-        private Map<Experiment, SilacRatio> _experimentRatios = new HashMap<>();
+        private Map<Experiment, List<SilacRatio>> _experimentRatios = new HashMap<>();
 
         public String getProteinIds()
         {
@@ -310,10 +311,16 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
 
         public void addExperimentRatios(Experiment experiment, SilacRatio ratios)
         {
-            _experimentRatios.put(experiment, ratios);
+            List<SilacRatio> sRatios = _experimentRatios.get(experiment);
+            if(sRatios == null)
+            {
+                sRatios = new ArrayList<>();
+                _experimentRatios.put(experiment, sRatios);
+            }
+            sRatios.add(ratios);
         }
 
-        public Map<Experiment, SilacRatio> getExperimentRatios()
+        public Map<Experiment, List<SilacRatio>> getExperimentRatios()
         {
             return Collections.unmodifiableMap(_experimentRatios);
         }

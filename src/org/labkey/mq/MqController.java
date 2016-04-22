@@ -16,12 +16,17 @@
 
 package org.labkey.mq;
 
+import com.drew.lang.annotations.Nullable;
+import org.labkey.api.action.QueryViewAction;
 import org.labkey.api.action.RedirectAction;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.data.Container;
 import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.browse.PipelinePathForm;
+import org.labkey.api.query.QueryService;
+import org.labkey.api.query.QuerySettings;
+import org.labkey.api.query.QueryView;
 import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
@@ -32,6 +37,7 @@ import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.ViewBackgroundInfo;
+import org.labkey.api.view.ViewContext;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
@@ -45,7 +51,7 @@ import java.util.List;
 public class MqController extends SpringActionController
 {
     private static final DefaultActionResolver _actionResolver = new DefaultActionResolver(MqController.class);
-    public static final String NAME = "ongmq";
+    public static final String NAME = "mq";
 
     public MqController()
     {
@@ -57,7 +63,7 @@ public class MqController extends SpringActionController
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
         {
-            return new JspView("/org/labkey/ongmq/view/hello.jsp");
+            return new JspView("/org/labkey/mq/view/hello.jsp");
         }
 
         public NavTree appendNavTrail(NavTree root)
@@ -123,6 +129,50 @@ public class MqController extends SpringActionController
                 resolvedFiles.add(FileUtil.resolveFile(file));  // Strips out ".." and "." from the path
             }
             return resolvedFiles;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // View protein groups in an experiment group
+    // ------------------------------------------------------------------------
+//    public class ViewProteinGroupsAction extends QueryViewAction<ExperimentIdForm>
+//    {
+//        @Override
+//        public ModelAndView getView(Object o, BindException errors) throws Exception
+//        {
+//            return null;
+//        }
+//
+//        @Override
+//        public NavTree appendNavTrail(NavTree root)
+//        {
+//            return null;
+//        }
+//
+//        @Override
+//        protected QueryView createQueryView(QueryExportForm form, BindException errors, boolean forExport, @Nullable String dataRegion) throws Exception
+//        {
+//            ViewContext viewContext = getViewContext();
+//            QuerySettings settings = new QuerySettings(viewContext, "TargetedMSMatches", "Precursor");
+//
+//            QueryView view = new QueryView(QueryService.get().getUserSchema(getUser(), getContainer(), MqSchema.NAME));
+//            view.
+//            return view;
+//        }
+//    }
+
+    public static class ExperimentIdForm
+    {
+        private int _experimentGroupId;
+
+        public int getExperimentGroupId()
+        {
+            return _experimentGroupId;
+        }
+
+        public void setExperimentGroupId(int experimentGroupId)
+        {
+            _experimentGroupId = experimentGroupId;
         }
     }
 

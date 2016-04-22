@@ -73,7 +73,7 @@ public class EvidenceParser extends MaxQuantTsvParser
         evidenceRow.setScanNumber(getIntValue(row, MsmsScanNumber));
         evidenceRow.setScore(getDoubleValue(row, Score));
         evidenceRow.setDeltaScore(getDoubleValue(row, DeltaScore));
-        evidenceRow.setIntensity(getIntValue(row, Intensity, null));
+        evidenceRow.setIntensity(tryGetLongValue(row, Intensity));
         evidenceRow.setMaxQuantPeptideId(getIntValue(row, PeptideId));
         evidenceRow.setMaxQuantModifiedPeptideId(getIntValue(row, ModifiedPeptideId));
         evidenceRow.setMsmsIds(getValue(row, MsmsIds));
@@ -98,7 +98,7 @@ public class EvidenceParser extends MaxQuantTsvParser
         for(String labeltype: Labeltypes)
         {
             String ratioHeader = Intensity + " " + labeltype;
-            Integer intensity = tryGetIntValue(row, ratioHeader);
+            Long intensity = tryGetLongValue(row, ratioHeader);
             if(intensity != null)
             {
                 evidenceRow.addSilacIntensity(labeltype, intensity);
@@ -122,13 +122,13 @@ public class EvidenceParser extends MaxQuantTsvParser
         private int _scanNumber;
         private double _score;
         private double _deltaScore;
-        private Integer _intensity;
+        private Long _intensity;
         private int _maxQuantPeptideId;
         private int _maxQuantModifiedPeptideId;
         private String _msmsIds;
         private int _bestMsMsId;
 
-        private Map<String, Integer> _silacIntensities = new HashMap<String, Integer>();
+        private Map<String, Long> _silacIntensities = new HashMap<String, Long>();
         private List<SilacRatio> _silacRatios = new ArrayList<>();
 
         // Ratios for SILAC experiment
@@ -264,12 +264,12 @@ public class EvidenceParser extends MaxQuantTsvParser
             _deltaScore = deltaScore;
         }
 
-        public Integer getIntensity()
+        public Long getIntensity()
         {
             return _intensity;
         }
 
-        public void setIntensity(Integer intensity)
+        public void setIntensity(Long intensity)
         {
             _intensity = intensity;
         }
@@ -324,12 +324,12 @@ public class EvidenceParser extends MaxQuantTsvParser
             return Collections.unmodifiableList(_silacRatios);
         }
 
-        public void addSilacIntensity(String label, Integer intensity)
+        public void addSilacIntensity(String label, Long intensity)
         {
             _silacIntensities.put(label, intensity);
         }
 
-        public Map<String, Integer> getSilacIntensities()
+        public Map<String, Long> getSilacIntensities()
         {
             return Collections.unmodifiableMap(_silacIntensities);
         }

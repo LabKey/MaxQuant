@@ -24,7 +24,7 @@ public class Evidence extends MqEntity
     private int _scanNumber;
     private double _score;
     private double _deltaScore;
-    private Integer _intensity;
+    private Long _intensity;
     private String _maxQuantMsmsIds;
     private int _maxQuantBestMsmsId;
 
@@ -201,12 +201,12 @@ public class Evidence extends MqEntity
         _deltaScore = deltaScore;
     }
 
-    public Integer getIntensity()
+    public Long getIntensity()
     {
         return _intensity;
     }
 
-    public void setIntensity(Integer intensity)
+    public void setIntensity(Long intensity)
     {
         _intensity = intensity;
     }

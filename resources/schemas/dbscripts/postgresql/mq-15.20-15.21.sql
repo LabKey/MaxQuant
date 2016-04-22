@@ -104,7 +104,7 @@ CREATE TABLE mq.ProteinGroup
     RazorUniqPeptideCount INT NOT NULL,
     SequenceCoverage REAL NOT NULL,
     Score Double Precision NOT NULL,
-    Intensity INT NOT NULL,
+    Intensity BIGINT NOT NULL,
     MS2Count INT,
     IdentifiedBySite BOOLEAN,
     Decoy BOOLEAN,
@@ -266,7 +266,7 @@ CREATE TABLE mq.Evidence
     ScanNumber INT NOT NULL,
     Score DOUBLE PRECISION NOT NULL,
     DeltaScore DOUBLE PRECISION NOT NULL,
-    Intensity INT,
+    Intensity BIGINT,
     MaxQuantMsmsIds TEXT,
     MaxQuantBestMsmsId INT NOT NULL,
 
@@ -296,7 +296,7 @@ CREATE TABLE mq.EvidenceIntensitySilac
 
     EvidenceId INT NOT NULL,
     Labeltype CHAR(1) NOT NULL,
-    Intensity INT NOT NULL,
+    Intensity BIGINT NOT NULL,
 
     CONSTRAINT PK_EvidenceIntensitySilac PRIMARY KEY (Id),
     CONSTRAINT FK_EvidenceIntensitySilac_Evidence FOREIGN KEY (EvidenceId) REFERENCES mq.Evidence(Id)

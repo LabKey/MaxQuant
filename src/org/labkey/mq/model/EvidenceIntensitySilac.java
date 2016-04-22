@@ -6,7 +6,7 @@ package org.labkey.mq.model;
 public class EvidenceIntensitySilac extends MqEntity
 {
     private int _evidenceId;
-    private Integer _intensity;
+    private Long _intensity;
     private String _labelType;
 
     public EvidenceIntensitySilac() {}
@@ -21,12 +21,12 @@ public class EvidenceIntensitySilac extends MqEntity
         _evidenceId = evidenceId;
     }
 
-    public Integer getIntensity()
+    public Long getIntensity()
     {
         return _intensity;
     }
 
-    public void setIntensity(Integer intensity)
+    public void setIntensity(Long intensity)
     {
         _intensity = intensity;
     }

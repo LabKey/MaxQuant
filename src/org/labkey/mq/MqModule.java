@@ -26,7 +26,11 @@ import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.module.DefaultModule;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.pipeline.PipelineService;
+import org.labkey.api.view.BaseWebPartFactory;
+import org.labkey.api.view.Portal;
+import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
+import org.labkey.api.view.WebPartView;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -95,6 +99,14 @@ public class MqModule extends DefaultModule
                 return Collections.emptySet();
             }
         });
+
+//        BaseWebPartFactory runsFactory = new BaseWebPartFactory(TARGETED_MS_RUNS_WEBPART_NAME)
+//        {
+//            public WebPartView getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
+//            {
+//                return new TargetedMSRunsWebPartView(portalCtx);
+//            }
+//        };
     }
 
     @Override

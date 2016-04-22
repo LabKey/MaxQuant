@@ -36,6 +36,7 @@ import org.labkey.mq.query.ModifiedPeptideManager;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -167,7 +168,7 @@ public class MqExperimentImporter
         }
         catch (MqParserException mqe)
         {
-            logError("MaxQuant import failed due to a missing file.", mqe);
+            logError("MaxQuant import failed.", mqe);
             updateRunStatus(IMPORT_FAILED, STATUS_FAILED);
             throw mqe;
         }
@@ -227,20 +228,23 @@ public class MqExperimentImporter
                 Table.insert(_user, MqManager.getTableInfoProteinGroupIntensity(), intensity);
             }
 
-            Map<Experiment, ProteinGroupsParser.SilacRatio> ratios = row.getExperimentRatios();
-            for(Map.Entry<Experiment, ProteinGroupsParser.SilacRatio> entry: ratios.entrySet())
+            Map<Experiment, List<ProteinGroupsParser.SilacRatio>> ratios = row.getExperimentRatios();
+            for(Map.Entry<Experiment, List<ProteinGroupsParser.SilacRatio>> entry: ratios.entrySet())
             {
-                ProteinGroupRatioSilac silacRatios = new ProteinGroupRatioSilac();
-                silacRatios.setExperimentId(entry.getKey().getId());
-                silacRatios.setContainer(_container);
-                silacRatios.setProteinGroupId(pg.getId());
-                ProteinGroupsParser.SilacRatio silacRatiosRow = entry.getValue();
-                silacRatios.setRatioType(silacRatiosRow.getRatioType());
-                silacRatios.setRatio(silacRatiosRow.getRatio());
-                silacRatios.setRatioNormalized(silacRatiosRow.getRatioNormalized());
-                silacRatios.setRatioCount(silacRatiosRow.getRatioCount());
+                List<ProteinGroupsParser.SilacRatio> sRatios = entry.getValue();
+                for(ProteinGroupsParser.SilacRatio ratio: sRatios)
+                {
+                    ProteinGroupRatioSilac silacRatios = new ProteinGroupRatioSilac();
+                    silacRatios.setExperimentId(entry.getKey().getId());
+                    silacRatios.setContainer(_container);
+                    silacRatios.setProteinGroupId(pg.getId());
+                    silacRatios.setRatioType(ratio.getRatioType());
+                    silacRatios.setRatio(ratio.getRatio());
+                    silacRatios.setRatioNormalized(ratio.getRatioNormalized());
+                    silacRatios.setRatioCount(ratio.getRatioCount());
 
-                Table.insert(_user, MqManager.getTableInfoProteinGroupRatiosSilac(), silacRatios);
+                    Table.insert(_user, MqManager.getTableInfoProteinGroupRatiosSilac(), silacRatios);
+                }
             }
         }
 
@@ -383,7 +387,7 @@ public class MqExperimentImporter
                 Table.insert(_user, MqManager.getTableInfoEvidenceRatioSilac(), erSilac);
             }
 
-            for(Map.Entry<String, Integer> entry: row.getSilacIntensities().entrySet())
+            for(Map.Entry<String, Long> entry: row.getSilacIntensities().entrySet())
             {
                 EvidenceIntensitySilac eiSilac = new EvidenceIntensitySilac();
                 eiSilac.setContainer(_container);
