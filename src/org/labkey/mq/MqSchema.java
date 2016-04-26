@@ -134,7 +134,8 @@ public class MqSchema extends UserSchema
         }
         else if(TABLE_PROTEIN_GROUP_SEQUENCE_COVERAGE.equalsIgnoreCase(name)
                 || TABLE_PROTEIN_GROUP_INTENSITY.equalsIgnoreCase(name)
-                || TABLE_PG_INTENSITY_COVERAGE.equalsIgnoreCase(name))
+                || TABLE_PG_INTENSITY_COVERAGE.equalsIgnoreCase(name)
+                || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name))
         {
             FilteredTable table = new FilteredTable<>(getSchema().getTable(name), this);
             table.wrapAllColumns(true);
@@ -153,7 +154,6 @@ public class MqSchema extends UserSchema
         }
         else if(TABLE_EXPERIMENT.equalsIgnoreCase(name)
                 || TABLE_RAW_FILE.equalsIgnoreCase(name)
-                || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name)
                 || TABLE_MODIFIED_PEPTIDE.equalsIgnoreCase(name)
                 || TABLE_EVIDENCE_INETNSITY_SILAC.equalsIgnoreCase(name)
                 || TABLE_EVIDENCE_RATIO_SILAC.equalsIgnoreCase(name)
