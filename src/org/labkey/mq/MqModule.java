@@ -31,9 +31,12 @@ import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.api.view.WebPartView;
+import org.labkey.mq.view.search.ProteinSearchWebPart;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class MqModule extends DefaultModule
@@ -60,13 +63,6 @@ public class MqModule extends DefaultModule
     public boolean hasScripts()
     {
         return true;
-    }
-
-    @Override
-    @NotNull
-    protected Collection<WebPartFactory> createWebPartFactories()
-    {
-        return Collections.emptyList();
     }
 
     @Override
@@ -99,6 +95,21 @@ public class MqModule extends DefaultModule
                 return Collections.emptySet();
             }
         });
+    }
+
+    @NotNull
+    @Override
+    protected Collection<WebPartFactory> createWebPartFactories()
+    {
+        BaseWebPartFactory proteinSearchWebPart = new BaseWebPartFactory(ProteinSearchWebPart.NAME)
+        {
+            @Override
+            public WebPartView getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
+            {
+                return new ProteinSearchWebPart(new MqController.ProteinSearchForm());
+            }
+        };
+
 
 //        BaseWebPartFactory runsFactory = new BaseWebPartFactory(TARGETED_MS_RUNS_WEBPART_NAME)
 //        {
@@ -107,6 +118,9 @@ public class MqModule extends DefaultModule
 //                return new TargetedMSRunsWebPartView(portalCtx);
 //            }
 //        };
+        List<WebPartFactory> webpartFactoryList = new ArrayList<>();
+        webpartFactoryList.add(proteinSearchWebPart);
+        return webpartFactoryList;
     }
 
     @Override
