@@ -222,53 +222,8 @@
   </ns:columns>
  </ns:table>
 
- <ns:table tableName="ProteinGroupSequenceCoverage" tableDbType="TABLE">
-  <ns:description>Contains a row for sequence coverage of a protein group in an experiment.</ns:description>
-  <ns:columns>
-   <ns:column columnName="Id">
-    <ns:isHidden>true</ns:isHidden>
-   </ns:column>
-   <ns:column columnName="CreatedBy">
-    <ns:fk>
-     <ns:fkColumnName>UserId</ns:fkColumnName>
-     <ns:fkDbSchema>core</ns:fkDbSchema>
-     <ns:fkTable>UsersData</ns:fkTable>
-    </ns:fk>
-    <ns:isHidden>true</ns:isHidden>
-   </ns:column>
-   <ns:column columnName="Created">
-    <ns:formatString>DateTime</ns:formatString>
-    <ns:isHidden>true</ns:isHidden>
-   </ns:column>
-   <ns:column columnName="ModifiedBy">
-    <ns:fk>
-     <ns:fkColumnName>UserId</ns:fkColumnName>
-     <ns:fkDbSchema>core</ns:fkDbSchema>
-     <ns:fkTable>UsersData</ns:fkTable>
-    </ns:fk>
-    <ns:isHidden>true</ns:isHidden>
-   </ns:column>
-   <ns:column columnName="Modified">
-    <ns:formatString>DateTime</ns:formatString>
-    <ns:isHidden>true</ns:isHidden>
-   </ns:column>
-   <ns:column columnName="Container">
-    <ns:isReadOnly>false</ns:isReadOnly>
-    <ns:isHidden>true</ns:isHidden>
-    <ns:fk>
-     <ns:fkColumnName>EntityId</ns:fkColumnName>
-     <ns:fkDbSchema>core</ns:fkDbSchema>
-     <ns:fkTable>containers</ns:fkTable>
-    </ns:fk>
-   </ns:column>
-   <ns:column columnName="ProteinGroupId"/>
-   <ns:column columnName="ExperimentId"/>
-   <ns:column columnName="Coverage"/>
-  </ns:columns>
- </ns:table>
-
- <ns:table tableName="ProteinGroupIntensity" tableDbType="TABLE">
-  <ns:description>Contains a row for the intensity of a protein group in an experiment.</ns:description>
+ <ns:table tableName="ProteinGroupExperimentInfo" tableDbType="TABLE">
+  <ns:description>Contains a row for experiment specif information for a protein group.</ns:description>
   <ns:columns>
    <ns:column columnName="Id">
     <ns:isHidden>true</ns:isHidden>
@@ -309,6 +264,7 @@
    <ns:column columnName="ProteinGroupId"/>
    <ns:column columnName="ExperimentId"/>
    <ns:column columnName="Intensity"/>
+   <ns:column columnName="ExperimentId"/>
   </ns:columns>
  </ns:table>
 

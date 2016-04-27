@@ -21,9 +21,8 @@ import org.labkey.mq.model.ExperimentGroup;
 import org.labkey.mq.model.ModifiedPeptide;
 import org.labkey.mq.model.Peptide;
 import org.labkey.mq.model.ProteinGroup;
-import org.labkey.mq.model.ProteinGroupIntensity;
+import org.labkey.mq.model.ProteinGroupExperimentInfo;
 import org.labkey.mq.model.ProteinGroupRatioSilac;
-import org.labkey.mq.model.ProteinGroupSequenceCoverage;
 import org.labkey.mq.model.RawFile;
 import org.labkey.mq.parser.EvidenceParser;
 import org.labkey.mq.parser.ExperimentDesignTemplateParser;
@@ -192,6 +191,10 @@ public class MqExperimentImporter
         {
             throw new MqParserException("Could not find proteinGroups.txt in " + txtDir.getPath());
         }
+
+        logFileProcessingStart(proteinGrpsFile.getPath());
+
+        int count = 0;
         ProteinGroupsParser pgParser = new ProteinGroupsParser(proteinGrpsFile);
         ProteinGroupsParser.ProteinGroupRow row;
         while((row = pgParser.nextProteinGroup(experimentGroup.getExperiments())) != null)
@@ -204,28 +207,17 @@ public class MqExperimentImporter
             Table.insert(_user, MqManager.getTableInfoProteinGroup(), pg);
             maxQuantProteinGroupIdToDbId.put(pg.getMaxQuantId(), pg.getId());
 
-            Map<Experiment, Double> experimentCoverages = row.getExperimentCoverages();
-            for(Map.Entry<Experiment, Double> entry: experimentCoverages.entrySet())
+            Map<Experiment, ProteinGroupsParser.ExperimentInfo> experimentCoverages = row.getExperimentInfos();
+            for(Map.Entry<Experiment, ProteinGroupsParser.ExperimentInfo> entry: experimentCoverages.entrySet())
             {
-                ProteinGroupSequenceCoverage coverage = new ProteinGroupSequenceCoverage();
-                coverage.setContainer(_container);
-                coverage.setExperimentId(entry.getKey().getId());
-                coverage.setProteinGroupId(pg.getId());
-                coverage.setCoverage(entry.getValue());
+                ProteinGroupExperimentInfo info = new ProteinGroupExperimentInfo();
+                info.setContainer(_container);
+                info.setExperimentId(entry.getKey().getId());
+                info.setProteinGroupId(pg.getId());
+                info.setCoverage(entry.getValue().getCoverage());
+                info.setIntensity(entry.getValue().getIntensity());
 
-                Table.insert(_user, MqManager.getTableInfoProteinGroupSequenceCoverage(), coverage);
-            }
-
-            Map<Experiment, Long> experimentIntensities = row.getExperimentIntensities();
-            for(Map.Entry<Experiment, Long> entry: experimentIntensities.entrySet())
-            {
-                ProteinGroupIntensity intensity = new ProteinGroupIntensity();
-                intensity.setContainer(_container);
-                intensity.setExperimentId(entry.getKey().getId());
-                intensity.setProteinGroupId(pg.getId());
-                intensity.setIntensity(entry.getValue());
-
-                Table.insert(_user, MqManager.getTableInfoProteinGroupIntensity(), intensity);
+                Table.insert(_user, MqManager.getTableInfoProteinGroupExperimentInfo(), info);
             }
 
             Map<Experiment, List<ProteinGroupsParser.SilacRatio>> ratios = row.getExperimentRatios();
@@ -246,9 +238,31 @@ public class MqExperimentImporter
                     Table.insert(_user, MqManager.getTableInfoProteinGroupRatiosSilac(), silacRatios);
                 }
             }
+
+            printStatus(++count, 200, "protein groups");
         }
 
+        logFileProcessingEnd(proteinGrpsFile.getPath(), count + " protein groups");
+
         return maxQuantProteinGroupIdToDbId;
+    }
+
+    private void logFileProcessingStart(String file)
+    {
+        _log.info("Parsing results in " + file);
+    }
+
+    private void logFileProcessingEnd(String file, String message)
+    {
+        _log.info("Finished parsing results in " + file + ". " + message);
+    }
+
+    private void printStatus(int count, int maxCount, String objects)
+    {
+        if(count % maxCount == 0)
+        {
+            _log.info("Parsed " + count + " " + objects);
+        }
     }
 
     private Map<Integer, Integer> parsePeptides(File txtDir, Map<Integer, Integer> maxQuantProteinGroupIdToDbId)
@@ -260,6 +274,10 @@ public class MqExperimentImporter
         {
             throw new MqParserException("Could not find " + peptidesFile.getName() + " in " + txtDir.getPath());
         }
+
+        logFileProcessingStart(peptidesFile.getPath());
+
+        int count = 0;
         PeptidesParser pepParser = new PeptidesParser(peptidesFile);
         PeptidesParser.PeptideRow row;
         while((row = pepParser.nextPeptide()) != null)
@@ -285,7 +303,11 @@ public class MqExperimentImporter
 
                 Table.insert(_user, MqManager.getTableInfoProteinGroupPeptide(), mapping);
             }
+
+            printStatus(++count, 5000, "peptides");
         }
+
+        logFileProcessingEnd(peptidesFile.getPath(), count + " peptides");
 
         return maxQuantPeptideIdToDbId;
     }
@@ -299,6 +321,10 @@ public class MqExperimentImporter
         {
             throw new MqParserException("Could not find " + modifiedPeptidesFile.getName() + " in " + txtDir.getPath());
         }
+
+        logFileProcessingStart(modifiedPeptidesFile.getPath());
+
+        int count = 0;
         ModifiedPeptidesParser pepParser = new ModifiedPeptidesParser(modifiedPeptidesFile);
         ModifiedPeptidesParser.ModifiedPeptideRow row;
         while((row = pepParser.nextModifiedPeptide()) != null)
@@ -311,7 +337,11 @@ public class MqExperimentImporter
             Table.insert(_user, MqManager.getTableInfoModifiedPeptide(), modPeptide);
 
             maxQuantModifiedPeptideIdToDbId.put(modPeptide.getMaxQuantId(), modPeptide.getId());
+
+            printStatus(++count, 5000, "modified peptides");
         }
+
+        logFileProcessingEnd(modifiedPeptidesFile.getPath(), count + " modified peptides");
 
         return maxQuantModifiedPeptideIdToDbId;
     }
@@ -326,6 +356,9 @@ public class MqExperimentImporter
         {
             throw new MqParserException("Could not find " + evidenceFile.getName() + " in " + txtDir.getPath());
         }
+
+        logFileProcessingStart(evidenceFile.getPath());
+
         EvidenceParser pepParser = new EvidenceParser(evidenceFile);
         EvidenceParser.EvidenceRow row;
 
@@ -340,6 +373,8 @@ public class MqExperimentImporter
             }
 
         }
+        int count = 0;
+
         while((row = pepParser.nextEvidence()) != null)
         {
             Evidence evidence = new Evidence(row);
@@ -396,7 +431,11 @@ public class MqExperimentImporter
                 eiSilac.setIntensity(entry.getValue());
                 Table.insert(_user, MqManager.getTableInfoEvidenceIntensitySilac(), eiSilac);
             }
+
+            printStatus(++count, 10000, "evidence");
         }
+
+        logFileProcessingEnd(evidenceFile.getPath(), count + " evidence");
     }
 
     private static final ReentrantLock _schemaLock = new ReentrantLock();

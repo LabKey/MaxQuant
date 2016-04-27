@@ -79,8 +79,9 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
             String coverageHeader = "Sequence coverage " + expName + " [%]";
             String intensityHeader = Intensity + " " + expName;
 
-            pgRow.addExperimentCoverage(experiment, getDoubleValue(row, coverageHeader));
-            pgRow.addExperimentIntensity(experiment, getLongValue(row, intensityHeader));
+            Double coverage = getDoubleValue(row, coverageHeader);
+            Long intensity = getLongValue(row, intensityHeader);
+            pgRow.addExperimentInfo(experiment, new ExperimentInfo(intensity, coverage));
 
             // Parse the Ratio columns - only in SILAC file
             for(String ratioType: RatioTypes)
@@ -123,8 +124,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         private boolean _reverse;
         private boolean _contaminant;
 
-        private Map<Experiment, Double> _experimentCoverage = new HashMap<Experiment, Double>();
-        private Map<Experiment, Long> _experimentIntensity = new HashMap<Experiment, Long>();
+        private Map<Experiment, ExperimentInfo> _experimentIntensity = new HashMap<Experiment, ExperimentInfo>();
 
         // Ratios for SILAC experiment
         private Map<Experiment, List<SilacRatio>> _experimentRatios = new HashMap<>();
@@ -289,24 +289,14 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
             _contaminant = contaminant;
         }
 
-        public void addExperimentCoverage(Experiment experiment, Double coverage)
+        public void addExperimentInfo(Experiment experiment, ExperimentInfo info)
         {
-            _experimentCoverage.put(experiment, coverage);
+            _experimentIntensity.put(experiment, info);
         }
 
-        public void addExperimentIntensity(Experiment experiment, Long intensity)
-        {
-            _experimentIntensity.put(experiment, intensity);
-        }
-
-        public Map<Experiment, Long> getExperimentIntensities()
+        public Map<Experiment, ExperimentInfo> getExperimentInfos()
         {
             return Collections.unmodifiableMap(_experimentIntensity);
-        }
-
-        public Map<Experiment, Double> getExperimentCoverages()
-        {
-            return Collections.unmodifiableMap(_experimentCoverage);
         }
 
         public void addExperimentRatios(Experiment experiment, SilacRatio ratios)
@@ -323,6 +313,28 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         public Map<Experiment, List<SilacRatio>> getExperimentRatios()
         {
             return Collections.unmodifiableMap(_experimentRatios);
+        }
+    }
+
+    public static final class ExperimentInfo
+    {
+        private final Long _intensity;
+        private final Double _coverage;
+
+        private ExperimentInfo(Long intensity, Double coverage)
+        {
+            _intensity =  intensity;
+            _coverage = coverage;
+        }
+
+        public Long getIntensity()
+        {
+            return _intensity;
+        }
+
+        public Double getCoverage()
+        {
+            return _coverage;
         }
     }
 

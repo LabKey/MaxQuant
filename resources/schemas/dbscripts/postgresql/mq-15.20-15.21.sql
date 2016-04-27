@@ -115,8 +115,8 @@ CREATE TABLE mq.ProteinGroup
 );
 CREATE INDEX IX_ProteinGroup_ExperimentGroupId ON mq.ProteinGroup (ExperimentGroupId);
 
--- ProteinGroupSequenceCoverage table
-CREATE TABLE mq.ProteinGroupSequenceCoverage
+-- ProteinGroupExperimentInfo table
+CREATE TABLE mq.ProteinGroupExperimentInfo
 (
     Id SERIAL NOT NULL,
     CreatedBy USERID,
@@ -128,34 +128,14 @@ CREATE TABLE mq.ProteinGroupSequenceCoverage
     ProteinGroupId INT NOT NULL,
     ExperimentId INT NOT NULL,
     Coverage REAL NOT NULL,
-
-    CONSTRAINT PK_ProteinGroupSequenceCoverage PRIMARY KEY (Id),
-    CONSTRAINT FK_ProteinGroupSequenceCoverage_ProteinGroup FOREIGN KEY (ProteinGroupId) REFERENCES mq.ProteinGroup(Id),
-    CONSTRAINT FK_ProteinGroupSequenceCoverage_Experiment FOREIGN KEY (ExperimentId) REFERENCES mq.Experiment(Id)
-);
-CREATE INDEX IX_ProteinGroupSequenceCoverage_ExperimentId ON mq.ProteinGroupSequenceCoverage (ExperimentId);
-CREATE INDEX IX_ProteinGroupSequenceCoverage_ProteinGroupId ON mq.ProteinGroupSequenceCoverage (ProteinGroupId);
-
--- ProteinGroupIntensity table
-CREATE TABLE mq.ProteinGroupIntensity
-(
-    Id SERIAL NOT NULL,
-    CreatedBy USERID,
-    Created TIMESTAMP,
-    ModifiedBy USERID,
-    Modified TIMESTAMP,
-    Container ENTITYID NOT NULL,
-
-    ProteinGroupId INT NOT NULL,
-    ExperimentId INT NOT NULL,
     Intensity BIGINT NOT NULL,
 
-    CONSTRAINT PK_ProteinGroupIntensity PRIMARY KEY (Id),
-    CONSTRAINT FK_ProteinGroupIntensity_ProteinGroup FOREIGN KEY (ProteinGroupId) REFERENCES mq.ProteinGroup(Id),
-    CONSTRAINT FK_ProteinGroupIntensity_Experiment FOREIGN KEY (ExperimentId) REFERENCES mq.Experiment(Id)
+    CONSTRAINT PK_ProteinGroupExperimentInfo PRIMARY KEY (Id),
+    CONSTRAINT FK_ProteinGroupExperimentInfo_ProteinGroup FOREIGN KEY (ProteinGroupId) REFERENCES mq.ProteinGroup(Id),
+    CONSTRAINT FK_ProteinGroupExperimentInfo_Experiment FOREIGN KEY (ExperimentId) REFERENCES mq.Experiment(Id)
 );
-CREATE INDEX IX_ProteinGroupIntensity_ExperimentId ON mq.ProteinGroupIntensity (ExperimentId);
-CREATE INDEX IX_ProteinGroupIntensity_ProteinGroupId ON mq.ProteinGroupIntensity (ProteinGroupId);
+CREATE INDEX IX_ProteinGroupExperimentInfo_ExperimentId ON mq.ProteinGroupExperimentInfo (ExperimentId);
+CREATE INDEX IX_ProteinGroupExperimentInfo_ProteinGroupId ON mq.ProteinGroupExperimentInfo (ProteinGroupId);
 
 -- ProteinGroupRatiosSilac table
 CREATE TABLE mq.ProteinGroupRatiosSilac
@@ -178,8 +158,8 @@ CREATE TABLE mq.ProteinGroupRatiosSilac
     CONSTRAINT FK_ProteinGroupRatiosSilac_ProteinGroup FOREIGN KEY (ProteinGroupId) REFERENCES mq.ProteinGroup(Id),
     CONSTRAINT FK_ProteinGroupRatiosSilac_Experiment FOREIGN KEY (ExperimentId) REFERENCES mq.Experiment(Id)
 );
-CREATE INDEX IX_ProteinGroupRatiosSilac_ExperimentId ON mq.ProteinGroupIntensity (ExperimentId);
-CREATE INDEX IX_ProteinGroupRatiosSilac_ProteinGroupId ON mq.ProteinGroupIntensity (ProteinGroupId);
+CREATE INDEX IX_ProteinGroupRatiosSilac_ExperimentId ON mq.ProteinGroupRatiosSilac (ExperimentId);
+CREATE INDEX IX_ProteinGroupRatiosSilac_ProteinGroupId ON mq.ProteinGroupRatiosSilac (ProteinGroupId);
 
 CREATE TABLE mq.Peptide
 (

@@ -45,7 +45,6 @@ import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.mq.model.ExperimentGroup;
@@ -89,14 +88,9 @@ public class MqManager
         return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP);
     }
 
-    public static TableInfo getTableInfoProteinGroupIntensity()
+    public static TableInfo getTableInfoProteinGroupExperimentInfo()
     {
-        return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_INTENSITY);
-    }
-
-    public static TableInfo getTableInfoProteinGroupSequenceCoverage()
-    {
-        return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_SEQUENCE_COVERAGE);
+        return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO);
     }
 
     public static TableInfo getTableInfoProteinGroupRatiosSilac()
@@ -341,14 +335,8 @@ public class MqManager
                 "ExperimentGroupId IN (SELECT Id FROM " +
                 getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
 
-        // Delete from ProteinGroupIntensity
-        execute("DELETE FROM " + getTableInfoProteinGroupIntensity() + " WHERE ProteinGroupId IN (SELECT Id FROM "
-                + getTableInfoProteinGroup() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
-
-        // Delete from ProteinGroupSequenceCoverage
-        execute("DELETE FROM " + getTableInfoProteinGroupSequenceCoverage() + " WHERE ProteinGroupId IN (SELECT Id FROM "
+        // Delete from ProteinGroupExperimentInfo
+        execute("DELETE FROM " + getTableInfoProteinGroupExperimentInfo() + " WHERE ProteinGroupId IN (SELECT Id FROM "
                 + getTableInfoProteinGroup() + " WHERE " +
                 "ExperimentGroupId IN (SELECT Id FROM " +
                 getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);

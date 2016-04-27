@@ -3,11 +3,15 @@ package org.labkey.mq.model;
 /**
  * Created by vsharma on 3/3/2016.
  */
-public class ProteinGroupSequenceCoverage extends MqEntity
+public class ProteinGroupExperimentInfo extends MqEntity
 {
     private int _proteinGroupId;
     private int _experimentId;
+    private long _intensity;
+    private String _labelType;
     private double _coverage;
+
+    public ProteinGroupExperimentInfo() {}
 
     public int getProteinGroupId()
     {
@@ -27,6 +31,26 @@ public class ProteinGroupSequenceCoverage extends MqEntity
     public void setExperimentId(int experimentId)
     {
         _experimentId = experimentId;
+    }
+
+    public long getIntensity()
+    {
+        return _intensity;
+    }
+
+    public void setIntensity(long intensity)
+    {
+        _intensity = intensity;
+    }
+
+    public String getLabelType()
+    {
+        return _labelType;
+    }
+
+    public void setLabelType(String labelType)
+    {
+        _labelType = labelType;
     }
 
     public double getCoverage()

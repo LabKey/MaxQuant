@@ -65,8 +65,7 @@ public class MqSchema extends UserSchema
     public static final String TABLE_EXPERIMENT = "Experiment";
     public static final String TABLE_RAW_FILE = "RawFile";
     public static final String TABLE_PROTEIN_GROUP = "ProteinGroup";
-    public static final String TABLE_PROTEIN_GROUP_SEQUENCE_COVERAGE = "ProteinGroupSequenceCoverage";
-    public static final String TABLE_PROTEIN_GROUP_INTENSITY = "ProteinGroupIntensity";
+    public static final String TABLE_PROTEIN_GROUP_EXPERIMENT_INFO = "ProteinGroupExperimentInfo";
     public static final String TABLE_PROTEIN_GROUP_RATIOS_SILAC = "ProteinGroupRatiosSilac";
     public static final String TABLE_PEPTIDE = "Peptide";
     public static final String TABLE_PROTEIN_GROUP_PEPTIDE = "ProteinGroupPeptide";
@@ -74,8 +73,6 @@ public class MqSchema extends UserSchema
     public static final String TABLE_EVIDENCE = "Evidence";
     public static final String TABLE_EVIDENCE_INETNSITY_SILAC = "EvidenceIntensitySilac";
     public static final String TABLE_EVIDENCE_RATIO_SILAC = "EvidenceRatioSilac";
-
-    public static final String TABLE_PG_INTENSITY_COVERAGE = "ProteinGroupIntensityAndCoverage";
 
     private static final String PROTOCOL_PATTERN_PREFIX = "urn:lsid:%:Protocol.%:";
 
@@ -132,9 +129,7 @@ public class MqSchema extends UserSchema
         {
             return new EvidenceTable(this);
         }
-        else if(TABLE_PROTEIN_GROUP_SEQUENCE_COVERAGE.equalsIgnoreCase(name)
-                || TABLE_PROTEIN_GROUP_INTENSITY.equalsIgnoreCase(name)
-                || TABLE_PG_INTENSITY_COVERAGE.equalsIgnoreCase(name)
+        else if(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO.equalsIgnoreCase(name)
                 || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name))
         {
             FilteredTable table = new FilteredTable<>(getSchema().getTable(name), this);
@@ -309,8 +304,7 @@ public class MqSchema extends UserSchema
         hs.add(TABLE_EXPERIMENT);
         hs.add(TABLE_RAW_FILE);
         hs.add(TABLE_PROTEIN_GROUP);
-        hs.add(TABLE_PROTEIN_GROUP_SEQUENCE_COVERAGE);
-        hs.add(TABLE_PROTEIN_GROUP_INTENSITY);
+        hs.add(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO);
         hs.add(TABLE_PROTEIN_GROUP_RATIOS_SILAC);
         hs.add(TABLE_PEPTIDE);
         hs.add(TABLE_PROTEIN_GROUP_PEPTIDE);
