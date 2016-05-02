@@ -137,6 +137,28 @@ CREATE TABLE mq.ProteinGroupExperimentInfo
 CREATE INDEX IX_ProteinGroupExperimentInfo_ExperimentId ON mq.ProteinGroupExperimentInfo (ExperimentId);
 CREATE INDEX IX_ProteinGroupExperimentInfo_ProteinGroupId ON mq.ProteinGroupExperimentInfo (ProteinGroupId);
 
+-- ProteinGroupIntensitySilac table
+CREATE TABLE mq.ProteinGroupIntensitySilac
+(
+    Id SERIAL NOT NULL,
+    CreatedBy USERID,
+    Created TIMESTAMP,
+    ModifiedBy USERID,
+    Modified TIMESTAMP,
+    Container ENTITYID NOT NULL,
+
+    ProteinGroupId INT NOT NULL,
+    ExperimentId INT NOT NULL,
+    LabelType CHAR(1) NOT NULL,
+    Intensity BIGINT NOT NULL,
+
+    CONSTRAINT PK_ProteinGroupIntensitySilac PRIMARY KEY (Id),
+    CONSTRAINT FK_ProteinGroupIntensitySilac_ProteinGroup FOREIGN KEY (ProteinGroupId) REFERENCES mq.ProteinGroup(Id),
+    CONSTRAINT FK_ProteinGroupIntensitySilac_Experiment FOREIGN KEY (ExperimentId) REFERENCES mq.Experiment(Id)
+);
+CREATE INDEX IX_ProteinGroupIntensitySilac_ExperimentId ON mq.ProteinGroupIntensitySilac (ExperimentId);
+CREATE INDEX IX_ProteinGroupIntensitySilac_ProteinGroupId ON mq.ProteinGroupIntensitySilac (ProteinGroupId);
+
 -- ProteinGroupRatiosSilac table
 CREATE TABLE mq.ProteinGroupRatiosSilac
 (

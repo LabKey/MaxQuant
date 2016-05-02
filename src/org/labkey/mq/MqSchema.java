@@ -67,6 +67,7 @@ public class MqSchema extends UserSchema
     public static final String TABLE_PROTEIN_GROUP = "ProteinGroup";
     public static final String TABLE_PROTEIN_GROUP_EXPERIMENT_INFO = "ProteinGroupExperimentInfo";
     public static final String TABLE_PROTEIN_GROUP_RATIOS_SILAC = "ProteinGroupRatiosSilac";
+    public static final String TABLE_PROTEIN_GROUP_INTENSITY_SILAC = "ProteinGroupIntensitySilac";
     public static final String TABLE_PEPTIDE = "Peptide";
     public static final String TABLE_PROTEIN_GROUP_PEPTIDE = "ProteinGroupPeptide";
     public static final String TABLE_MODIFIED_PEPTIDE = "ModifiedPeptide";
@@ -130,7 +131,8 @@ public class MqSchema extends UserSchema
             return new EvidenceTable(this);
         }
         else if(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO.equalsIgnoreCase(name)
-                || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name))
+                || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name)
+                || TABLE_PROTEIN_GROUP_INTENSITY_SILAC.equalsIgnoreCase(name))
         {
             FilteredTable table = new FilteredTable<>(getSchema().getTable(name), this);
             table.wrapAllColumns(true);
@@ -305,6 +307,7 @@ public class MqSchema extends UserSchema
         hs.add(TABLE_RAW_FILE);
         hs.add(TABLE_PROTEIN_GROUP);
         hs.add(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO);
+        hs.add(TABLE_PROTEIN_GROUP_RATIOS_SILAC);
         hs.add(TABLE_PROTEIN_GROUP_RATIOS_SILAC);
         hs.add(TABLE_PEPTIDE);
         hs.add(TABLE_PROTEIN_GROUP_PEPTIDE);

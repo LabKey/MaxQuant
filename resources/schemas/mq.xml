@@ -316,6 +316,52 @@
   </ns:columns>
  </ns:table>
 
+ <ns:table tableName="ProteinGroupIntensitySilac" tableDbType="TABLE">
+  <ns:description>Contains a row for the SILAC intensities of a protein group in an experiment.</ns:description>
+  <ns:columns>
+   <ns:column columnName="Id">
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="CreatedBy">
+    <ns:fk>
+     <ns:fkColumnName>UserId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>UsersData</ns:fkTable>
+    </ns:fk>
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Created">
+    <ns:formatString>DateTime</ns:formatString>
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="ModifiedBy">
+    <ns:fk>
+     <ns:fkColumnName>UserId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>UsersData</ns:fkTable>
+    </ns:fk>
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Modified">
+    <ns:formatString>DateTime</ns:formatString>
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Container">
+    <ns:isReadOnly>false</ns:isReadOnly>
+    <ns:isHidden>true</ns:isHidden>
+    <ns:fk>
+     <ns:fkColumnName>EntityId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>containers</ns:fkTable>
+    </ns:fk>
+   </ns:column>
+   <ns:column columnName="ProteinGroupId"/>
+   <ns:column columnName="ExperimentId"/>
+   <ns:column columnName="LabelType"/>
+   <ns:column columnName="Intensity"/>
+  </ns:columns>
+ </ns:table>
+
  <ns:table tableName="Peptide" tableDbType="TABLE">
   <ns:description>Contains a row for each peptide in the MaxQuant run.</ns:description>
   <ns:columns>

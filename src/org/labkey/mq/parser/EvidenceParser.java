@@ -36,17 +36,6 @@ public class EvidenceParser extends MaxQuantTsvParser
     private static final String MsmsIds = "MS/MS IDs";
     private static final String BestMsmsId = "Best MS/MS";
 
-    // SILAC file columns
-    private static final String H = "H";
-    private static final String M = "M";
-    private static final String L = "L";
-    private static final String[] Labeltypes = new String[] {H, M, L};
-    private static final String HL = "H/L";
-    private static final String HM = "H/M";
-    private static final String ML = "M/L";
-    private static final String[] RatioTypes = new String[] {HL, HM, ML};
-    private static final String Ratio = "Ratio";
-
     public EvidenceParser(File file) throws MqParserException
     {
         super(file);
@@ -80,10 +69,10 @@ public class EvidenceParser extends MaxQuantTsvParser
         evidenceRow.setBestMsMsId(getIntValue(row, BestMsmsId));
         evidenceRow.setMaxQuantId(getIntValue(row, MaxQuantId));
 
-        for(String ratioType: RatioTypes)
+        for(String ratioType: Constants.RatioTypes)
         {
-            String ratioHeader = Ratio + " " + ratioType;
-            String ratioNormHeader = Ratio + " " + ratioType + " normalized";
+            String ratioHeader = Constants.Ratio + " " + ratioType;
+            String ratioNormHeader = Constants.Ratio + " " + ratioType + " normalized";
 
             SilacRatio ratio = new SilacRatio();
             ratio.setRatioType(ratioType);
@@ -95,7 +84,7 @@ public class EvidenceParser extends MaxQuantTsvParser
             }
         }
 
-        for(String labeltype: Labeltypes)
+        for(String labeltype: Constants.LabelTypes)
         {
             String ratioHeader = Intensity + " " + labeltype;
             Long intensity = tryGetLongValue(row, ratioHeader);

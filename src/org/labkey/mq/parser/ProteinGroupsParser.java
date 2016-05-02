@@ -34,13 +34,6 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
     private static final String PotentialContaminant = "Potential contaminant";
     // private static final String MaxQuantPeptideIds = "Peptide IDs";
 
-    // SILAC file columns
-    private static final String HL = "H/L";
-    private static final String HM = "H/M";
-    private static final String ML = "M/L";
-    private static final String[] RatioTypes = new String[] {HL, HM, ML};
-    private static final String Ratio = "Ratio";
-
     public ProteinGroupsParser(File file) throws MqParserException
     {
         super(file);
@@ -84,9 +77,9 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
             pgRow.addExperimentInfo(experiment, new ExperimentInfo(intensity, coverage));
 
             // Parse the Ratio columns - only in SILAC file
-            for(String ratioType: RatioTypes)
+            for(String ratioType: Constants.RatioTypes)
             {
-                String prefix = Ratio + " " + ratioType + " ";
+                String prefix = Constants.Ratio + " " + ratioType + " ";
                 String ratioHeader = prefix + expName;
                 String ratioNormHeader = prefix + "normalized " + expName;
                 String ratioCountHeader = prefix + "count " + expName;
@@ -101,6 +94,19 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
                     pgRow.addExperimentRatios(experiment, ratios);
                 }
             }
+
+            // Parse (H/M/L) intensity columns - only in SILAC files
+            for(String label: Constants.LabelTypes)
+            {
+                String intensitySilacHeader = Intensity + " "  + label + " " + expName;
+
+                SilacIntensity sIntensity = new SilacIntensity();
+                sIntensity.setLabel(label);
+                sIntensity.setIntensity(tryGetLongValue(row, intensitySilacHeader));
+
+                pgRow.addSilacExperimentIntensity(experiment, sIntensity);
+            }
+
         }
         return pgRow;
     }
@@ -128,6 +134,9 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
 
         // Ratios for SILAC experiment
         private Map<Experiment, List<SilacRatio>> _experimentRatios = new HashMap<>();
+
+        // Intensities for SILAC experiment
+        private Map<Experiment, List<SilacIntensity>> _silacExperimentIntensities = new HashMap<>();
 
         public String getProteinIds()
         {
@@ -314,6 +323,22 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         {
             return Collections.unmodifiableMap(_experimentRatios);
         }
+
+        public void addSilacExperimentIntensity(Experiment experiment, SilacIntensity intensity)
+        {
+            List<SilacIntensity> sIntensities = _silacExperimentIntensities.get(experiment);
+            if(sIntensities == null)
+            {
+                sIntensities = new ArrayList<>();
+                _silacExperimentIntensities.put(experiment, sIntensities);
+            }
+            sIntensities.add(intensity);
+        }
+
+        public Map<Experiment, List<SilacIntensity>> getSilacExperimentIntensities()
+        {
+            return Collections.unmodifiableMap(_silacExperimentIntensities);
+        }
     }
 
     public static final class ExperimentInfo
@@ -355,6 +380,32 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         public boolean hasRatioVals()
         {
             return super.hasRatioVals() || _ratioCount != null;
+        }
+    }
+
+    public static final class SilacIntensity
+    {
+        private String _label;
+        private Long _intensity;
+
+        public String getLabel()
+        {
+            return _label;
+        }
+
+        public void setLabel(String label)
+        {
+            _label = label;
+        }
+
+        public Long getIntensity()
+        {
+            return _intensity;
+        }
+
+        public void setIntensity(Long intensity)
+        {
+            _intensity = intensity;
         }
     }
 }

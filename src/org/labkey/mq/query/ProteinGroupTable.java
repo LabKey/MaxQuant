@@ -48,10 +48,11 @@ public class ProteinGroupTable extends FilteredTable<MqSchema>
         intensityAndCoverageCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, "Id", "ProteinGroupId", "Link"));
 
         ColumnInfo proteinGrpSilacRatiosCol = addWrapColumn("SilacRatios", getRealTable().getColumn(FieldKey.fromParts("Id")));
-        proteinGrpSilacRatiosCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC, "Id", "ProteinGroupId", "Link")
-        {
+        proteinGrpSilacRatiosCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC, "Id", "ProteinGroupId", "Link"));
 
-        });
+        ColumnInfo proteinGrpSilacIntensitiesCol = addWrapColumn("SilacIntensities", getRealTable().getColumn(FieldKey.fromParts("Id")));
+        proteinGrpSilacIntensitiesCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_INTENSITY_SILAC, "Id", "ProteinGroupId", "Link"));
+
     }
 
     public static final class MultiLineDisplayFactory implements DisplayColumnFactory

@@ -24,6 +24,7 @@ import org.labkey.api.exp.ExperimentRunType;
 import org.labkey.api.exp.ExperimentRunTypeSource;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.module.DefaultModule;
+import org.labkey.api.module.FolderTypeManager;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.view.BaseWebPartFactory;
@@ -95,6 +96,9 @@ public class MqModule extends DefaultModule
                 return Collections.emptySet();
             }
         });
+
+        //register the MaxQuant folder type
+        FolderTypeManager.get().registerFolderType(this, new MqFolderType(this));
     }
 
     @NotNull

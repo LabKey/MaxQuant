@@ -22,6 +22,7 @@ import org.labkey.mq.model.ModifiedPeptide;
 import org.labkey.mq.model.Peptide;
 import org.labkey.mq.model.ProteinGroup;
 import org.labkey.mq.model.ProteinGroupExperimentInfo;
+import org.labkey.mq.model.ProteinGroupIntensitySilac;
 import org.labkey.mq.model.ProteinGroupRatioSilac;
 import org.labkey.mq.model.RawFile;
 import org.labkey.mq.parser.EvidenceParser;
@@ -236,6 +237,27 @@ public class MqExperimentImporter
                     silacRatios.setRatioCount(ratio.getRatioCount());
 
                     Table.insert(_user, MqManager.getTableInfoProteinGroupRatiosSilac(), silacRatios);
+                }
+            }
+
+            Map<Experiment, List<ProteinGroupsParser.SilacIntensity>> silacIntensities = row.getSilacExperimentIntensities();
+            for(Map.Entry<Experiment, List<ProteinGroupsParser.SilacIntensity>> entry: silacIntensities.entrySet())
+            {
+                List<ProteinGroupsParser.SilacIntensity> intensities = entry.getValue();
+                for(ProteinGroupsParser.SilacIntensity sInt: intensities)
+                {
+                    if(sInt.getIntensity() == null)
+                    {
+                        continue; // There will be no value for non-SILAC experiments.
+                    }
+                    ProteinGroupIntensitySilac silacIntensity = new ProteinGroupIntensitySilac();
+                    silacIntensity.setExperimentId(entry.getKey().getId());
+                    silacIntensity.setContainer(_container);
+                    silacIntensity.setProteinGroupId(pg.getId());
+                    silacIntensity.setLabelType(sInt.getLabel());
+                    silacIntensity.setIntensity(sInt.getIntensity());
+
+                    Table.insert(_user, MqManager.getTableInfoProteinGroupIntensitySilac(), silacIntensity);
                 }
             }
 

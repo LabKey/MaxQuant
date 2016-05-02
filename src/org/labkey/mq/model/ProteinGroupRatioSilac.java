@@ -7,7 +7,6 @@ public class ProteinGroupRatioSilac extends MqEntity
 {
     private int _proteinGroupId;
     private int _experimentId;
-    private int _intensity;
     private String _ratioType;
     private double _ratio;
     private double _ratioNormalized;
@@ -33,16 +32,6 @@ public class ProteinGroupRatioSilac extends MqEntity
     public void setExperimentId(int experimentId)
     {
         _experimentId = experimentId;
-    }
-
-    public int getIntensity()
-    {
-        return _intensity;
-    }
-
-    public void setIntensity(int intensity)
-    {
-        _intensity = intensity;
     }
 
     public String getRatioType()

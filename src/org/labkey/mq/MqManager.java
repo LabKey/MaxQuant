@@ -98,6 +98,11 @@ public class MqManager
         return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC);
     }
 
+    public static TableInfo getTableInfoProteinGroupIntensitySilac()
+    {
+        return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_INTENSITY_SILAC);
+    }
+
     public static TableInfo getTableInfoPeptide()
     {
         return getSchema().getTable(MqSchema.TABLE_PEPTIDE);
