@@ -264,6 +264,7 @@
    <ns:column columnName="ProteinGroupId"/>
    <ns:column columnName="ExperimentId"/>
    <ns:column columnName="Intensity"/>
+   <ns:column columnName="LfqIntensity"/>
    <ns:column columnName="ExperimentId"/>
   </ns:columns>
  </ns:table>

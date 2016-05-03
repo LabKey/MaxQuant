@@ -52,21 +52,21 @@ public class EvidenceParser extends MaxQuantTsvParser
         evidenceRow.setModifiedSequence(getValue(row, ModifiedSequence));
         evidenceRow.setRawFile(getValue(row, RawFile));
         evidenceRow.setExperiment(getValue(row, Experiment));
-        evidenceRow.setMsmsMz(getDoubleValue(row, MsmsMz));
+        evidenceRow.setMsmsMz(tryGetDoubleValue(row, MsmsMz)); // Found missing MS/MS m/z in LFQ data
         evidenceRow.setCharge(getIntValue(row, Charge));
         evidenceRow.setMassErrorPpm(getDoubleValue(row, MassErrorPpm));
         evidenceRow.setUncalibratedMassErrorPpm(getDoubleValue(row, UncalibratedMassErrorPpm));
         evidenceRow.setRetentionTime(getDoubleValue(row, RetentionTime));
-        evidenceRow.setPep(getDoubleValue(row, Pep));
+        evidenceRow.setPep(tryGetDoubleValue(row, Pep)); // Found missing values in LFQ data
         evidenceRow.setMsmsCount(getIntValue(row, MsmsCount));
-        evidenceRow.setScanNumber(getIntValue(row, MsmsScanNumber));
-        evidenceRow.setScore(getDoubleValue(row, Score));
-        evidenceRow.setDeltaScore(getDoubleValue(row, DeltaScore));
+        evidenceRow.setScanNumber(tryGetIntValue(row, MsmsScanNumber)); // Found missing values in LFQ data
+        evidenceRow.setScore(tryGetDoubleValue(row, Score)); // Found NaN values in LFQ data
+        evidenceRow.setDeltaScore(tryGetDoubleValue(row, DeltaScore)); // Found NaN values in LFQ data
         evidenceRow.setIntensity(tryGetLongValue(row, Intensity));
         evidenceRow.setMaxQuantPeptideId(getIntValue(row, PeptideId));
         evidenceRow.setMaxQuantModifiedPeptideId(getIntValue(row, ModifiedPeptideId));
-        evidenceRow.setMsmsIds(getValue(row, MsmsIds));
-        evidenceRow.setBestMsMsId(getIntValue(row, BestMsmsId));
+        evidenceRow.setMsmsIds(tryGetValue(row, MsmsIds));
+        evidenceRow.setBestMsMsId(tryGetIntValue(row, BestMsmsId)); // Found missing values in LFQ data
         evidenceRow.setMaxQuantId(getIntValue(row, MaxQuantId));
 
         for(String ratioType: Constants.RatioTypes)
@@ -101,21 +101,21 @@ public class EvidenceParser extends MaxQuantTsvParser
         private String _modifiedSequence; // We will use this value to update ModifiedPeptide.Sequence
         private String _rawFile;
         private String _experiment;
-        private double _msmsMz;
+        private Double _msmsMz;
         private int _charge;
         private Double _massErrorPpm;
         private Double _uncalibratedMassErrorPpm;
         private double _retentionTime;
-        private double _pep;
+        private Double _pep;
         private int _msmsCount;
-        private int _scanNumber;
-        private double _score;
-        private double _deltaScore;
+        private Integer _scanNumber;
+        private Double _score;
+        private Double _deltaScore;
         private Long _intensity;
         private int _maxQuantPeptideId;
         private int _maxQuantModifiedPeptideId;
         private String _msmsIds;
-        private int _bestMsMsId;
+        private Integer _bestMsMsId;
 
         private Map<String, Long> _silacIntensities = new HashMap<String, Long>();
         private List<SilacRatio> _silacRatios = new ArrayList<>();
@@ -153,12 +153,12 @@ public class EvidenceParser extends MaxQuantTsvParser
             _experiment = experiment;
         }
 
-        public double getMsmsMz()
+        public Double getMsmsMz()
         {
             return _msmsMz;
         }
 
-        public void setMsmsMz(double msmsMz)
+        public void setMsmsMz(Double msmsMz)
         {
             _msmsMz = msmsMz;
         }
@@ -203,12 +203,12 @@ public class EvidenceParser extends MaxQuantTsvParser
             _retentionTime = retentionTime;
         }
 
-        public double getPep()
+        public Double getPep()
         {
             return _pep;
         }
 
-        public void setPep(double pep)
+        public void setPep(Double pep)
         {
             _pep = pep;
         }
@@ -223,32 +223,32 @@ public class EvidenceParser extends MaxQuantTsvParser
             _msmsCount = msmsCount;
         }
 
-        public int getScanNumber()
+        public Integer getScanNumber()
         {
             return _scanNumber;
         }
 
-        public void setScanNumber(int scanNumber)
+        public void setScanNumber(Integer scanNumber)
         {
             _scanNumber = scanNumber;
         }
 
-        public double getScore()
+        public Double getScore()
         {
             return _score;
         }
 
-        public void setScore(double score)
+        public void setScore(Double score)
         {
             _score = score;
         }
 
-        public double getDeltaScore()
+        public Double getDeltaScore()
         {
             return _deltaScore;
         }
 
-        public void setDeltaScore(double deltaScore)
+        public void setDeltaScore(Double deltaScore)
         {
             _deltaScore = deltaScore;
         }
@@ -293,12 +293,12 @@ public class EvidenceParser extends MaxQuantTsvParser
             _msmsIds = msmsIds;
         }
 
-        public int getBestMsMsId()
+        public Integer getBestMsMsId()
         {
             return _bestMsMsId;
         }
 
-        public void setBestMsMsId(int bestMsMsId)
+        public void setBestMsMsId(Integer bestMsMsId)
         {
             _bestMsMsId = bestMsMsId;
         }

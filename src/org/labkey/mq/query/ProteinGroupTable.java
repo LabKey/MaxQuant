@@ -13,6 +13,8 @@ import org.labkey.api.util.PageFlowUtil;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.MqSchema;
 
+import java.util.regex.Pattern;
+
 /**
  * Created by vsharma on 3/29/2016.
  */
@@ -27,10 +29,10 @@ public class ProteinGroupTable extends FilteredTable<MqSchema>
         experimentGroupCol.setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
 
         ColumnInfo proteinIdsColumn = getColumn(FieldKey.fromParts("ProteinIds"));
-        proteinIdsColumn.setDisplayColumnFactory(new MultiLineDisplayFactory());
+        proteinIdsColumn.setDisplayColumnFactory(new UniProtLinkDisplayFactory());
 
         ColumnInfo majorityProteinIdsCol = getColumn(FieldKey.fromParts("MajorityProteinIds"));
-        majorityProteinIdsCol.setDisplayColumnFactory(new MultiLineDisplayFactory());
+        majorityProteinIdsCol.setDisplayColumnFactory(new UniProtLinkDisplayFactory());
 
         ColumnInfo fastaHeadersCol = getColumn(FieldKey.fromParts("FastaHeaders"));
         fastaHeadersCol.setDisplayColumnFactory(new MultiLineDisplayFactory());
@@ -75,6 +77,47 @@ public class ProteinGroupTable extends FilteredTable<MqSchema>
                     {
                         sb.append(separator);
                         sb.append(PageFlowUtil.filter(value));
+                        separator = "<br>";
+                    }
+                    return sb.toString();
+                }
+            };
+        }
+    }
+
+    public static final class UniProtLinkDisplayFactory implements DisplayColumnFactory
+    {
+        // Source http://www.uniprot.org/help/accession_numbers
+        private static final Pattern UniprotAccPattern = Pattern.compile("[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}-?\\d*");
+        @Override
+        public DisplayColumn createRenderer(ColumnInfo colInfo)
+        {
+            return new DataColumn(colInfo)
+            {
+                // The HTML encoded value
+                @Override @NotNull
+                public String getFormattedValue(RenderContext ctx)
+                {
+                    String multiValues = (String)getValue(ctx);
+
+                    String[] values = multiValues.split(";");
+                    StringBuilder sb = new StringBuilder();
+                    String separator = "";
+                    for(String value: values)
+                    {
+                        sb.append(separator);
+                        value = PageFlowUtil.filter(value);
+                        if(UniprotAccPattern.matcher(value).matches())
+                        {
+                            sb.append("<a href=\"http://www.uniprot.org/uniprot/");
+                            sb.append(value);
+                            sb.append("\">").append(value);
+                            sb.append("</a>");
+                        }
+                        else
+                        {
+                            sb.append(value);
+                        }
                         separator = "<br>";
                     }
                     return sb.toString();

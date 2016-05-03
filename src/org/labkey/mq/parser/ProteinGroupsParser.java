@@ -68,13 +68,14 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         for(Experiment experiment: experiments)
         {
             String expName = experiment.getExperimentName();
-            // Parse Sequence coverage and intensity columns
-            String coverageHeader = "Sequence coverage " + expName + " [%]";
-            String intensityHeader = Intensity + " " + expName;
+            // Parse Sequence coverage and intensity columns (and LFQ intensity column in LFQ data)
+            Double coverage = getDoubleValue(row, "Sequence coverage " + expName + " [%]");
+            Long intensity = getLongValue(row, Intensity + " " + expName);
+            Long lqfIntensity = tryGetLongValue(row, "LFQ " + Intensity + " " + expName);
 
-            Double coverage = getDoubleValue(row, coverageHeader);
-            Long intensity = getLongValue(row, intensityHeader);
-            pgRow.addExperimentInfo(experiment, new ExperimentInfo(intensity, coverage));
+            ExperimentInfo expInfo = new ExperimentInfo(intensity, coverage);
+            expInfo.setLfqIntensity(lqfIntensity);
+            pgRow.addExperimentInfo(experiment, expInfo);
 
             // Parse the Ratio columns - only in SILAC file
             for(String ratioType: Constants.RatioTypes)
@@ -345,6 +346,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
     {
         private final Long _intensity;
         private final Double _coverage;
+        private Long _lfqIntensity;
 
         private ExperimentInfo(Long intensity, Double coverage)
         {
@@ -360,6 +362,16 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         public Double getCoverage()
         {
             return _coverage;
+        }
+
+        public Long getLfqIntensity()
+        {
+            return _lfqIntensity;
+        }
+
+        public void setLfqIntensity(Long lfqIntensity)
+        {
+            _lfqIntensity = lfqIntensity;
         }
     }
 

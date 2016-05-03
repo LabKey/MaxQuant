@@ -8,6 +8,7 @@ public class ProteinGroupExperimentInfo extends MqEntity
     private int _proteinGroupId;
     private int _experimentId;
     private long _intensity;
+    private Long _lfqIntensity; // lfq = Label Free Quantification
     private String _labelType;
     private double _coverage;
 
@@ -61,5 +62,15 @@ public class ProteinGroupExperimentInfo extends MqEntity
     public void setCoverage(double coverage)
     {
         _coverage = coverage;
+    }
+
+    public Long getLfqIntensity()
+    {
+        return _lfqIntensity;
+    }
+
+    public void setLfqIntensity(Long lfqIntensity)
+    {
+        _lfqIntensity = lfqIntensity;
     }
 }

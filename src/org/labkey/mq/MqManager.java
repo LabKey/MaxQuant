@@ -352,6 +352,12 @@ public class MqManager
                 "ExperimentGroupId IN (SELECT Id FROM " +
                 getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
 
+        // Delete from ProteinGroupIntensitySilac
+        execute("DELETE FROM " + getTableInfoProteinGroupIntensitySilac() + " WHERE ProteinGroupId IN (SELECT Id FROM "
+                + getTableInfoProteinGroup() + " WHERE " +
+                "ExperimentGroupId IN (SELECT Id FROM " +
+                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
+
         // Delete from Experiment
         execute("DELETE FROM " + getTableInfoExperiment() + " WHERE " +
                 "ExperimentGroupId IN (SELECT Id FROM " +

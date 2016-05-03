@@ -129,6 +129,7 @@ CREATE TABLE mq.ProteinGroupExperimentInfo
     ExperimentId INT NOT NULL,
     Coverage REAL NOT NULL,
     Intensity BIGINT NOT NULL,
+    LfqIntensity BIGINT,
 
     CONSTRAINT PK_ProteinGroupExperimentInfo PRIMARY KEY (Id),
     CONSTRAINT FK_ProteinGroupExperimentInfo_ProteinGroup FOREIGN KEY (ProteinGroupId) REFERENCES mq.ProteinGroup(Id),
@@ -258,19 +259,19 @@ CREATE TABLE mq.Evidence
     RawFileId INT NOT NULL,
 
     MaxQuantId INT NOT NULL,
-    MsmsMz DOUBLE PRECISION NOT NULL,
+    MsmsMz DOUBLE PRECISION,
     Charge INT NOT NULL,
     MassErrorPpm DOUBLE PRECISION NOT NULL,
     UncalibratedMassErrorPpm DOUBLE PRECISION NOT NULL,
     RetentionTime REAL NOT NULL,
-    Pep DOUBLE PRECISION NOT NULL,
+    Pep DOUBLE PRECISION,
     MsmsCount INT NOT NULL,
-    ScanNumber INT NOT NULL,
-    Score DOUBLE PRECISION NOT NULL,
-    DeltaScore DOUBLE PRECISION NOT NULL,
+    ScanNumber INT,
+    Score DOUBLE PRECISION,
+    DeltaScore DOUBLE PRECISION,
     Intensity BIGINT,
     MaxQuantMsmsIds TEXT,
-    MaxQuantBestMsmsId INT NOT NULL,
+    MaxQuantBestMsmsId INT,
 
 
 

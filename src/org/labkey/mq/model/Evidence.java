@@ -14,19 +14,19 @@ public class Evidence extends MqEntity
     private int _experimentId;
     private int _rawFileId;
 
-    private double _msmsMz;
+    private Double _msmsMz;
     private int _charge;
     private double _massErrorPpm;
     private double _uncalibratedMassErrorPpm;
     private double _retentionTime;
-    private double _pep;
+    private Double _pep;
     private int _msmsCount;
-    private int _scanNumber;
-    private double _score;
-    private double _deltaScore;
+    private Integer _scanNumber;
+    private Double _score;
+    private Double _deltaScore;
     private Long _intensity;
     private String _maxQuantMsmsIds;
-    private int _maxQuantBestMsmsId;
+    private Integer _maxQuantBestMsmsId;
 
     private int _maxQuantId;
 
@@ -101,12 +101,12 @@ public class Evidence extends MqEntity
         _rawFileId = rawFileId;
     }
 
-    public double getMsmsMz()
+    public Double getMsmsMz()
     {
         return _msmsMz;
     }
 
-    public void setMsmsMz(double msmsMz)
+    public void setMsmsMz(Double msmsMz)
     {
         _msmsMz = msmsMz;
     }
@@ -151,12 +151,12 @@ public class Evidence extends MqEntity
         _retentionTime = retentionTime;
     }
 
-    public double getPep()
+    public Double getPep()
     {
         return _pep;
     }
 
-    public void setPep(double pep)
+    public void setPep(Double pep)
     {
         _pep = pep;
     }
@@ -171,32 +171,32 @@ public class Evidence extends MqEntity
         _msmsCount = msmsCount;
     }
 
-    public int getScanNumber()
+    public Integer getScanNumber()
     {
         return _scanNumber;
     }
 
-    public void setScanNumber(int scanNumber)
+    public void setScanNumber(Integer scanNumber)
     {
         _scanNumber = scanNumber;
     }
 
-    public double getScore()
+    public Double getScore()
     {
         return _score;
     }
 
-    public void setScore(double score)
+    public void setScore(Double score)
     {
         _score = score;
     }
 
-    public double getDeltaScore()
+    public Double getDeltaScore()
     {
         return _deltaScore;
     }
 
-    public void setDeltaScore(double deltaScore)
+    public void setDeltaScore(Double deltaScore)
     {
         _deltaScore = deltaScore;
     }
@@ -221,12 +221,12 @@ public class Evidence extends MqEntity
         _maxQuantMsmsIds = maxQuantMsmsIds;
     }
 
-    public int getMaxQuantBestMsmsId()
+    public Integer getMaxQuantBestMsmsId()
     {
         return _maxQuantBestMsmsId;
     }
 
-    public void setMaxQuantBestMsmsId(int maxQuantBestMsmsId)
+    public void setMaxQuantBestMsmsId(Integer maxQuantBestMsmsId)
     {
         _maxQuantBestMsmsId = maxQuantBestMsmsId;
     }
