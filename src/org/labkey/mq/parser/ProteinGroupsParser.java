@@ -71,7 +71,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
             // Parse Sequence coverage and intensity columns (and LFQ intensity column in LFQ data)
             Double coverage = getDoubleValue(row, "Sequence coverage " + expName + " [%]");
             Long intensity = getLongValue(row, Intensity + " " + expName);
-            Long lqfIntensity = tryGetLongValue(row, "LFQ " + Intensity + " " + expName);
+            Long lqfIntensity = tryGetLongValue(row, "LFQ intensity " + expName);
 
             ExperimentInfo expInfo = new ExperimentInfo(intensity, coverage);
             expInfo.setLfqIntensity(lqfIntensity);

@@ -215,8 +215,10 @@ public class MqExperimentImporter
                 info.setContainer(_container);
                 info.setExperimentId(entry.getKey().getId());
                 info.setProteinGroupId(pg.getId());
-                info.setCoverage(entry.getValue().getCoverage());
-                info.setIntensity(entry.getValue().getIntensity());
+                ProteinGroupsParser.ExperimentInfo expInfo = entry.getValue();
+                info.setCoverage(expInfo.getCoverage());
+                info.setIntensity(expInfo.getIntensity());
+                info.setLfqIntensity(expInfo.getLfqIntensity());
 
                 Table.insert(_user, MqManager.getTableInfoProteinGroupExperimentInfo(), info);
             }
