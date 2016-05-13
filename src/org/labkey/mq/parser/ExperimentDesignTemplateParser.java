@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class ExperimentDesignTemplateParser
 {
-    public static final String FILE_NAME = "experimentalDesignTemplate.txt";
+    public static final String FILE = "experimentalDesignTemplate.txt";
 
     public ExperimentGroup parse(File file) throws MqParserException
     {

@@ -9,10 +9,15 @@ import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryForeignKey;
+import org.labkey.api.security.UserPrincipal;
+import org.labkey.api.security.permissions.Permission;
+import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.MqSchema;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.regex.Pattern;
 
 /**
@@ -46,15 +51,8 @@ public class ProteinGroupTable extends FilteredTable<MqSchema>
         ColumnInfo peptideCountCol = getColumn(FieldKey.fromParts("PeptideCount"));
         peptideCountCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE, "Id", "ProteinGroupId"));
 
-        ColumnInfo intensityAndCoverageCol = addWrapColumn("IntensityAndCoverage", getRealTable().getColumn(FieldKey.fromParts("Id")));
+        ColumnInfo intensityAndCoverageCol = addWrapColumn("ExperimentDetails", getRealTable().getColumn(FieldKey.fromParts("Id")));
         intensityAndCoverageCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, "Id", "ProteinGroupId", "Link"));
-
-        ColumnInfo proteinGrpSilacRatiosCol = addWrapColumn("SilacRatios", getRealTable().getColumn(FieldKey.fromParts("Id")));
-        proteinGrpSilacRatiosCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC, "Id", "ProteinGroupId", "Link"));
-
-        ColumnInfo proteinGrpSilacIntensitiesCol = addWrapColumn("SilacIntensities", getRealTable().getColumn(FieldKey.fromParts("Id")));
-        proteinGrpSilacIntensitiesCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_INTENSITY_SILAC, "Id", "ProteinGroupId", "Link"));
-
     }
 
     public static final class MultiLineDisplayFactory implements DisplayColumnFactory
@@ -94,6 +92,7 @@ public class ProteinGroupTable extends FilteredTable<MqSchema>
         {
             return new DataColumn(colInfo)
             {
+                private String _separator = "<br>";
                 // The HTML encoded value
                 @Override @NotNull
                 public String getFormattedValue(RenderContext ctx)
@@ -118,11 +117,27 @@ public class ProteinGroupTable extends FilteredTable<MqSchema>
                         {
                             sb.append(value);
                         }
-                        separator = "<br>";
+                        separator = _separator;
                     }
                     return sb.toString();
                 }
+
+                @Override
+                public void renderDetailsCellContents(RenderContext ctx, Writer out) throws IOException
+                {
+                    _separator = ", ";
+                    super.renderDetailsCellContents(ctx, out);
+                }
             };
         }
+    }
+
+    // Need to override this if we want to use this table in grid/details views.
+    // AbstractTableInfo.hasPermission returns false, and you will see a message like
+    // "You do not have permission to read this data"
+    @Override
+    public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
+    {
+        return ReadPermission.class.equals(perm) && getContainer().hasPermission(user, perm);
     }
 }

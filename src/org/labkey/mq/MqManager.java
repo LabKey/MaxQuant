@@ -272,7 +272,7 @@ public class MqManager
             Map<ExpData, String> inputDatas = new HashMap<>();
             Map<ExpData, String> outputDatas = new HashMap<>();
 
-            outputDatas.put(expData, ExperimentDesignTemplateParser.FILE_NAME);
+            outputDatas.put(expData, ExperimentDesignTemplateParser.FILE);
 
             expRun = ExperimentService.get().saveSimpleExperimentRun(expRun,
                     Collections.<ExpMaterial, String>emptyMap(),

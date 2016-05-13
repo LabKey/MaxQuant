@@ -47,7 +47,7 @@ public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
         // TODO: The display field in the ProteinGroupId Query FK is set to the ProteinIds column. And that column
         // has a display factory assigned to it.  But the display factory is not getting used.
         // So I have to explicitly add the ProteinGroupId/ProteinIds column to the visible columns list.
-        visibleColumns.add(FieldKey.fromParts("ProteinGroupId", "ProteinIds"));
+        // visibleColumns.add(FieldKey.fromParts("ProteinGroupId", "ProteinIds"));
         visibleColumns.add(FieldKey.fromParts("PeptideId"));
         visibleColumns.add(FieldKey.fromParts("PeptideId", "Length"));
         visibleColumns.add(FieldKey.fromParts("PeptideId", "Mass"));

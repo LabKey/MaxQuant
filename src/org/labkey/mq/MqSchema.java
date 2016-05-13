@@ -49,6 +49,7 @@ import org.labkey.mq.query.EvidenceTable;
 import org.labkey.mq.query.PeptideTable;
 import org.labkey.mq.query.ProteinGroupPeptideTable;
 import org.labkey.mq.query.ProteinGroupTable;
+import org.springframework.web.servlet.mvc.Controller;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -247,8 +248,6 @@ public class MqSchema extends UserSchema
         return result;
     }
 
-
-
     public static SQLFragment getRunProteinGroupCountSQL(String runAlias)
     {
         SQLFragment sqlFragment = new SQLFragment("SELECT COUNT(pg.id) FROM ");
@@ -293,8 +292,19 @@ public class MqSchema extends UserSchema
         private ActionURL getQueryURL(RenderContext ctx, String tableName)
         {
             Integer exptGrpId = (Integer)ctx.get(FieldKey.fromParts("ExperimentGroup"));
-            ActionURL url = QueryService.get().urlDefault(ctx.getContainer(), QueryAction.executeQuery, NAME, tableName);
-            url.addParameter("query.ExperimentGroupId~eq", String.valueOf(exptGrpId));
+            // ActionURL url = QueryService.get().urlDefault(ctx.getContainer(), QueryAction.executeQuery, NAME, tableName);
+            // url.addParameter("query.ExperimentGroupId~eq", String.valueOf(exptGrpId));
+            Class<? extends Controller> actionClass = null;
+            if(tableName.equals(MqSchema.TABLE_PROTEIN_GROUP))
+            {
+                actionClass = MqController.ViewProteinGroupsAction.class;
+            }
+            else if(tableName.equals(TABLE_PEPTIDE))
+            {
+                actionClass = MqController.ViewPeptidesAction.class;
+            }
+            ActionURL url = new ActionURL(actionClass, ctx.getContainer());
+            url.addParameter("ExperimentGroupId", String.valueOf(exptGrpId));
             return url;
         }
     }
