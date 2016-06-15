@@ -69,7 +69,7 @@ public class MaxQuantTsvParser extends TsvParser
         String val = getValue(row, column);
         try
         {
-            return Long.parseLong(val);
+            return Math.round(Double.parseDouble(val));
         }
         catch (NumberFormatException e)
         {
