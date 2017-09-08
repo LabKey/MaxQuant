@@ -35,6 +35,7 @@ import org.labkey.mq.query.ModifiedPeptideManager;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -343,7 +344,7 @@ public class MqExperimentImporter
 
         if(!modifiedPeptidesFile.exists())
         {
-            throw new MqParserException("Could not find " + modifiedPeptidesFile.getName() + " in " + txtDir.getPath());
+            return Collections.emptyMap();
         }
 
         logFileProcessingStart(modifiedPeptidesFile.getPath());
@@ -378,7 +379,7 @@ public class MqExperimentImporter
 
         if(!evidenceFile.exists())
         {
-            throw new MqParserException("Could not find " + evidenceFile.getName() + " in " + txtDir.getPath());
+            return;
         }
 
         logFileProcessingStart(evidenceFile.getPath());
@@ -407,7 +408,12 @@ public class MqExperimentImporter
             evidence.setPeptideId(peptideId);
             int modifiedPeptideId = maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
             evidence.setModifiedPeptideId(modifiedPeptideId);
-            evidence.setExperimentId(experimentNameToDbId.get(row.getExperiment()));
+            Integer experimentId = experimentNameToDbId.get(row.getExperiment());
+            if (experimentId == null)
+            {
+                throw new IllegalArgumentException("Unable to find experiment with name:" + row.getExperiment());
+            }
+            evidence.setExperimentId(experimentId);
             evidence.setRawFileId(rawfileNameToDbId.get(row.getRawFile()));
             evidence.setMaxQuantId(row.getMaxQuantId());
             evidence.setMsmsMz(row.getMsmsMz());

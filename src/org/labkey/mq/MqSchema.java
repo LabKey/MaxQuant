@@ -109,7 +109,7 @@ public class MqSchema extends UserSchema
 
     @Nullable
     @Override
-    protected TableInfo createTable(String name)
+    public TableInfo createTable(String name)
     {
         if (TABLE_EXPERIMENT_GROUP.equalsIgnoreCase(name))
         {
