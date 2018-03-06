@@ -57,7 +57,7 @@ public class MqModule extends DefaultModule
     @Override
     public double getVersion()
     {
-        return 15.21;
+        return 18.11;
     }
 
     @Override

@@ -48,7 +48,7 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.mq.model.ExperimentGroup;
-import org.labkey.mq.parser.ExperimentDesignTemplateParser;
+import org.labkey.mq.parser.SummaryTemplateParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -272,7 +272,7 @@ public class MqManager
             Map<ExpData, String> inputDatas = new HashMap<>();
             Map<ExpData, String> outputDatas = new HashMap<>();
 
-            outputDatas.put(expData, ExperimentDesignTemplateParser.FILE);
+            outputDatas.put(expData, SummaryTemplateParser.FILE);
 
             expRun = ExperimentService.get().saveSimpleExperimentRun(expRun,
                     Collections.<ExpMaterial, String>emptyMap(),

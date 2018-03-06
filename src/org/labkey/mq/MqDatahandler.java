@@ -73,7 +73,7 @@ public class MqDatahandler extends AbstractExperimentDataHandler
             return null;
         File file = new File(url);
         String filename = file.getName();
-        if("experimentaldesigntemplate.txt".equals(filename.toLowerCase()))
+        if(MqPipelineProvider.FILE_NAME.equals(filename.toLowerCase()))
         {
             return Priority.HIGH;
         }

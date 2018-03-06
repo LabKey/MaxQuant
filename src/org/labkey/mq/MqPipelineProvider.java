@@ -15,6 +15,7 @@ import java.io.File;
 public class MqPipelineProvider extends PipelineProvider
 {
     static String name = "MaxQuant";
+    public static String FILE_NAME = "summary.txt";
 
     public MqPipelineProvider(Module owningModule)
     {
@@ -37,7 +38,7 @@ public class MqPipelineProvider extends PipelineProvider
     {
         public boolean accept(File file)
         {
-            return file.getName().equalsIgnoreCase("experimentalDesignTemplate.txt");
+            return file.getName().equalsIgnoreCase(FILE_NAME);
         }
     }
 }

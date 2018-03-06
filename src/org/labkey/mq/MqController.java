@@ -63,7 +63,7 @@ import org.labkey.mq.model.ExperimentGroup;
 import org.labkey.mq.model.Peptide;
 import org.labkey.mq.model.ProteinGroup;
 import org.labkey.mq.parser.EvidenceParser;
-import org.labkey.mq.parser.ExperimentDesignTemplateParser;
+import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.parser.ModifiedPeptidesParser;
 import org.labkey.mq.parser.PeptidesParser;
 import org.labkey.mq.parser.ProteinGroupsParser;
@@ -220,8 +220,8 @@ public class MqController extends SpringActionController
                 throw new NotFoundException("Experiment directory " + experimentDir + " does not exist.");
             }
 
-            if(form.getFileName().equals(ExperimentDesignTemplateParser.FILE)
-                    && file.getName().equals(ExperimentDesignTemplateParser.FILE))
+            if(form.getFileName().equals(SummaryTemplateParser.FILE)
+                    && file.getName().equals(SummaryTemplateParser.FILE))
             {
                 PageFlowUtil.streamFile(getViewContext().getResponse(), file, true);
                 return null;
@@ -570,7 +570,7 @@ public class MqController extends SpringActionController
         return new DetailsView(exptGrpDetailsRetion, experimentGroupId);
     }
 
-    private String[] allFiles = new String[] {ExperimentDesignTemplateParser.FILE, ProteinGroupsParser.FILE,
+    private String[] allFiles = new String[] {SummaryTemplateParser.FILE, ProteinGroupsParser.FILE,
                                            PeptidesParser.FILE, ModifiedPeptidesParser.FILE, EvidenceParser.FILE};
     @NotNull
     private HtmlView getDownloadLinksView(int experimentGroupId, String... files)
@@ -589,10 +589,10 @@ public class MqController extends SpringActionController
 
         for(String file: files)
         {
-            if(file.equals(ExperimentDesignTemplateParser.FILE))
+            if(file.equals(SummaryTemplateParser.FILE))
             {
-                downloadFileUrl.replaceParameter("fileName", ExperimentDesignTemplateParser.FILE);
-                html.append("<li><a href=\"" + downloadFileUrl.getLocalURIString() + "\">experimentalDesignTemplate.txt</a></li>");
+                downloadFileUrl.replaceParameter("fileName", SummaryTemplateParser.FILE);
+                html.append("<li><a href=\"" + downloadFileUrl.getLocalURIString() + "\">" + SummaryTemplateParser.FILE + "</a></li>");
             }
             else if(file.equals(ProteinGroupsParser.FILE))
             {

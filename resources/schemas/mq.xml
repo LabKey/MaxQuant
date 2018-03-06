@@ -214,7 +214,7 @@
    <ns:column columnName="RazorUniqPeptideCount"/>
    <ns:column columnName="SequenceCoverage"/>
    <ns:column columnName="Score"/>
-   <ns:column columnName="Intensity"/>
+   <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="MS2Count"/>
    <ns:column columnName="IdentifiedBySite"/>
    <ns:column columnName="Decoy"/>
@@ -264,7 +264,7 @@
    <ns:column columnName="Coverage"/>
    <ns:column columnName="ProteinGroupId"/>
    <ns:column columnName="ExperimentId"/>
-   <ns:column columnName="Intensity"/>
+   <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="LfqIntensity"/>
   </ns:columns>
  </ns:table>
@@ -359,7 +359,7 @@
    <ns:column columnName="ProteinGroupId"/>
    <ns:column columnName="ExperimentId"/>
    <ns:column columnName="LabelType"/>
-   <ns:column columnName="Intensity"/>
+   <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 
@@ -409,7 +409,7 @@
    <ns:column columnName="StartPosition"/>
    <ns:column columnName="EndPosition"/>
    <ns:column columnName="MissedCleavages"/>
-   <ns:column columnName="Mass"/>
+   <ns:column columnName="Mass"><ns:formatString>#,###.00000</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 
@@ -464,7 +464,7 @@
    <ns:column columnName="MaxQuantId"/>
    <ns:column columnName="Sequence"/>
    <ns:column columnName="Modifications"/>
-   <ns:column columnName="Mass"/>
+   <ns:column columnName="Mass"><ns:formatString>#,###.00000</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 
@@ -512,17 +512,17 @@
    <ns:column columnName="ExperimentId"/>
    <ns:column columnName="RawFileId"/>
    <ns:column columnName="MaxQuantId"/>
-   <ns:column columnName="MsmsMz"/>
+   <ns:column columnName="MsmsMz"><ns:formatString>#,###.0000</ns:formatString></ns:column>
    <ns:column columnName="Charge"/>
-   <ns:column columnName="MassErrorPpm"/>
-   <ns:column columnName="UncalibratedMassErrorPpm"/>
-   <ns:column columnName="RetentionTime"/>
+   <ns:column columnName="MassErrorPpm"><ns:formatString>#,###</ns:formatString></ns:column>
+   <ns:column columnName="UncalibratedMassErrorPpm"><ns:formatString>#,###</ns:formatString></ns:column>
+   <ns:column columnName="RetentionTime"><ns:formatString>#,###.0000</ns:formatString></ns:column>
    <ns:column columnName="Pep"/>
    <ns:column columnName="MsmsCount"/>
    <ns:column columnName="ScanNumber"/>
-   <ns:column columnName="Score"/>
+   <ns:column columnName="Score"><ns:formatString>#,###.00</ns:formatString></ns:column>
    <ns:column columnName="DeltaScore"/>
-   <ns:column columnName="Intensity"/>
+   <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="MaxQuantMsmsIds"/>
    <ns:column columnName="MaxQuantBestMsmsId"/>
   </ns:columns>
@@ -569,7 +569,7 @@
    </ns:column>
    <ns:column columnName="EvidenceId"/>
    <ns:column columnName="LabelType"/>
-   <ns:column columnName="Intensity"/>
+   <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 

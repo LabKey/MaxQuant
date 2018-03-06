@@ -26,7 +26,7 @@ import org.labkey.mq.model.ProteinGroupIntensitySilac;
 import org.labkey.mq.model.ProteinGroupRatioSilac;
 import org.labkey.mq.model.RawFile;
 import org.labkey.mq.parser.EvidenceParser;
-import org.labkey.mq.parser.ExperimentDesignTemplateParser;
+import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.parser.ModifiedPeptidesParser;
 import org.labkey.mq.parser.MqParserException;
 import org.labkey.mq.parser.PeptidesParser;
@@ -99,8 +99,8 @@ public class MqExperimentImporter
             return run;
         }
 
-        File experimentDesignTemplatefile = _expData.getFile();
-        File experimentDirectory = experimentDesignTemplatefile.getParentFile();
+        File summaryTemplatefile = _expData.getFile();
+        File experimentDirectory = summaryTemplatefile.getParentFile();
 
         if(!experimentDirectory.exists())
         {
@@ -117,12 +117,12 @@ public class MqExperimentImporter
             _log.info("Starting to import MaxQuant results from " + experimentDirectory);
 
             // Parse the "ExperimentDesignTemplate.txt" in the given directory
-            if(!experimentDesignTemplatefile.exists())
+            if(!summaryTemplatefile.exists())
             {
-                throw new MqParserException("Could not find file " + experimentDesignTemplatefile.getName() + " in directory " + experimentDirectory + ".");
+                throw new MqParserException("Could not find file " + summaryTemplatefile.getName() + " in directory " + experimentDirectory + ".");
             }
 
-            ExperimentGroup experimentGroup = new ExperimentDesignTemplateParser().parse(experimentDesignTemplatefile);
+            ExperimentGroup experimentGroup = new SummaryTemplateParser().parse(summaryTemplatefile);
             try (DbScope.Transaction transaction = MqSchema.getSchema().getScope().ensureTransaction(_schemaLock))
             {
                 for(Experiment experiment: experimentGroup.getExperiments())
