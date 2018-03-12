@@ -20,7 +20,7 @@
 
     String proteinId = bean.getForm().getProteinId() != null ? bean.getForm().getProteinId() : "";
     String majorityProteinId = bean.getForm().getMajorityProteinId() != null ? bean.getForm().getMajorityProteinId() : "";
-    String proteinName = bean.getForm().getProteinName() != null ? bean.getForm().getProteinName() : null;
+    String proteinName = bean.getForm().getProteinName();
     String geneName = bean.getForm().getGeneName() != null ? bean.getForm().getGeneName() : "";
 
     ActionURL proteinSearchUrl = new ActionURL(MqController.ProteinSearchAction.class, getContainer());
@@ -72,7 +72,7 @@
                     name: 'includeSubfolders',
                     fieldLabel: 'Search in subfolders',
                     inputValue: true,
-                    checked: <%=bean.getForm().isIncludeSubfolders()%>,
+                    checked: <%=bean.getForm().isIncludeSubfolders()%>
                 }
             ],
             buttonAlign: 'left',
@@ -86,7 +86,7 @@
                         params: values
                     });
                 }
-            }],
+            }]
         });
     });
 

@@ -1,36 +1,29 @@
 package org.labkey.mq.query;
 
 import org.labkey.api.data.ColumnInfo;
-import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.JdbcType;
-import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryForeignKey;
-import org.labkey.api.view.ActionURL;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.MqSchema;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by vsharma on 3/29/2016.
  */
 public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
 {
-    public ProteinGroupPeptideTable(final MqSchema schema)
+    public ProteinGroupPeptideTable(MqSchema schema)
     {
         super(MqManager.getTableInfoProteinGroupPeptide(), schema);
         wrapAllColumns(true);
 
-        ColumnInfo proteinGroupIdCol = getColumn(FieldKey.fromParts("ProteinGroupId"));
-        proteinGroupIdCol.setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PROTEIN_GROUP, "Id", "ProteinIds"));
-
-        ColumnInfo peptideIdCol = getColumn(FieldKey.fromParts("PeptideId"));
-        peptideIdCol.setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
+        getColumn("ProteinGroupId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PROTEIN_GROUP, "Id", "ProteinIds"));
+        getColumn("PeptideId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
 
         SQLFragment sql = new SQLFragment("(").append("SELECT COUNT(e.Id) FROM ");
         sql.append(MqManager.getTableInfoEvidence(), "e");

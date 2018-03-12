@@ -5,7 +5,6 @@ import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.MqSchema;
@@ -15,15 +14,13 @@ import java.util.ArrayList;
 /**
  * Created by vsharma on 3/29/2016.
  */
-public class PeptideTable extends FilteredTable<MqSchema>
+public class PeptideTable extends DefaultMqTable
 {
-    public PeptideTable(final MqSchema schema)
+    public PeptideTable(MqSchema schema)
     {
         super(MqManager.getTableInfoPeptide(), schema);
-        wrapAllColumns(true);
 
-        ColumnInfo experimentGroupCol = getColumn(FieldKey.fromParts("ExperimentGroupId"));
-        experimentGroupCol.setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
+        getColumn("ExperimentGroupId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
 
         SQLFragment sql = new SQLFragment("(").append("SELECT COUNT(e.Id) FROM ");
         sql.append(MqManager.getTableInfoEvidence(), "e");
@@ -36,7 +33,6 @@ public class PeptideTable extends FilteredTable<MqSchema>
 
         //only display a subset of the columns by default
         ArrayList<FieldKey> visibleColumns = new ArrayList<>();
-
         visibleColumns.add(FieldKey.fromParts("ExperimentGroupId"));
         visibleColumns.add(FieldKey.fromParts("Id"));
         visibleColumns.add(FieldKey.fromParts("Sequence"));
@@ -46,7 +42,6 @@ public class PeptideTable extends FilteredTable<MqSchema>
         visibleColumns.add(FieldKey.fromParts("EndPosition"));
         visibleColumns.add(FieldKey.fromParts("MissedCleavages"));
         visibleColumns.add(FieldKey.fromParts("EvidenceCount"));
-
         setDefaultVisibleColumns(visibleColumns);
     }
 }

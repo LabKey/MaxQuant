@@ -39,10 +39,8 @@ import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.LookupForeignKey;
-import org.labkey.api.query.QueryAction;
 import org.labkey.api.query.QuerySchema;
-import org.labkey.api.query.QueryService;
-import org.labkey.api.query.UserSchema;
+import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.view.ActionURL;
 import org.labkey.mq.query.EvidenceTable;
@@ -56,7 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class MqSchema extends UserSchema
+public class MqSchema extends SimpleUserSchema
 {
     public static final String NAME = "mq";
     public static final String SCHEMA_DESCR = "Contains data imported from MaxQuant results";
@@ -111,7 +109,7 @@ public class MqSchema extends UserSchema
     @Override
     public TableInfo createTable(String name)
     {
-        if (TABLE_EXPERIMENT_GROUP.equalsIgnoreCase(name))
+        if (TABLE_EXPERIMENT_GROUP.equalsIgnoreCase(name) || "Runs".equalsIgnoreCase(name))
         {
             return getExperimentGroupTable();
         }
@@ -131,38 +129,27 @@ public class MqSchema extends UserSchema
         {
             return new EvidenceTable(this);
         }
-        else if(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO.equalsIgnoreCase(name)
+
+        SimpleUserSchema.SimpleTable<MqSchema> table = new SimpleUserSchema.SimpleTable<>(this, createSourceTable(name)).init();
+        table.setReadOnly(true);
+
+        if (TABLE_PROTEIN_GROUP_EXPERIMENT_INFO.equalsIgnoreCase(name)
                 || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name)
                 || TABLE_PROTEIN_GROUP_INTENSITY_SILAC.equalsIgnoreCase(name))
         {
-            FilteredTable table = new FilteredTable<>(getSchema().getTable(name), this);
-            table.wrapAllColumns(true);
+
             List<FieldKey> defaultVisible = table.getDefaultVisibleColumns();
             List<FieldKey> visibleColumns = new ArrayList<>();
-            for(FieldKey fk: defaultVisible)
+            for (FieldKey fk: defaultVisible)
             {
-                if(fk.getName().equalsIgnoreCase("ProteinGroupId"))
-                {
+                if (fk.getName().equalsIgnoreCase("ProteinGroupId"))
                     continue;
-                }
                 visibleColumns.add(fk);
             }
             table.setDefaultVisibleColumns(visibleColumns);
-            return table;
-        }
-        else if(TABLE_EXPERIMENT.equalsIgnoreCase(name)
-                || TABLE_RAW_FILE.equalsIgnoreCase(name)
-                || TABLE_MODIFIED_PEPTIDE.equalsIgnoreCase(name)
-                || TABLE_EVIDENCE_INETNSITY_SILAC.equalsIgnoreCase(name)
-                || TABLE_EVIDENCE_RATIO_SILAC.equalsIgnoreCase(name)
-                )
-        {
-            FilteredTable table = new FilteredTable<>(getSchema().getTable(name), this);
-            table.wrapAllColumns(true);
-            return table;
         }
 
-        return null;
+        return table;
     }
 
     public ExpRunTable getExperimentGroupTable()
@@ -228,7 +215,6 @@ public class MqSchema extends UserSchema
         });
         mqDetailColumn.setHidden(false);
         result.addColumn(mqDetailColumn);
-
 
         //adjust the default visible columns
         List<FieldKey> columns = new ArrayList<>(result.getDefaultVisibleColumns());
@@ -317,7 +303,6 @@ public class MqSchema extends UserSchema
         hs.add(TABLE_RAW_FILE);
         hs.add(TABLE_PROTEIN_GROUP);
         hs.add(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO);
-        hs.add(TABLE_PROTEIN_GROUP_RATIOS_SILAC);
         hs.add(TABLE_PROTEIN_GROUP_RATIOS_SILAC);
         hs.add(TABLE_PEPTIDE);
         hs.add(TABLE_PROTEIN_GROUP_PEPTIDE);

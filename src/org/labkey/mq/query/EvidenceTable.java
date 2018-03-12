@@ -6,7 +6,6 @@ import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.MqSchema;
@@ -17,20 +16,19 @@ import java.util.List;
 /**
  * Created by vsharma on 3/29/2016.
  */
-public class EvidenceTable extends FilteredTable<MqSchema>
+public class EvidenceTable extends DefaultMqTable
 {
-    public EvidenceTable(final MqSchema schema)
+    public EvidenceTable(MqSchema schema)
     {
         super(MqManager.getTableInfoEvidence(), schema);
-        wrapAllColumns(true);
 
-        ColumnInfo peptideIdCol = getColumn(FieldKey.fromParts("PeptideId"));
-        peptideIdCol.setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
-        peptideIdCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PEPTIDE, "PeptideId", "Id"));
+        getColumn("ExperimentId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT, "Id", "ExperimentName"));
+        getColumn("RawFileId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_RAW_FILE, "Id", "Name"));
+        getColumn("PeptideId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
+        getColumn("ModifiedPeptideId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_MODIFIED_PEPTIDE, "Id", "Sequence"));
 
-        ColumnInfo modifiedPeptideIdCol = getColumn(FieldKey.fromParts("ModifiedPeptideId"));
-        modifiedPeptideIdCol.setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_MODIFIED_PEPTIDE, "Id", "Sequence"));
-        modifiedPeptideIdCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_MODIFIED_PEPTIDE, "ModifiedPeptideId", "Id"));
+        getColumn("PeptideId").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PEPTIDE, "PeptideId", "Id"));
+        getColumn("ModifiedPeptideId").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_MODIFIED_PEPTIDE, "ModifiedPeptideId", "Id"));
 
         addColumn(makeSilacIntensityColumn('H'));
         addColumn(makeSilacIntensityColumn('M'));
@@ -42,22 +40,17 @@ public class EvidenceTable extends FilteredTable<MqSchema>
         addColumn(makeSilacRatioColumn("M/L", "Ratio"));
         addColumn(makeSilacRatioColumn("M/L", "RatioNormalized"));
 
-
         //only display a subset of the columns by default
         ArrayList<FieldKey> visibleColumns = new ArrayList<>();
-
         List<FieldKey> defaultVisible = getDefaultVisibleColumns();
-        for(FieldKey fk: defaultVisible)
+        for (FieldKey fk: defaultVisible)
         {
-            if(fk.getName().equalsIgnoreCase("Container"))
-            {
+            if (fk.getName().equalsIgnoreCase("Container"))
                 continue;
-            }
+
             visibleColumns.add(fk);
-            if(fk.getName().equalsIgnoreCase("ModifiedPeptideId"))
-            {
+            if (fk.getName().equalsIgnoreCase("ModifiedPeptideId"))
                 visibleColumns.add(FieldKey.fromParts("ModifiedPeptideId", "Modifications"));
-            }
         }
         setDefaultVisibleColumns(visibleColumns);
     }

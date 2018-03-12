@@ -7,7 +7,6 @@ import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.Permission;
@@ -23,35 +22,22 @@ import java.util.regex.Pattern;
 /**
  * Created by vsharma on 3/29/2016.
  */
-public class ProteinGroupTable extends FilteredTable<MqSchema>
+public class ProteinGroupTable extends DefaultMqTable
 {
-    public ProteinGroupTable(final MqSchema schema)
+    public ProteinGroupTable(MqSchema schema)
     {
         super(MqManager.getTableInfoProteinGroup(), schema);
-        wrapAllColumns(true);
 
-        ColumnInfo experimentGroupCol = getColumn(FieldKey.fromParts("ExperimentGroupId"));
-        experimentGroupCol.setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
+        getColumn("ExperimentGroupId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
 
-        ColumnInfo proteinIdsColumn = getColumn(FieldKey.fromParts("ProteinIds"));
-        proteinIdsColumn.setDisplayColumnFactory(new UniProtLinkDisplayFactory());
+        getColumn("ProteinIds").setDisplayColumnFactory(new UniProtLinkDisplayFactory());
+        getColumn("MajorityProteinIds").setDisplayColumnFactory(new UniProtLinkDisplayFactory());
+        getColumn("FastaHeaders").setDisplayColumnFactory(new MultiLineDisplayFactory());
+        getColumn("ProteinNames").setDisplayColumnFactory(new MultiLineDisplayFactory());
+        getColumn("GeneNames").setDisplayColumnFactory(new MultiLineDisplayFactory());
+        getColumn("PeptideCount").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE, "Id", "ProteinGroupId"));
 
-        ColumnInfo majorityProteinIdsCol = getColumn(FieldKey.fromParts("MajorityProteinIds"));
-        majorityProteinIdsCol.setDisplayColumnFactory(new UniProtLinkDisplayFactory());
-
-        ColumnInfo fastaHeadersCol = getColumn(FieldKey.fromParts("FastaHeaders"));
-        fastaHeadersCol.setDisplayColumnFactory(new MultiLineDisplayFactory());
-
-        ColumnInfo proteinNamesCol = getColumn(FieldKey.fromParts("ProteinNames"));
-        proteinNamesCol.setDisplayColumnFactory(new MultiLineDisplayFactory());
-
-        ColumnInfo geneNames = getColumn(FieldKey.fromParts("GeneNames"));
-        geneNames.setDisplayColumnFactory(new MultiLineDisplayFactory());
-
-        ColumnInfo peptideCountCol = getColumn(FieldKey.fromParts("PeptideCount"));
-        peptideCountCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE, "Id", "ProteinGroupId"));
-
-        ColumnInfo intensityAndCoverageCol = addWrapColumn("ExperimentDetails", getRealTable().getColumn(FieldKey.fromParts("Id")));
+        ColumnInfo intensityAndCoverageCol = addWrapColumn("ExperimentDetails", getRealTable().getColumn("Id"));
         intensityAndCoverageCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, "Id", "ProteinGroupId", "Link"));
     }
 
