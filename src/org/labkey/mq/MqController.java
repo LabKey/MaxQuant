@@ -485,13 +485,14 @@ public class MqController extends SpringActionController
         @Override
         public ModelAndView getView(ExperimentGroupIdForm form, BindException errors) throws Exception
         {
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(form.getExperimentGroupId());
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
+
             // Details of the Experiment group
             DetailsView exptDetailsView = getExperimentGroupDetailsView(form.getExperimentGroupId());
-
-            // Links to download the files
-            HtmlView fileDownloadLinks = getDownloadLinksView(form.getExperimentGroupId());
-
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLinks);
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Experiment Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
@@ -501,7 +502,8 @@ public class MqController extends SpringActionController
             QueryView proteinGrpsGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             proteinGrpsGridView.setTitle("Protein Groups");
 
-            VBox view = new VBox(detailsBox);
+            VBox view = new VBox();
+            view.addView(detailsBox);
             view.addView(proteinGrpsGridView);
             return view;
         }
@@ -533,17 +535,17 @@ public class MqController extends SpringActionController
         public ModelAndView getView(ExperimentGroupIdForm form, BindException errors) throws Exception
         {
             ExperimentGroup expGrp = MqManager.getExperimentGroup(form.getExperimentGroupId());
-            if(expGrp == null)
-            {
+            if (expGrp == null)
                 throw new NotFoundException("Experiment group with ID " + form.getExperimentGroupId() + " does not exist.");
-            }
+
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(form.getExperimentGroupId());
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
+
             // Details of the Experiment group
             DetailsView exptDetailsView = getExperimentGroupDetailsView(form.getExperimentGroupId());
-
-            // Links to download the files
-            HtmlView fileDownloadLinks = getDownloadLinksView(form.getExperimentGroupId());
-
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLinks);
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Experiment Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
@@ -553,7 +555,8 @@ public class MqController extends SpringActionController
             QueryView proteinGrpsGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             proteinGrpsGridView.setTitle("Peptides");
 
-            VBox view = new VBox(detailsBox);
+            VBox view = new VBox();
+            view.addView(detailsBox);
             view.addView(proteinGrpsGridView);
             return view;
         }
@@ -583,8 +586,6 @@ public class MqController extends SpringActionController
         ActionURL downloadFileUrl = new ActionURL(DownloadFileAction.class, getContainer());
         downloadFileUrl.addParameter("experimentGroupId", experimentGroupId);
         StringBuilder html = new StringBuilder();
-        String txt = files.length > 1 ? "Files" : "File";
-        html.append("<div>").append(txt).append(":");
         html.append("<ul>");
 
         for(String file: files)
@@ -616,7 +617,6 @@ public class MqController extends SpringActionController
             }
         }
         html.append("</ul");
-        html.append("</div>");
         return new HtmlView(html.toString());
     }
 
@@ -650,19 +650,20 @@ public class MqController extends SpringActionController
         @Override
         public ModelAndView getView(ProteinGroupIdForm form, BindException errors) throws Exception
         {
-            // Details of the  ProteinGroup
-            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getProteinGroupId());
             // Links to download the peptides.txt files
             ProteinGroup proteinGroup = ProteinGroupManager.get(form.getProteinGroupId());
-            if(proteinGroup == null)
-            {
+            if (proteinGroup == null)
                 throw new NotFoundException("Could not find protein group with ID " + form.getProteinGroupId());
-            }
             _experimentGroupId = proteinGroup.getExperimentGroupId();
 
-            HtmlView fileDownloadLink = getDownloadLinksView(proteinGroup.getExperimentGroupId(), PeptidesParser.FILE);
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(proteinGroup.getExperimentGroupId(), PeptidesParser.FILE);
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
 
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLink);
+            // Details of the  ProteinGroup
+            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getProteinGroupId());
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Protein Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
@@ -672,7 +673,8 @@ public class MqController extends SpringActionController
             QueryView peptidesGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             peptidesGridView.setTitle("Peptides");
 
-            VBox view = new VBox(detailsBox);
+            VBox view = new VBox();
+            view.addView(detailsBox);
             view.addView(peptidesGridView);
             return view;
         }
@@ -705,19 +707,20 @@ public class MqController extends SpringActionController
         @Override
         public ModelAndView getView(ProteinGroupIdForm form, BindException errors) throws Exception
         {
-            // Details of the  ProteinGroup
-            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getProteinGroupId());
             // Links to download the peptides.txt files
             ProteinGroup proteinGroup = ProteinGroupManager.get(form.getProteinGroupId());
-            if(proteinGroup == null)
-            {
+            if (proteinGroup == null)
                 throw new NotFoundException("Could not find protein group with ID " + form.getProteinGroupId());
-            }
             _experimentGroupId = proteinGroup.getExperimentGroupId();
 
-            HtmlView fileDownloadLink = getDownloadLinksView(proteinGroup.getExperimentGroupId(), ProteinGroupsParser.FILE);
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(proteinGroup.getExperimentGroupId(), ProteinGroupsParser.FILE);
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
 
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLink);
+            // Details of the  ProteinGroup
+            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getProteinGroupId());
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Protein Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
@@ -742,7 +745,8 @@ public class MqController extends SpringActionController
             QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
             silacInteisitiesView.setTitle("Silac Intensities");
 
-            VBox view = new VBox(detailsBox);
+            VBox view = new VBox();
+            view.addView(detailsBox);
             view.addView(protGrpExpInfoView);
             view.addView(silacRatiosView);
             view.addView(silacInteisitiesView);
@@ -813,19 +817,20 @@ public class MqController extends SpringActionController
         @Override
         public ModelAndView getView(PeptideIdForm form, BindException errors) throws Exception
         {
-            // Details of the  Peptide
-            DetailsView exptDetailsView = getPeptideDetailsView(form.getPeptideId());
             // Links to download the evidence.txt files
             Peptide peptide = PeptideManager.get(form.getPeptideId());
-            if(peptide == null)
-            {
+            if (peptide == null)
                 throw new NotFoundException("Could not find peptide with ID " + form.getPeptideId());
-            }
             _experimentGroupId = peptide.getExperimentGroupId();
 
-            HtmlView fileDownloadLink = getDownloadLinksView(peptide.getExperimentGroupId(), EvidenceParser.FILE);
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(peptide.getExperimentGroupId(), EvidenceParser.FILE);
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
 
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLink);
+            // Details of the  Peptide
+            DetailsView exptDetailsView = getPeptideDetailsView(form.getPeptideId());
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Peptide Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
@@ -835,7 +840,8 @@ public class MqController extends SpringActionController
             QueryView evidenceGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             evidenceGridView.setTitle("Evidence");
 
-            VBox view = new VBox(detailsBox);
+            VBox view = new VBox();
+            view.addView(detailsBox);
             view.addView(evidenceGridView);
             return view;
         }
