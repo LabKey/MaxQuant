@@ -27,12 +27,14 @@ import org.labkey.api.module.DefaultModule;
 import org.labkey.api.module.FolderTypeManager;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.pipeline.PipelineService;
+import org.labkey.api.protein.ProteinService;
+import org.labkey.api.services.ServiceRegistry;
 import org.labkey.api.view.BaseWebPartFactory;
+import org.labkey.api.view.JspView;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.api.view.WebPartView;
-import org.labkey.mq.view.search.ProteinSearchWebPart;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +46,7 @@ public class MqModule extends DefaultModule
 {
     public static final String NAME = "mq";
     public static final ExperimentRunType EXP_RUN_TYPE = new MqExperimentRunType();
+    public static final String SEARCH_WEBPART_NAME = "MaxQuant Protein Search";
 
     // Protocol prefix for importing .zip archives from Skyline
     public static final String IMPORT_MQ_PROTOCOL_OBJECT_PREFIX = "MaxQuant.Import";
@@ -99,29 +102,27 @@ public class MqModule extends DefaultModule
 
         //register the MaxQuant folder type
         FolderTypeManager.get().registerFolderType(this, new MqFolderType(this));
+
+        ProteinService proteinService = ServiceRegistry.get().getService(ProteinService.class);
+        if (proteinService != null)
+            proteinService.registerProteinSearchView(new MqProteinSearchViewProvider());
     }
 
     @NotNull
     @Override
     protected Collection<WebPartFactory> createWebPartFactories()
     {
-        BaseWebPartFactory proteinSearchWebPart = new BaseWebPartFactory(ProteinSearchWebPart.NAME)
+        BaseWebPartFactory proteinSearchWebPart = new BaseWebPartFactory(SEARCH_WEBPART_NAME)
         {
             @Override
             public WebPartView getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
             {
-                return new ProteinSearchWebPart(new MqController.ProteinSearchForm());
+                JspView view = new JspView("/org/labkey/mq/view/proteinSearch.jsp");
+                view.setTitle(SEARCH_WEBPART_NAME);
+                return view;
             }
         };
 
-
-//        BaseWebPartFactory runsFactory = new BaseWebPartFactory(TARGETED_MS_RUNS_WEBPART_NAME)
-//        {
-//            public WebPartView getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
-//            {
-//                return new TargetedMSRunsWebPartView(portalCtx);
-//            }
-//        };
         List<WebPartFactory> webpartFactoryList = new ArrayList<>();
         webpartFactoryList.add(proteinSearchWebPart);
         return webpartFactoryList;

@@ -18,17 +18,13 @@ package org.labkey.mq;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.labkey.api.action.HasViewContext;
-import org.labkey.api.action.QueryViewAction;
 import org.labkey.api.action.RedirectAction;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.data.ButtonBar;
 import org.labkey.api.data.ColumnInfo;
-import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
-import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.DataRegion;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableInfo;
@@ -36,11 +32,9 @@ import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.api.ExperimentUrls;
-import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.browse.PipelinePathForm;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
@@ -59,7 +53,6 @@ import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.RedirectException;
 import org.labkey.api.view.VBox;
 import org.labkey.api.view.ViewBackgroundInfo;
-import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartView;
 import org.labkey.mq.model.ExperimentGroup;
 import org.labkey.mq.model.Peptide;
@@ -71,7 +64,6 @@ import org.labkey.mq.parser.PeptidesParser;
 import org.labkey.mq.parser.ProteinGroupsParser;
 import org.labkey.mq.query.PeptideManager;
 import org.labkey.mq.query.ProteinGroupManager;
-import org.labkey.mq.view.search.ProteinSearchWebPart;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
@@ -276,176 +268,6 @@ public class MqController extends SpringActionController
         public void setFileName(String fileName)
         {
             _fileName = fileName;
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Protein search action
-    // ------------------------------------------------------------------------
-    @RequiresPermission(ReadPermission.class)
-    public class ProteinSearchAction extends QueryViewAction<ProteinSearchForm, QueryView>
-    {
-        public ProteinSearchAction()
-        {
-            super(ProteinSearchForm.class);
-        }
-
-        @Override
-        protected QueryView createQueryView(ProteinSearchForm form, BindException errors, boolean forExport, String dataRegion) throws Exception
-        {
-            return createProteinSearchView(form, errors);
-        }
-
-        @Override
-        protected ModelAndView getHtmlView(final ProteinSearchForm form, BindException errors) throws Exception
-        {
-            VBox result = new VBox(new ProteinSearchWebPart(form));
-
-            if (form.isPopulated())
-                result.addView(createProteinSearchView(form, errors));
-
-            return result;
-        }
-
-        private QueryView createProteinSearchView(final ProteinSearchForm form, BindException errors)
-        {
-            if (! getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule(MqModule.class)))
-                return null;
-
-            ViewContext viewContext = getViewContext();
-            QuerySettings settings = new QuerySettings(viewContext, "MqMatches", "ProteinGroup");
-
-            if (form.isIncludeSubfolders())
-                settings.setContainerFilterName(ContainerFilter.Type.CurrentAndSubfolders.name());
-
-            QueryView result = new QueryView(new MqSchema(viewContext.getUser(), viewContext.getContainer()), settings, errors)
-            {
-                @Override
-                protected TableInfo createTable()
-                {
-                    FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
-
-                    SimpleFilter filter = new SimpleFilter();
-
-                    if (!StringUtils.isBlank(form.getProteinId()))
-                    {
-                        // filter.addClause(new SimpleFilter.OrClause(new CompareType.CompareClause(FieldKey.fromString("ProteinIds"), CompareType.CONTAINS, form.getProteinId())));
-                        filter.addCondition(FieldKey.fromString("ProteinIds"), form.getProteinId(), CompareType.CONTAINS);
-                    }
-                    if (!StringUtils.isBlank(form.getMajorityProteinId()))
-                    {
-                        filter.addCondition(FieldKey.fromString("MajorityProteinIds"), form.getMajorityProteinId(), CompareType.CONTAINS);
-                    }
-                    if (!StringUtils.isBlank(form.getProteinName()))
-                    {
-                        filter.addCondition(FieldKey.fromString("ProteinNames"), form.getProteinName(), CompareType.CONTAINS);
-                    }
-                    if (!StringUtils.isBlank(form.getGeneName()))
-                    {
-                        filter.addCondition(FieldKey.fromString("GeneNames"), form.getGeneName(), CompareType.CONTAINS);
-                    }
-
-                    result.addCondition(filter);
-
-                    List<FieldKey> defaultVisible = result.getDefaultVisibleColumns();
-                    List<FieldKey> visibleColumns = new ArrayList<>();
-                    visibleColumns.add(FieldKey.fromParts("ExperimentGroupId", "ExperimentGroup", "FolderName"));
-                    if (form.isIncludeSubfolders())
-                    {
-                        visibleColumns.add(FieldKey.fromParts("Container"));
-                    }
-                    visibleColumns.addAll(defaultVisible);
-                    result.setDefaultVisibleColumns(visibleColumns);
-                    return result;
-                }
-            };
-            result.setTitle("MaxQuant Proteins");
-            result.setUseQueryViewActionExportURLs(true);
-            return result;
-        }
-
-        @Override
-        public NavTree appendNavTrail(NavTree root)
-        {
-            return root.addChild("Modification Search Results");
-        }
-    }
-
-    public static class ProteinSearchForm extends QueryViewAction.QueryExportForm implements HasViewContext
-    {
-        private ViewContext _context;
-        private String _proteinId;
-        private String _majorityProteinId;
-        private String _proteinName;
-        private String _geneName;
-        private boolean _includeSubfolders;
-
-        public ViewContext getContext()
-        {
-            return _context;
-        }
-
-        public void setContext(ViewContext context)
-        {
-            _context = context;
-        }
-
-        public String getProteinId()
-        {
-            return _proteinId;
-        }
-
-        public void setProteinId(String proteinId)
-        {
-            _proteinId = proteinId;
-        }
-
-        public String getMajorityProteinId()
-        {
-            return _majorityProteinId;
-        }
-
-        public void setMajorityProteinId(String majorityProteinId)
-        {
-            _majorityProteinId = majorityProteinId;
-        }
-
-        public String getProteinName()
-        {
-            return _proteinName;
-        }
-
-        public void setProteinName(String proteinName)
-        {
-            _proteinName = proteinName;
-        }
-
-        public String getGeneName()
-        {
-            return _geneName;
-        }
-
-        public void setGeneName(String geneName)
-        {
-            _geneName = geneName;
-        }
-
-        public boolean isIncludeSubfolders()
-        {
-            return _includeSubfolders;
-        }
-
-        public void setIncludeSubfolders(boolean includeSubfolders)
-        {
-            _includeSubfolders = includeSubfolders;
-        }
-
-        public boolean isPopulated()
-        {
-            return !StringUtils.isBlank(_proteinId)
-                    || !StringUtils.isBlank(_majorityProteinId)
-                    || !StringUtils.isBlank(_proteinName)
-                    || !StringUtils.isBlank(_geneName);
         }
     }
 

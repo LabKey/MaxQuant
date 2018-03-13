@@ -16,21 +16,15 @@
 
 package org.labkey.mq;
 
-import org.jetbrains.annotations.NotNull;
-import org.labkey.api.data.Container;
-import org.labkey.api.module.Module;
-import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.module.MultiPortalFolderType;
 import org.labkey.api.util.HelpTopic;
-import org.labkey.api.view.ActionURL;
-import org.labkey.api.view.NavTree;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
-import org.labkey.mq.view.search.ProteinSearchWebPart;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+
+import static org.labkey.mq.MqModule.SEARCH_WEBPART_NAME;
 
 /**
  * User: vsharma
@@ -47,7 +41,7 @@ public class MqFolderType extends MultiPortalFolderType
                 "Manage results from MaxQuant runs.",
             Collections.<Portal.WebPart>emptyList(),
             Arrays.asList(
-                    Portal.getPortalPart(ProteinSearchWebPart.NAME).createWebPart(),
+                    Portal.getPortalPart(SEARCH_WEBPART_NAME).createWebPart(),
                     Portal.getPortalPart("Experiment Runs").createWebPart(),
                     Portal.getPortalPart("Data Pipeline").createWebPart()
             ),
