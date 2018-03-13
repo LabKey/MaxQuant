@@ -12,7 +12,7 @@ public class MqEntity
 {
     private int _id;
     private Container _container;
-    private User _createBy;
+    private User _createdBy;
     private Date _created;
     private User _modifiedBy;
     private Date _modified;
@@ -37,14 +37,14 @@ public class MqEntity
         _container = container;
     }
 
-    public User getCreateBy()
+    public User getCreatedBy()
     {
-        return _createBy;
+        return _createdBy;
     }
 
-    public void setCreateBy(User createBy)
+    public void setCreatedBy(User createdBy)
     {
-        _createBy = createBy;
+        _createdBy = createdBy;
     }
 
     public Date getCreated()

@@ -6,12 +6,15 @@ import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.RenderContext;
+import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.view.ActionURL;
+import org.labkey.mq.MqController;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.MqSchema;
 
@@ -37,8 +40,8 @@ public class ProteinGroupTable extends DefaultMqTable
         getColumn("GeneNames").setDisplayColumnFactory(new MultiLineDisplayFactory());
         getColumn("PeptideCount").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE, "Id", "ProteinGroupId"));
 
-        ColumnInfo intensityAndCoverageCol = addWrapColumn("ExperimentDetails", getRealTable().getColumn("Id"));
-        intensityAndCoverageCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, "Id", "ProteinGroupId", "Link"));
+        ActionURL detailsUrl = new ActionURL(MqController.ViewProteinGroupInfoAction.class, getContainer());
+        setDetailsURL(new DetailsURL(detailsUrl, "id", FieldKey.fromParts("Id")));
     }
 
     public static final class MultiLineDisplayFactory implements DisplayColumnFactory

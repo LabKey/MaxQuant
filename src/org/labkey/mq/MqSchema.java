@@ -129,6 +129,10 @@ public class MqSchema extends SimpleUserSchema
         {
             return new EvidenceTable(this);
         }
+        else if (!getTableNames().contains(name))
+        {
+            return null;
+        }
 
         SimpleUserSchema.SimpleTable<MqSchema> table = new SimpleUserSchema.SimpleTable<>(this, createSourceTable(name)).init();
         table.setReadOnly(true);
@@ -167,8 +171,9 @@ public class MqSchema extends SimpleUserSchema
                 "\nFROM " + MqManager.getTableInfoExperimentGroup() + " expgrp " +
                 "\nWHERE expgrp.ExperimentRunLSID = " + ExprColumn.STR_TABLE_ALIAS + ".LSID AND expgrp.Deleted = ?)");
         sql.add(Boolean.FALSE);
+        ActionURL url = new ActionURL(MqController.ViewProteinGroupsAction.class, getContainer());
         ColumnInfo mqDetailColumn = new ExprColumn(result, "ExperimentGroup", sql, JdbcType.INTEGER);
-        mqDetailColumn.setFk(new LookupForeignKey(MqSchema.TABLE_EXPERIMENT_GROUP, "Id", "Id")
+        mqDetailColumn.setFk(new LookupForeignKey(url, "id", "Id", "Id")
         {
             public TableInfo getLookupTableInfo()
             {
@@ -278,19 +283,15 @@ public class MqSchema extends SimpleUserSchema
         private ActionURL getQueryURL(RenderContext ctx, String tableName)
         {
             Integer exptGrpId = (Integer)ctx.get(FieldKey.fromParts("ExperimentGroup"));
-            // ActionURL url = QueryService.get().urlDefault(ctx.getContainer(), QueryAction.executeQuery, NAME, tableName);
-            // url.addParameter("query.ExperimentGroupId~eq", String.valueOf(exptGrpId));
+
             Class<? extends Controller> actionClass = null;
-            if(tableName.equals(MqSchema.TABLE_PROTEIN_GROUP))
-            {
+            if (tableName.equals(MqSchema.TABLE_PROTEIN_GROUP))
                 actionClass = MqController.ViewProteinGroupsAction.class;
-            }
-            else if(tableName.equals(TABLE_PEPTIDE))
-            {
+            else if (tableName.equals(TABLE_PEPTIDE))
                 actionClass = MqController.ViewPeptidesAction.class;
-            }
+
             ActionURL url = new ActionURL(actionClass, ctx.getContainer());
-            url.addParameter("ExperimentGroupId", String.valueOf(exptGrpId));
+            url.addParameter("id", String.valueOf(exptGrpId));
             return url;
         }
     }
