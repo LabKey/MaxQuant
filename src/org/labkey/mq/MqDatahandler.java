@@ -12,6 +12,7 @@ import org.labkey.api.security.User;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.mq.model.ExperimentGroup;
+import org.labkey.mq.parser.SummaryTemplateParser;
 
 import java.io.File;
 import java.util.Arrays;
@@ -71,15 +72,12 @@ public class MqDatahandler extends AbstractExperimentDataHandler
         String url = data.getDataFileUrl();
         if (url == null)
             return null;
+
         File file = new File(url);
         String filename = file.getName();
-        if(MqPipelineProvider.FILE_NAME.equals(filename.toLowerCase()))
-        {
+        if (SummaryTemplateParser.FILE.equals(filename.toLowerCase()))
             return Priority.HIGH;
-        }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 }
