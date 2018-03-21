@@ -78,6 +78,10 @@ import java.util.Map;
 
 import static org.labkey.mq.MqSchema.TABLE_PEPTIDE;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_INTENSITY_SILAC;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC;
 
 public class MqController extends SpringActionController
 {
@@ -316,7 +320,7 @@ public class MqController extends SpringActionController
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
             // ProteinGroups table
-            QuerySettings settings = new QuerySettings(getViewContext(), "ProteinGroups", "ProteinGroup");
+            QuerySettings settings = new QuerySettings(getViewContext(), "ProteinGroups", TABLE_PROTEIN_GROUP);
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ExperimentGroupId"), form.getId()));
             QueryView proteinGrpsGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             proteinGrpsGridView.setTitle("Protein Groups");
@@ -374,7 +378,7 @@ public class MqController extends SpringActionController
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
             // Peptides table
-            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", "Peptide");
+            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", TABLE_PEPTIDE);
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ExperimentGroupId"), form.getId()));
             QueryView proteinGrpsGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             proteinGrpsGridView.setTitle("Peptides");
@@ -435,7 +439,7 @@ public class MqController extends SpringActionController
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
             // ProteinGroupPeptide table
-            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", "ProteinGroupPeptide");
+            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", TABLE_PROTEIN_GROUP_PEPTIDE);
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getId()));
             QueryView peptidesGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             peptidesGridView.setTitle("Peptides");
@@ -496,23 +500,17 @@ public class MqController extends SpringActionController
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
             // ProteinGroupExperimentInfo table
-            QuerySettings s1 = new QuerySettings(getViewContext(), "IntensityAndCoverage", "ProteinGroupExperimentInfo");
-            s1.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getId()));
-            s1.setMaxRows(50);
+            QuerySettings s1 = getQuerySettings("IntensityAndCoverage", TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, form.getId());
             QueryView protGrpExpInfoView = new QueryView(new MqSchema(getUser(), getContainer()), s1, errors);
             protGrpExpInfoView.setTitle("Intensity And Coverage");
 
             // ProteinGroupRatiosSilac table
-            QuerySettings s2 = new QuerySettings(getViewContext(), "SilacRatios", "ProteinGroupRatiosSilac");
-            s2.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getId()));
-            s2.setMaxRows(50);
+            QuerySettings s2 = getQuerySettings("SilacRatios", TABLE_PROTEIN_GROUP_RATIOS_SILAC, form.getId());
             QueryView silacRatiosView = new QueryView(new MqSchema(getUser(), getContainer()), s2, errors);
             silacRatiosView.setTitle("Silac Ratios");
 
             // ProteinGroupIntensitySilac table
-            QuerySettings s3 = new QuerySettings(getViewContext(), "SilacIntensities", "ProteinGroupIntensitySilac");
-            s3.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getId()));
-            s3.setMaxRows(50);
+            QuerySettings s3 = getQuerySettings("SilacIntensities", TABLE_PROTEIN_GROUP_INTENSITY_SILAC, form.getId());
             QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
             silacInteisitiesView.setTitle("Silac Intensities");
 
@@ -522,6 +520,14 @@ public class MqController extends SpringActionController
             view.addView(silacRatiosView);
             view.addView(silacInteisitiesView);
             return view;
+        }
+
+        private QuerySettings getQuerySettings(String dataRegionName, String queryName, int proteinGroupId)
+        {
+            QuerySettings qs = new QuerySettings(getViewContext(), dataRegionName, queryName);
+            qs.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), proteinGroupId));
+            qs.setMaxRows(50);
+            return qs;
         }
     }
 

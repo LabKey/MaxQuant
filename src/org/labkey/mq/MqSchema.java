@@ -305,6 +305,7 @@ public class MqSchema extends SimpleUserSchema
         hs.add(TABLE_PROTEIN_GROUP);
         hs.add(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO);
         hs.add(TABLE_PROTEIN_GROUP_RATIOS_SILAC);
+        hs.add(TABLE_PROTEIN_GROUP_INTENSITY_SILAC);
         hs.add(TABLE_PEPTIDE);
         hs.add(TABLE_PROTEIN_GROUP_PEPTIDE);
         hs.add(TABLE_MODIFIED_PEPTIDE);
