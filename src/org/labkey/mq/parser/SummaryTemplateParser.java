@@ -141,7 +141,6 @@ public class SummaryTemplateParser
         @Test
         public void testValidateFile()
         {
-
             String fileHeader = "Raw file\tExperiment\tFraction\tEnzyme\tEnzyme mode\tEnzyme first search\tEnzyme " +
                     "mode first search\t" + "Use enzyme first search\tVariable modifications\tMulti modifications\t"
                     + "Variable modifications first search\tUse variable modifications first search\tRequantify\t" +
@@ -178,8 +177,6 @@ public class SummaryTemplateParser
             Map<String, Experiment> resultMap = getStringExperimentMap(fileLines);
             assertEquals("Map does not match",experimentMapExpected.entrySet(), resultMap.entrySet());
             assertEquals("Map does not match",experimentMapExpected.get("experimentdat"), resultMap.get("experimentdat"));
-
-
         }
     }
 }

@@ -35,6 +35,7 @@ import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.api.view.WebPartView;
+import org.labkey.mq.parser.SummaryTemplateParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -140,5 +141,12 @@ public class MqModule extends DefaultModule
     public Set<String> getSchemaNames()
     {
         return Collections.singleton(MqSchema.NAME);
+    }
+
+    @NotNull
+    @Override
+    public Set<Class> getUnitTests()
+    {
+        return Collections.singleton(SummaryTemplateParser.TestCase.class);
     }
 }
