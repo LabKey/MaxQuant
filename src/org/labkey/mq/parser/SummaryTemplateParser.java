@@ -23,8 +23,6 @@ public class SummaryTemplateParser
     public static final String FILE = "summary.txt";
 
     private static int SUMMARY_TXT_RAW_FILE_INDEX = 0;
-    private static int SUMMARY_TXT_EXPERIMENT_INDEX = 1;
-    private static int SUMMARY_TXT_FRACTION_INDEX = 2;
 
     public ExperimentGroup parse(File file) throws MqParserException
     {
@@ -73,7 +71,15 @@ public class SummaryTemplateParser
     {
         Map<String, Experiment> experimentMap = new HashMap<>();
 
-        for (int i=1; i< lines.length-2; i++)
+        String[] headerParts = getParts(lines[0]);
+        int SUMMARY_TXT_EXPERIMENT_INDEX = 1;
+        boolean hasExperimentColumn = headerParts[SUMMARY_TXT_EXPERIMENT_INDEX].equalsIgnoreCase("Experiment");
+        int SUMMARY_TXT_FRACTION_INDEX = 2;
+        boolean hasFractionColumn = headerParts[SUMMARY_TXT_FRACTION_INDEX].equalsIgnoreCase("Fraction");
+
+        Experiment experiment = null;
+        int linesToIgnoreCount = 1;
+        for (int i = 1; i< lines.length- linesToIgnoreCount; i++)
         {
             String[] parts = getParts(lines[i]);
             if (parts.length < 3)
@@ -81,20 +87,35 @@ public class SummaryTemplateParser
                 throw new MqParserException("Expected at least 3 tab separated values; found " + parts.length);
             }
 
-            Experiment experiment = experimentMap.get(parts[SUMMARY_TXT_EXPERIMENT_INDEX]);
+            String experimentName = null;
+            if (hasExperimentColumn)
+            {
+                experimentName = parts[SUMMARY_TXT_EXPERIMENT_INDEX];
+                experiment = experimentMap.get(parts[SUMMARY_TXT_EXPERIMENT_INDEX]);
+            }
+
             if (experiment == null)
             {
+                if(hasExperimentColumn){
+                    linesToIgnoreCount++;
+                }
                 experiment = new Experiment();
-                experiment.setExperimentName(parts[SUMMARY_TXT_EXPERIMENT_INDEX]);
+                experiment.setExperimentName(experimentName);
                 experimentMap.put(experiment.getExperimentName(), experiment);
             }
 
-            experiment.addRawfile(new RawFile(parts[SUMMARY_TXT_RAW_FILE_INDEX], parts[SUMMARY_TXT_FRACTION_INDEX]));
+            String fraction = "NA";
+            if (hasFractionColumn)
+            {
+                fraction = parts[SUMMARY_TXT_FRACTION_INDEX];
+            }
+
+            experiment.addRawfile(new RawFile(parts[SUMMARY_TXT_RAW_FILE_INDEX], fraction));
         }
         return experimentMap;
     }
 
-    protected static void validateFileHeader(String[] fileLines) throws IOException
+    protected static void validateFileHeader(String[] fileLines)
     {
         if(fileLines.length == 0){
             throw new MqParserException("The selected file is empty.");
@@ -103,9 +124,7 @@ public class SummaryTemplateParser
         if (line != null)
         {
             String[] parts = getParts(line);
-            if (!parts[SUMMARY_TXT_RAW_FILE_INDEX].equalsIgnoreCase("Raw file")
-                    || !parts[SUMMARY_TXT_EXPERIMENT_INDEX].equalsIgnoreCase("Experiment")
-                    || !parts[SUMMARY_TXT_FRACTION_INDEX].equalsIgnoreCase("Fraction"))
+            if (!parts[SUMMARY_TXT_RAW_FILE_INDEX].equalsIgnoreCase("Raw file"))
             {
                 throw new MqParserException("Expected header: \\'Raw File   Fraction    Experiment\\'; found " + line);
             }
@@ -120,7 +139,7 @@ public class SummaryTemplateParser
     public static class TestCase extends Assert
     {
         @Test
-        public void testValidateFile() throws IOException
+        public void testValidateFile()
         {
 
             String fileHeader = "Raw file\tExperiment\tFraction\tEnzyme\tEnzyme mode\tEnzyme first search\tEnzyme " +

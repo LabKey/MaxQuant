@@ -69,9 +69,12 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         {
             String expName = experiment.getExperimentName();
             // Parse Sequence coverage and intensity columns (and LFQ intensity column in LFQ data)
-            Double coverage = getDoubleValue(row, "Sequence coverage " + expName + " [%]");
-            Long intensity = getLongValue(row, Intensity + " " + expName);
-            Long lqfIntensity = tryGetLongValue(row, "LFQ intensity " + expName);
+            String derivedExpName =  experiment.isDerivedExperimentName() ? "" : " " + expName;
+            String column = "Sequence coverage" + derivedExpName + " [%]";
+
+            Double coverage = getDoubleValue(row, column);
+            Long intensity = getLongValue(row, Intensity + derivedExpName);
+            Long lqfIntensity = tryGetLongValue(row, "LFQ intensity" + derivedExpName);
 
             ExperimentInfo expInfo = new ExperimentInfo(intensity, coverage);
             expInfo.setLfqIntensity(lqfIntensity);
@@ -81,9 +84,9 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
             for(String ratioType: Constants.RatioTypes)
             {
                 String prefix = Constants.Ratio + " " + ratioType + " ";
-                String ratioHeader = prefix + expName;
-                String ratioNormHeader = prefix + "normalized " + expName;
-                String ratioCountHeader = prefix + "count " + expName;
+                String ratioHeader = prefix + derivedExpName;
+                String ratioNormHeader = prefix + "normalized" + derivedExpName;
+                String ratioCountHeader = prefix + "count " + derivedExpName;
 
                 SilacRatio ratios = new SilacRatio();
                 ratios.setRatioType(ratioType);
@@ -99,7 +102,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
             // Parse (H/M/L) intensity columns - only in SILAC files
             for(String label: Constants.LabelTypes)
             {
-                String intensitySilacHeader = Intensity + " "  + label + " " + expName;
+                String intensitySilacHeader = Intensity + " "  + label + derivedExpName;
 
                 SilacIntensity sIntensity = new SilacIntensity();
                 sIntensity.setLabel(label);
