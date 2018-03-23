@@ -1,5 +1,7 @@
 package org.labkey.mq.parser;
 
+import org.labkey.api.collections.CaseInsensitiveHashMap;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -90,12 +92,12 @@ public class TsvParser
 
     public static final class TsvRow
     {
-        private Map<String, String> _values;
+        private CaseInsensitiveHashMap<String> _values;
         private final int _rowNum;
 
         public TsvRow(int rowNum)
         {
-            _values = new HashMap<>();
+            _values = new CaseInsensitiveHashMap<String>();
             _rowNum = rowNum;
         }
 

@@ -18,27 +18,23 @@ package org.labkey.mq;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.labkey.api.action.HasViewContext;
-import org.labkey.api.action.QueryViewAction;
 import org.labkey.api.action.RedirectAction;
+import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.data.ButtonBar;
 import org.labkey.api.data.ColumnInfo;
-import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
-import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.DataRegion;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
-import org.labkey.api.module.ModuleLoader;
+import org.labkey.api.exp.api.ExperimentUrls;
 import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.browse.PipelinePathForm;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
@@ -57,20 +53,17 @@ import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.RedirectException;
 import org.labkey.api.view.VBox;
 import org.labkey.api.view.ViewBackgroundInfo;
-import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartView;
 import org.labkey.mq.model.ExperimentGroup;
 import org.labkey.mq.model.Peptide;
 import org.labkey.mq.model.ProteinGroup;
 import org.labkey.mq.parser.EvidenceParser;
-import org.labkey.mq.parser.ExperimentDesignTemplateParser;
+import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.parser.ModifiedPeptidesParser;
 import org.labkey.mq.parser.PeptidesParser;
 import org.labkey.mq.parser.ProteinGroupsParser;
 import org.labkey.mq.query.PeptideManager;
 import org.labkey.mq.query.ProteinGroupManager;
-import org.labkey.mq.query.ProteinGroupTable;
-import org.labkey.mq.view.search.ProteinSearchWebPart;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
@@ -82,6 +75,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static org.labkey.mq.MqSchema.TABLE_PEPTIDE;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_INTENSITY_SILAC;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC;
 
 public class MqController extends SpringActionController
 {
@@ -220,8 +220,8 @@ public class MqController extends SpringActionController
                 throw new NotFoundException("Experiment directory " + experimentDir + " does not exist.");
             }
 
-            if(form.getFileName().equals(ExperimentDesignTemplateParser.FILE)
-                    && file.getName().equals(ExperimentDesignTemplateParser.FILE))
+            if(form.getFileName().equals(SummaryTemplateParser.FILE)
+                    && file.getName().equals(SummaryTemplateParser.FILE))
             {
                 PageFlowUtil.streamFile(getViewContext().getResponse(), file, true);
                 return null;
@@ -276,232 +276,57 @@ public class MqController extends SpringActionController
     }
 
     // ------------------------------------------------------------------------
-    // Protein search action
-    // ------------------------------------------------------------------------
-    @RequiresPermission(ReadPermission.class)
-    public class ProteinSearchAction extends QueryViewAction<ProteinSearchForm, QueryView>
-    {
-        public ProteinSearchAction()
-        {
-            super(ProteinSearchForm.class);
-        }
-
-        @Override
-        protected QueryView createQueryView(ProteinSearchForm form, BindException errors, boolean forExport, String dataRegion) throws Exception
-        {
-            return createProteinSearchView(form, errors);
-        }
-
-        @Override
-        protected ModelAndView getHtmlView(final ProteinSearchForm form, BindException errors) throws Exception
-        {
-            VBox result = new VBox(new ProteinSearchWebPart(form));
-
-            if (form.isPopulated())
-                result.addView(createProteinSearchView(form, errors));
-
-            return result;
-        }
-
-        private QueryView createProteinSearchView(final ProteinSearchForm form, BindException errors)
-        {
-            if (! getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule(MqModule.class)))
-                return null;
-
-            ViewContext viewContext = getViewContext();
-            QuerySettings settings = new QuerySettings(viewContext, "MqMatches", "ProteinGroup");
-
-            if (form.isIncludeSubfolders())
-                settings.setContainerFilterName(ContainerFilter.Type.CurrentAndSubfolders.name());
-
-            QueryView result = new QueryView(new MqSchema(viewContext.getUser(), viewContext.getContainer()), settings, errors)
-            {
-                @Override
-                protected TableInfo createTable()
-                {
-                    FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
-
-                    SimpleFilter filter = new SimpleFilter();
-
-                    if (!StringUtils.isBlank(form.getProteinId()))
-                    {
-                        // filter.addClause(new SimpleFilter.OrClause(new CompareType.CompareClause(FieldKey.fromString("ProteinIds"), CompareType.CONTAINS, form.getProteinId())));
-                        filter.addCondition(FieldKey.fromString("ProteinIds"), form.getProteinId(), CompareType.CONTAINS);
-                    }
-                    if (!StringUtils.isBlank(form.getMajorityProteinId()))
-                    {
-                        filter.addCondition(FieldKey.fromString("MajorityProteinIds"), form.getMajorityProteinId(), CompareType.CONTAINS);
-                    }
-                    if (!StringUtils.isBlank(form.getProteinName()))
-                    {
-                        filter.addCondition(FieldKey.fromString("ProteinNames"), form.getProteinName(), CompareType.CONTAINS);
-                    }
-                    if (!StringUtils.isBlank(form.getGeneName()))
-                    {
-                        filter.addCondition(FieldKey.fromString("GeneNames"), form.getGeneName(), CompareType.CONTAINS);
-                    }
-
-                    result.addCondition(filter);
-
-                    List<FieldKey> defaultVisible = result.getDefaultVisibleColumns();
-                    List<FieldKey> visibleColumns = new ArrayList<>();
-                    visibleColumns.add(FieldKey.fromParts("ExperimentGroupId", "ExperimentGroup", "FolderName"));
-                    if (form.isIncludeSubfolders())
-                    {
-                        visibleColumns.add(FieldKey.fromParts("Container"));
-                    }
-                    visibleColumns.addAll(defaultVisible);
-                    result.setDefaultVisibleColumns(visibleColumns);
-                    return result;
-                }
-            };
-            result.setTitle("MaxQuant Proteins");
-            result.setUseQueryViewActionExportURLs(true);
-            return result;
-        }
-
-        @Override
-        public NavTree appendNavTrail(NavTree root)
-        {
-            return root.addChild("Modification Search Results");
-        }
-    }
-
-    public static class ProteinSearchForm extends QueryViewAction.QueryExportForm implements HasViewContext
-    {
-        private ViewContext _context;
-        private String _proteinId;
-        private String _majorityProteinId;
-        private String _proteinName;
-        private String _geneName;
-        private boolean _includeSubfolders;
-
-        public ViewContext getContext()
-        {
-            return _context;
-        }
-
-        public void setContext(ViewContext context)
-        {
-            _context = context;
-        }
-
-        public String getProteinId()
-        {
-            return _proteinId;
-        }
-
-        public void setProteinId(String proteinId)
-        {
-            _proteinId = proteinId;
-        }
-
-        public String getMajorityProteinId()
-        {
-            return _majorityProteinId;
-        }
-
-        public void setMajorityProteinId(String majorityProteinId)
-        {
-            _majorityProteinId = majorityProteinId;
-        }
-
-        public String getProteinName()
-        {
-            return _proteinName;
-        }
-
-        public void setProteinName(String proteinName)
-        {
-            _proteinName = proteinName;
-        }
-
-        public String getGeneName()
-        {
-            return _geneName;
-        }
-
-        public void setGeneName(String geneName)
-        {
-            _geneName = geneName;
-        }
-
-        public boolean isIncludeSubfolders()
-        {
-            return _includeSubfolders;
-        }
-
-        public void setIncludeSubfolders(boolean includeSubfolders)
-        {
-            _includeSubfolders = includeSubfolders;
-        }
-
-        public boolean isPopulated()
-        {
-            return !StringUtils.isBlank(_proteinId)
-                    || !StringUtils.isBlank(_majorityProteinId)
-                    || !StringUtils.isBlank(_proteinName)
-                    || !StringUtils.isBlank(_geneName);
-        }
-    }
-
-    public static class ExperimentGroupIdForm extends QueryViewAction.QueryExportForm
-    {
-        private int _experimentGroupId;
-
-        public int getExperimentGroupId()
-        {
-            return _experimentGroupId;
-        }
-
-        public void setExperimentGroupId(int experimentGroupId)
-        {
-            _experimentGroupId = experimentGroupId;
-        }
-    }
-
-    // ------------------------------------------------------------------------
     // View protein groups in an experiment group
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ViewProteinGroupsAction extends SimpleViewAction<ExperimentGroupIdForm>
+    public class ViewProteinGroupsAction extends SimpleViewAction<IdForm>
     {
-        public ViewProteinGroupsAction()
-        {
-            super(ExperimentGroupIdForm.class);
-        }
+        private ExperimentGroup _experimentGroup;
 
         @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            if(root != null)
+            if (_experimentGroup != null)
             {
-                root.addChild("Protein Groups");
-                return root;
+                root.addChild("MaxQuant Runs", getShowRunsUrl());
+                root.addChild("Protein Groups for Experiment Group " + _experimentGroup.getId());
             }
-            return null;
+            return root;
         }
 
         @Override
-        public ModelAndView getView(ExperimentGroupIdForm form, BindException errors) throws Exception
+        public void validate(IdForm form, BindException errors)
         {
+            _experimentGroup = MqManager.getExperimentGroup(form.getId());
+            if (_experimentGroup == null)
+                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist.");
+        }
+
+        @Override
+        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        {
+            if (errors.hasErrors())
+                return new SimpleErrorView(errors);
+
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(form.getId());
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
+
             // Details of the Experiment group
-            DetailsView exptDetailsView = getExperimentGroupDetailsView(form.getExperimentGroupId());
-
-            // Links to download the files
-            HtmlView fileDownloadLinks = getDownloadLinksView(form.getExperimentGroupId());
-
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLinks);
+            JspView exptDetailsView = getExperimentGroupDetailsView(_experimentGroup);
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Experiment Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
             // ProteinGroups table
-            QuerySettings settings = new QuerySettings(getViewContext(), "ProteinGroups", "ProteinGroup");
-            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ExperimentGroupId"), form.getExperimentGroupId()));
+            QuerySettings settings = new QuerySettings(getViewContext(), "ProteinGroups", TABLE_PROTEIN_GROUP);
+            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ExperimentGroupId"), form.getId()));
             QueryView proteinGrpsGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             proteinGrpsGridView.setTitle("Protein Groups");
 
-            VBox view = new VBox(detailsBox);
+            VBox view = new VBox();
+            view.addView(detailsBox);
             view.addView(proteinGrpsGridView);
             return view;
         }
@@ -511,67 +336,291 @@ public class MqController extends SpringActionController
     // View peptides in an experiment group
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ViewPeptidesAction extends SimpleViewAction<ExperimentGroupIdForm>
+    public class ViewPeptidesAction extends SimpleViewAction<IdForm>
     {
-        public ViewPeptidesAction()
-        {
-            super(ExperimentGroupIdForm.class);
-        }
+        private ExperimentGroup _experimentGroup;
 
         @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            if(root != null)
+            if (_experimentGroup != null)
             {
-                root.addChild("Peptides");
-                return root;
+                root.addChild("MaxQuant Runs", getShowRunsUrl());
+                root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroup.getId()));
+                root.addChild("Peptides for Experiment Group " + _experimentGroup.getId());
             }
-            return null;
+            return root;
         }
 
         @Override
-        public ModelAndView getView(ExperimentGroupIdForm form, BindException errors) throws Exception
+        public void validate(IdForm form, BindException errors)
         {
-            ExperimentGroup expGrp = MqManager.getExperimentGroup(form.getExperimentGroupId());
-            if(expGrp == null)
-            {
-                throw new NotFoundException("Experiment group with ID " + form.getExperimentGroupId() + " does not exist.");
-            }
+            _experimentGroup = MqManager.getExperimentGroup(form.getId());
+            if (_experimentGroup == null)
+                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist.");
+        }
+
+        @Override
+        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        {
+            if (errors.hasErrors())
+                return new SimpleErrorView(errors);
+
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(form.getId());
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
+
             // Details of the Experiment group
-            DetailsView exptDetailsView = getExperimentGroupDetailsView(form.getExperimentGroupId());
-
-            // Links to download the files
-            HtmlView fileDownloadLinks = getDownloadLinksView(form.getExperimentGroupId());
-
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLinks);
+            JspView exptDetailsView = getExperimentGroupDetailsView(_experimentGroup);
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Experiment Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
 
             // Peptides table
-            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", "Peptide");
-            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ExperimentGroupId"), form.getExperimentGroupId()));
+            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", TABLE_PEPTIDE);
+            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ExperimentGroupId"), form.getId()));
             QueryView proteinGrpsGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             proteinGrpsGridView.setTitle("Peptides");
 
-            VBox view = new VBox(detailsBox);
+            VBox view = new VBox();
+            view.addView(detailsBox);
             view.addView(proteinGrpsGridView);
             return view;
         }
     }
 
-    @NotNull
-    private DetailsView getExperimentGroupDetailsView(int experimentGroupId)
+    // ------------------------------------------------------------------------
+    // View peptides in a protein group
+    // ------------------------------------------------------------------------
+    @RequiresPermission(ReadPermission.class)
+    public class ViewProteinPeptidesAction extends SimpleViewAction<IdForm>
     {
-        DataRegion exptGrpDetailsRetion = new DataRegion();
-        exptGrpDetailsRetion.setTable(MqManager.getTableInfoExperimentGroup());
-        exptGrpDetailsRetion.setColumns(MqManager.getTableInfoExperimentGroup().getColumns("Created", "CreatedBy", "LocationOnFileSystem"));
-        exptGrpDetailsRetion.setButtonBar(new ButtonBar()); // No buttons in the button bar
+        private int _experimentGroupId;
+        private ProteinGroup _proteinGroup;
 
-        return new DetailsView(exptGrpDetailsRetion, experimentGroupId);
+        @Override
+        public NavTree appendNavTrail(NavTree root)
+        {
+            if (_proteinGroup != null)
+            {
+                root.addChild("MaxQuant Runs", getShowRunsUrl());
+                root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroupId));
+                root.addChild("Peptides for Protein Group " + _proteinGroup.getId());
+            }
+            return root;
+        }
+
+        @Override
+        public void validate(IdForm form, BindException errors)
+        {
+            _proteinGroup = ProteinGroupManager.get(form.getId());
+            if (_proteinGroup == null)
+                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist.");
+            else
+                _experimentGroupId = _proteinGroup.getExperimentGroupId();
+        }
+
+        @Override
+        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        {
+            if (errors.hasErrors())
+                return new SimpleErrorView(errors);
+
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(_experimentGroupId, PeptidesParser.FILE);
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
+
+            // Details of the  ProteinGroup
+            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getId());
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
+            detailsBox.setTitle("Protein Group Details");
+            detailsBox.setFrame(WebPartView.FrameType.PORTAL);
+
+            // ProteinGroupPeptide table
+            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", TABLE_PROTEIN_GROUP_PEPTIDE);
+            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getId()));
+            QueryView peptidesGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
+            peptidesGridView.setTitle("Peptides");
+
+            VBox view = new VBox();
+            view.addView(detailsBox);
+            view.addView(peptidesGridView);
+            return view;
+        }
     }
 
-    private String[] allFiles = new String[] {ExperimentDesignTemplateParser.FILE, ProteinGroupsParser.FILE,
-                                           PeptidesParser.FILE, ModifiedPeptidesParser.FILE, EvidenceParser.FILE};
+    // ------------------------------------------------------------------------
+    // View details for a protein group
+    // ------------------------------------------------------------------------
+    @RequiresPermission(ReadPermission.class)
+    public class ViewProteinGroupInfoAction extends SimpleViewAction<IdForm>
+    {
+        private int _experimentGroupId;
+        private ProteinGroup _proteinGroup;
+
+        @Override
+        public NavTree appendNavTrail(NavTree root)
+        {
+            if (_proteinGroup != null)
+            {
+                root.addChild("MaxQuant Runs", getShowRunsUrl());
+                root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroupId));
+                root.addChild("Experiment Details for Protein Group " + _proteinGroup.getId());
+            }
+            return root;
+        }
+
+        @Override
+        public void validate(IdForm form, BindException errors)
+        {
+            _proteinGroup = ProteinGroupManager.get(form.getId());
+            if (_proteinGroup == null)
+                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist.");
+            else
+                _experimentGroupId = _proteinGroup.getExperimentGroupId();
+        }
+
+        @Override
+        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        {
+            if (errors.hasErrors())
+                return new SimpleErrorView(errors);
+
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(_experimentGroupId, ProteinGroupsParser.FILE);
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
+
+            // Details of the  ProteinGroup
+            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getId());
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
+            detailsBox.setTitle("Protein Group Details");
+            detailsBox.setFrame(WebPartView.FrameType.PORTAL);
+
+            // ProteinGroupExperimentInfo table
+            QuerySettings s1 = getQuerySettings("IntensityAndCoverage", TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, form.getId());
+            QueryView protGrpExpInfoView = new QueryView(new MqSchema(getUser(), getContainer()), s1, errors);
+            protGrpExpInfoView.setTitle("Intensity And Coverage");
+
+            // ProteinGroupRatiosSilac table
+            QuerySettings s2 = getQuerySettings("SilacRatios", TABLE_PROTEIN_GROUP_RATIOS_SILAC, form.getId());
+            QueryView silacRatiosView = new QueryView(new MqSchema(getUser(), getContainer()), s2, errors);
+            silacRatiosView.setTitle("Silac Ratios");
+
+            // ProteinGroupIntensitySilac table
+            QuerySettings s3 = getQuerySettings("SilacIntensities", TABLE_PROTEIN_GROUP_INTENSITY_SILAC, form.getId());
+            QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
+            silacInteisitiesView.setTitle("Silac Intensities");
+
+            VBox view = new VBox();
+            view.addView(detailsBox);
+            view.addView(protGrpExpInfoView);
+            view.addView(silacRatiosView);
+            view.addView(silacInteisitiesView);
+            return view;
+        }
+
+        private QuerySettings getQuerySettings(String dataRegionName, String queryName, int proteinGroupId)
+        {
+            QuerySettings qs = new QuerySettings(getViewContext(), dataRegionName, queryName);
+            qs.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), proteinGroupId));
+            qs.setMaxRows(50);
+            return qs;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // View evidence list for a peptide
+    // ------------------------------------------------------------------------
+    @RequiresPermission(ReadPermission.class)
+    public class ViewPeptideEvidenceAction extends SimpleViewAction<IdForm>
+    {
+        private int _experimentGroupId;
+        private Peptide _peptide;
+
+        @Override
+        public NavTree appendNavTrail(NavTree root)
+        {
+            if (_peptide != null)
+            {
+                root.addChild("MaxQuant Runs", getShowRunsUrl());
+                root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroupId));
+                root.addChild("Evidence for Peptide " + _peptide.getId());
+            }
+            return null;
+        }
+
+        @Override
+        public void validate(IdForm form, BindException errors)
+        {
+            _peptide = PeptideManager.get(form.getId());
+            if (_peptide == null)
+                errors.reject(ERROR_MSG, "Peptide with ID " + form.getId() + " does not exist.");
+            else
+                _experimentGroupId = _peptide.getExperimentGroupId();
+        }
+
+        @Override
+        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        {
+            if (errors.hasErrors())
+                return new SimpleErrorView(errors);
+
+            // Files listing
+            HtmlView fileDownloadView = getDownloadLinksView(_experimentGroupId, EvidenceParser.FILE);
+            fileDownloadView.setTitle("Files");
+            fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
+
+            // Details of the  Peptide
+            DetailsView exptDetailsView = getPeptideDetailsView(form.getId());
+            VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
+            detailsBox.setTitle("Peptide Details");
+            detailsBox.setFrame(WebPartView.FrameType.PORTAL);
+
+            // Evidence table
+            QuerySettings settings = new QuerySettings(getViewContext(), "Evidence", "Evidence");
+            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideId"), form.getId()));
+            QueryView evidenceGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
+            evidenceGridView.setTitle("Evidence");
+
+            VBox view = new VBox();
+            view.addView(detailsBox);
+            view.addView(evidenceGridView);
+            return view;
+        }
+    }
+
+    public static class IdForm
+    {
+        private int _id;
+
+        public int getId()
+        {
+            return _id;
+        }
+
+        public void setId(int id)
+        {
+            _id = id;
+        }
+    }
+
+    private ActionURL getShowRunsUrl()
+    {
+        return PageFlowUtil.urlProvider(ExperimentUrls.class).getShowRunsURL(getContainer(), new MqExperimentRunType());
+    }
+
+    private ActionURL getProteinGroupsUrl(int id)
+    {
+        ActionURL url = new ActionURL(ViewProteinGroupsAction.class, getContainer());
+        url.addParameter("id", id);
+        return url;
+    }
+
+    private String[] allFiles = new String[] {SummaryTemplateParser.FILE, ProteinGroupsParser.FILE,
+            PeptidesParser.FILE, ModifiedPeptidesParser.FILE, EvidenceParser.FILE};
     @NotNull
     private HtmlView getDownloadLinksView(int experimentGroupId, String... files)
     {
@@ -583,16 +632,14 @@ public class MqController extends SpringActionController
         ActionURL downloadFileUrl = new ActionURL(DownloadFileAction.class, getContainer());
         downloadFileUrl.addParameter("experimentGroupId", experimentGroupId);
         StringBuilder html = new StringBuilder();
-        String txt = files.length > 1 ? "Files" : "File";
-        html.append("<div>").append(txt).append(":");
         html.append("<ul>");
 
         for(String file: files)
         {
-            if(file.equals(ExperimentDesignTemplateParser.FILE))
+            if(file.equals(SummaryTemplateParser.FILE))
             {
-                downloadFileUrl.replaceParameter("fileName", ExperimentDesignTemplateParser.FILE);
-                html.append("<li><a href=\"" + downloadFileUrl.getLocalURIString() + "\">experimentalDesignTemplate.txt</a></li>");
+                downloadFileUrl.replaceParameter("fileName", SummaryTemplateParser.FILE);
+                html.append("<li><a href=\"" + downloadFileUrl.getLocalURIString() + "\">" + SummaryTemplateParser.FILE + "</a></li>");
             }
             else if(file.equals(ProteinGroupsParser.FILE))
             {
@@ -616,236 +663,37 @@ public class MqController extends SpringActionController
             }
         }
         html.append("</ul");
-        html.append("</div>");
         return new HtmlView(html.toString());
     }
 
-    // ------------------------------------------------------------------------
-    // View peptides in a protein group
-    // ------------------------------------------------------------------------
-    @RequiresPermission(ReadPermission.class)
-    public class ViewProteinPeptidesAction extends SimpleViewAction<ProteinGroupIdForm>
+    @NotNull
+    private JspView getExperimentGroupDetailsView(ExperimentGroup experimentGroup)
     {
-        private int _experimentGroupId; // for use in appendNavTrail
-
-        public ViewProteinPeptidesAction()
-        {
-            super(ProteinGroupIdForm.class);
-        }
-
-        @Override
-        public NavTree appendNavTrail(NavTree root)
-        {
-            if(root != null && _experimentGroupId != 0)
-            {
-                ActionURL url = new ActionURL(ViewProteinGroupsAction.class, getContainer());
-                url.addParameter("experimentGroupId", _experimentGroupId);
-                root.addChild("Protein Groups", url);
-                root.addChild("Peptides");
-                return root;
-            }
-            return null;
-        }
-
-        @Override
-        public ModelAndView getView(ProteinGroupIdForm form, BindException errors) throws Exception
-        {
-            // Details of the  ProteinGroup
-            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getProteinGroupId());
-            // Links to download the peptides.txt files
-            ProteinGroup proteinGroup = ProteinGroupManager.get(form.getProteinGroupId());
-            if(proteinGroup == null)
-            {
-                throw new NotFoundException("Could not find protein group with ID " + form.getProteinGroupId());
-            }
-            _experimentGroupId = proteinGroup.getExperimentGroupId();
-
-            HtmlView fileDownloadLink = getDownloadLinksView(proteinGroup.getExperimentGroupId(), PeptidesParser.FILE);
-
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLink);
-            detailsBox.setTitle("Protein Group Details");
-            detailsBox.setFrame(WebPartView.FrameType.PORTAL);
-
-            // ProteinGroupPeptide table
-            QuerySettings settings = new QuerySettings(getViewContext(), "Peptides", "ProteinGroupPeptide");
-            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getProteinGroupId()));
-            QueryView peptidesGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
-            peptidesGridView.setTitle("Peptides");
-
-            VBox view = new VBox(detailsBox);
-            view.addView(peptidesGridView);
-            return view;
-        }
-    }
-
-    @RequiresPermission(ReadPermission.class)
-    public class ViewProteinGroupInfoAction extends SimpleViewAction<ProteinGroupIdForm>
-    {
-        private int _experimentGroupId; // for use in appendNavTrail
-
-        public ViewProteinGroupInfoAction()
-        {
-            super(ProteinGroupIdForm.class);
-        }
-
-        @Override
-        public NavTree appendNavTrail(NavTree root)
-        {
-            if(root != null && _experimentGroupId != 0)
-            {
-                ActionURL url = new ActionURL(ViewProteinGroupsAction.class, getContainer());
-                url.addParameter("experimentGroupId", _experimentGroupId);
-                root.addChild("Protein Groups", url);
-                root.addChild("Experiment Details for Protein Group");
-                return root;
-            }
-            return null;
-        }
-
-        @Override
-        public ModelAndView getView(ProteinGroupIdForm form, BindException errors) throws Exception
-        {
-            // Details of the  ProteinGroup
-            DetailsView exptDetailsView = getProteinGroupDetailsView(form.getProteinGroupId());
-            // Links to download the peptides.txt files
-            ProteinGroup proteinGroup = ProteinGroupManager.get(form.getProteinGroupId());
-            if(proteinGroup == null)
-            {
-                throw new NotFoundException("Could not find protein group with ID " + form.getProteinGroupId());
-            }
-            _experimentGroupId = proteinGroup.getExperimentGroupId();
-
-            HtmlView fileDownloadLink = getDownloadLinksView(proteinGroup.getExperimentGroupId(), ProteinGroupsParser.FILE);
-
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLink);
-            detailsBox.setTitle("Protein Group Details");
-            detailsBox.setFrame(WebPartView.FrameType.PORTAL);
-
-            // ProteinGroupExperimentInfo table
-            QuerySettings s1 = new QuerySettings(getViewContext(), "IntensityAndCoverage", "ProteinGroupExperimentInfo");
-            s1.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getProteinGroupId()));
-            s1.setMaxRows(50);
-            QueryView protGrpExpInfoView = new QueryView(new MqSchema(getUser(), getContainer()), s1, errors);
-            protGrpExpInfoView.setTitle("Intensity And Coverage");
-
-            // ProteinGroupRatiosSilac table
-            QuerySettings s2 = new QuerySettings(getViewContext(), "SilacRatios", "ProteinGroupRatiosSilac");
-            s2.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getProteinGroupId()));
-            s2.setMaxRows(50);
-            QueryView silacRatiosView = new QueryView(new MqSchema(getUser(), getContainer()), s2, errors);
-            silacRatiosView.setTitle("Silac Ratios");
-
-            // ProteinGroupIntensitySilac table
-            QuerySettings s3 = new QuerySettings(getViewContext(), "SilacIntensities", "ProteinGroupIntensitySilac");
-            s3.setBaseFilter(new SimpleFilter(FieldKey.fromParts("ProteinGroupId"), form.getProteinGroupId()));
-            s3.setMaxRows(50);
-            QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
-            silacInteisitiesView.setTitle("Silac Intensities");
-
-            VBox view = new VBox(detailsBox);
-            view.addView(protGrpExpInfoView);
-            view.addView(silacRatiosView);
-            view.addView(silacInteisitiesView);
-            return view;
-        }
+        return new JspView<>("/org/labkey/mq/view/experimentGroupDetails.jsp", experimentGroup);
     }
 
     @NotNull
     private DetailsView getProteinGroupDetailsView(int proteinGroupid)
     {
-        TableInfo table = new ProteinGroupTable(new MqSchema(getUser(), getContainer()));
-        DataRegion proteinGroupDetailsRegion = new DataRegion();
-        proteinGroupDetailsRegion.setTable(table);
+        MqSchema schema = new MqSchema(getUser(), getContainer());
+        TableInfo table = schema.createTable(TABLE_PROTEIN_GROUP);
+
         Collection<FieldKey> columns = new ArrayList<>();
         columns.add(FieldKey.fromParts("ProteinIds"));
         columns.add(FieldKey.fromParts("MajorityProteinIds"));
         columns.add(FieldKey.fromParts("ProteinNames"));
         columns.add(FieldKey.fromParts("GeneNames"));
-        Map<FieldKey, ColumnInfo> columnMap = QueryService.get().getColumns(table, columns);
-        proteinGroupDetailsRegion.addColumns(new ArrayList<>(columnMap.values()));
-        proteinGroupDetailsRegion.setButtonBar(new ButtonBar()); // No buttons in the button bar
 
-        return new DetailsView(proteinGroupDetailsRegion, proteinGroupid);
+        return getDetailsView(table, columns, proteinGroupid);
     }
 
-    public static class ProteinGroupIdForm extends QueryViewAction.QueryExportForm
-    {
-        private int _proteinGroupId;
-
-        public int getProteinGroupId()
-        {
-            return _proteinGroupId;
-        }
-
-        public void setProteinGroupId(int proteinGroupId)
-        {
-            _proteinGroupId = proteinGroupId;
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // View evidence list for a peptide
-    // ------------------------------------------------------------------------
-    @RequiresPermission(ReadPermission.class)
-    public class ViewPeptideEvidenceAction extends SimpleViewAction<PeptideIdForm>
-    {
-        private int _experimentGroupId; // For use in appendNavTrail
-
-        public ViewPeptideEvidenceAction()
-        {
-            super(PeptideIdForm.class);
-        }
-
-        @Override
-        public NavTree appendNavTrail(NavTree root)
-        {
-            if(root != null && _experimentGroupId != 0)
-            {
-                ActionURL url = new ActionURL(ViewPeptidesAction.class, getContainer());
-                url.addParameter("experimentGroupId", _experimentGroupId);
-                root.addChild("Peptides", url);
-                root.addChild("Evidence");
-                return root;
-            }
-            return null;
-        }
-
-        @Override
-        public ModelAndView getView(PeptideIdForm form, BindException errors) throws Exception
-        {
-            // Details of the  Peptide
-            DetailsView exptDetailsView = getPeptideDetailsView(form.getPeptideId());
-            // Links to download the evidence.txt files
-            Peptide peptide = PeptideManager.get(form.getPeptideId());
-            if(peptide == null)
-            {
-                throw new NotFoundException("Could not find peptide with ID " + form.getPeptideId());
-            }
-            _experimentGroupId = peptide.getExperimentGroupId();
-
-            HtmlView fileDownloadLink = getDownloadLinksView(peptide.getExperimentGroupId(), EvidenceParser.FILE);
-
-            VBox detailsBox = new VBox(exptDetailsView, fileDownloadLink);
-            detailsBox.setTitle("Peptide Details");
-            detailsBox.setFrame(WebPartView.FrameType.PORTAL);
-
-            // Evidence table
-            QuerySettings settings = new QuerySettings(getViewContext(), "Evidence", "Evidence");
-            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideId"), form.getPeptideId()));
-            QueryView evidenceGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
-            evidenceGridView.setTitle("Evidence");
-
-            VBox view = new VBox(detailsBox);
-            view.addView(evidenceGridView);
-            return view;
-        }
-    }
 
     @NotNull
     private DetailsView getPeptideDetailsView(int peptideId)
     {
-        DataRegion peptideDetailsRegion = new DataRegion();
-        peptideDetailsRegion.setTable(MqManager.getTableInfoPeptide());
+        MqSchema schema = new MqSchema(getUser(), getContainer());
+        TableInfo table = schema.createTable(TABLE_PEPTIDE);
+
         Collection<FieldKey> columns = new ArrayList<>();
         columns.add(FieldKey.fromParts("Sequence"));
         columns.add(FieldKey.fromParts("Length"));
@@ -853,26 +701,19 @@ public class MqController extends SpringActionController
         columns.add(FieldKey.fromParts("StartPosition"));
         columns.add(FieldKey.fromParts("EndPosition"));
         columns.add(FieldKey.fromParts("MissedCleavages"));
-        columns.add(FieldKey.fromParts("PeptideId", "ProteinGroupid"));
-        Map<FieldKey, ColumnInfo> columnMap = QueryService.get().getColumns(MqManager.getTableInfoPeptide(), columns);
-        peptideDetailsRegion.addColumns(new ArrayList<>(columnMap.values()));
-        peptideDetailsRegion.setButtonBar(new ButtonBar()); // No buttons in the button bar
+        columns.add(FieldKey.fromParts("ExperimentGroupId"));
 
-        return new DetailsView(peptideDetailsRegion, peptideId);
+        return getDetailsView(table, columns, peptideId);
     }
 
-    public static class PeptideIdForm extends QueryViewAction.QueryExportForm
+    @NotNull
+    private DetailsView getDetailsView(TableInfo table, Collection<FieldKey> columns, int pkId)
     {
-        private int _peptideId;
-
-        public int getPeptideId()
-        {
-            return _peptideId;
-        }
-
-        public void setPeptideId(int peptideId)
-        {
-            _peptideId = peptideId;
-        }
+        DataRegion dataRegion = new DataRegion();
+        dataRegion.setTable(table);
+        Map<FieldKey, ColumnInfo> columnMap = QueryService.get().getColumns(table, columns);
+        dataRegion.addColumns(new ArrayList<>(columnMap.values()));
+        dataRegion.setButtonBar(new ButtonBar()); // No buttons in the button bar
+        return new DetailsView(dataRegion, pkId);
     }
 }

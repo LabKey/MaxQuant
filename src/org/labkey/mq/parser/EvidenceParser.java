@@ -41,7 +41,7 @@ public class EvidenceParser extends MaxQuantTsvParser
         super(file);
     }
 
-    public EvidenceRow nextEvidence()
+    public EvidenceRow nextEvidence(String derivedExperimentName)
     {
         TsvRow row = super.nextRow();
         if(row == null)
@@ -51,7 +51,8 @@ public class EvidenceParser extends MaxQuantTsvParser
         EvidenceRow evidenceRow = new EvidenceRow();
         evidenceRow.setModifiedSequence(getValue(row, ModifiedSequence));
         evidenceRow.setRawFile(getValue(row, RawFile));
-        evidenceRow.setExperiment(getValue(row, Experiment));
+        String experiment = derivedExperimentName != null?derivedExperimentName: getValue(row, Experiment);
+        evidenceRow.setExperiment(experiment);
         evidenceRow.setMsmsMz(tryGetDoubleValue(row, MsmsMz)); // Found missing MS/MS m/z in LFQ data
         evidenceRow.setCharge(getIntValue(row, Charge));
         evidenceRow.setMassErrorPpm(getDoubleValue(row, MassErrorPpm));

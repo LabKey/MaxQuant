@@ -12,6 +12,7 @@ public class Experiment extends MqEntity
 
     private String _experimentName;
     private List<RawFile> _rawfiles;
+    private boolean _isDerivedExperimentName;
 
     public int getExperimentGroupId()
     {
@@ -30,7 +31,21 @@ public class Experiment extends MqEntity
 
     public void setExperimentName(String experimentName)
     {
+        if(experimentName == null){
+            experimentName = "NA";
+            _isDerivedExperimentName = true;
+        }
         _experimentName = experimentName;
+    }
+
+    public boolean isDerivedExperimentName()
+    {
+        return _isDerivedExperimentName;
+    }
+
+    public void setDerivedExperimentName(boolean derivedExperimentName)
+    {
+        _isDerivedExperimentName = derivedExperimentName;
     }
 
     public List<RawFile> getRawfiles()

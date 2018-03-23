@@ -59,19 +59,19 @@ public class QueryLinkDisplayColumnFactory implements DisplayColumnFactory
                 if(_tableName.equalsIgnoreCase(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE))
                 {
                     url = new ActionURL(MqController.ViewProteinPeptidesAction.class, ctx.getContainer());
-                    url.addParameter("proteinGroupId", fkValue);
+                    url.addParameter("id", fkValue);
                 }
                 else if(_tableName.equalsIgnoreCase(MqSchema.TABLE_EVIDENCE))
                 {
                     url = new ActionURL(MqController.ViewPeptideEvidenceAction.class, ctx.getContainer());
-                    url.addParameter("peptideId", fkValue);
+                    url.addParameter("id", fkValue);
                 }
                 else if(_tableName.equalsIgnoreCase(MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO)
                         || _tableName.equalsIgnoreCase(MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC)
                         || _tableName.equalsIgnoreCase(MqSchema.TABLE_EVIDENCE_INETNSITY_SILAC))
                 {
                     url = new ActionURL(MqController.ViewProteinGroupInfoAction.class, ctx.getContainer());
-                    url.addParameter("proteinGroupId", fkValue);
+                    url.addParameter("id", fkValue);
                 }
                 else
                 {

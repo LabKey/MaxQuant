@@ -22,7 +22,7 @@ public class MqImportPipelineJob extends PipelineJob
 
     public MqImportPipelineJob(ViewBackgroundInfo info, ExpData expData, MqExperimentImporter.RunInfo runInfo, PipeRoot root) throws SQLException
     {
-        super(MqPipelineProvider.name, info, root);
+        super(MqPipelineProvider.NAME, info, root);
         _expData = expData;
         _runInfo = runInfo;
 

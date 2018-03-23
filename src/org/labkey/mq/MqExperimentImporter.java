@@ -26,7 +26,7 @@ import org.labkey.mq.model.ProteinGroupIntensitySilac;
 import org.labkey.mq.model.ProteinGroupRatioSilac;
 import org.labkey.mq.model.RawFile;
 import org.labkey.mq.parser.EvidenceParser;
-import org.labkey.mq.parser.ExperimentDesignTemplateParser;
+import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.parser.ModifiedPeptidesParser;
 import org.labkey.mq.parser.MqParserException;
 import org.labkey.mq.parser.PeptidesParser;
@@ -99,8 +99,8 @@ public class MqExperimentImporter
             return run;
         }
 
-        File experimentDesignTemplatefile = _expData.getFile();
-        File experimentDirectory = experimentDesignTemplatefile.getParentFile();
+        File summaryTemplatefile = _expData.getFile();
+        File experimentDirectory = summaryTemplatefile.getParentFile();
 
         if(!experimentDirectory.exists())
         {
@@ -117,16 +117,20 @@ public class MqExperimentImporter
             _log.info("Starting to import MaxQuant results from " + experimentDirectory);
 
             // Parse the "ExperimentDesignTemplate.txt" in the given directory
-            if(!experimentDesignTemplatefile.exists())
+            if(!summaryTemplatefile.exists())
             {
-                throw new MqParserException("Could not find file " + experimentDesignTemplatefile.getName() + " in directory " + experimentDirectory + ".");
+                throw new MqParserException("Could not find file " + summaryTemplatefile.getName() + " in directory " + experimentDirectory + ".");
             }
 
-            ExperimentGroup experimentGroup = new ExperimentDesignTemplateParser().parse(experimentDesignTemplatefile);
+            ExperimentGroup experimentGroup = new SummaryTemplateParser().parse(summaryTemplatefile);
             try (DbScope.Transaction transaction = MqSchema.getSchema().getScope().ensureTransaction(_schemaLock))
             {
+                String derivedExperimentName = null;
                 for(Experiment experiment: experimentGroup.getExperiments())
                 {
+                    if(experiment.isDerivedExperimentName()){
+                        derivedExperimentName = experiment.getExperimentName();
+                    }
                     experiment.setExperimentGroupId(_experimentGroupId);
                     experiment.setContainer(_container);
                     Table.insert(_user, MqManager.getTableInfoExperiment(), experiment);
@@ -143,7 +147,7 @@ public class MqExperimentImporter
                 File txtDir = new File(experimentDirectory, "txt");
                 if(!txtDir.exists())
                 {
-                    throw new MqParserException("Could not find 'txt' sub-directory in directory.");
+                    txtDir= experimentDirectory;
                 }
 
                 // Parse proteinGroups.txt;
@@ -156,7 +160,7 @@ public class MqExperimentImporter
                 Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId = parseModifiedPeptides(txtDir, maxQuantPeptideIdToDbId);
 
                 // parse evidence.txt
-                parseEvidence(txtDir, experimentGroup, maxQuantPeptideIdToDbId, maxQuantModifiedPeptideIdToDbId);
+                parseEvidence(txtDir, experimentGroup, maxQuantPeptideIdToDbId, maxQuantModifiedPeptideIdToDbId, derivedExperimentName);
 
                 transaction.commit();
             }
@@ -371,9 +375,7 @@ public class MqExperimentImporter
         return maxQuantModifiedPeptideIdToDbId;
     }
 
-    private void parseEvidence(File txtDir, ExperimentGroup experimentGroup,
-                               Map<Integer, Integer> maxQuantPeptideIdToDbId,
-                               Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId)
+    private void parseEvidence(File txtDir, ExperimentGroup experimentGroup, Map<Integer, Integer> maxQuantPeptideIdToDbId, Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId, String derivedExperimentName)
     {
         File evidenceFile = new File(txtDir, EvidenceParser.FILE);
 
@@ -400,7 +402,7 @@ public class MqExperimentImporter
         }
         int count = 0;
 
-        while((row = pepParser.nextEvidence()) != null)
+        while((row = pepParser.nextEvidence(derivedExperimentName)) != null)
         {
             Evidence evidence = new Evidence(row);
             evidence.setContainer(_container);
