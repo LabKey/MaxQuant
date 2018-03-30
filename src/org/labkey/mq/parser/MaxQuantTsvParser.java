@@ -106,12 +106,17 @@ public class MaxQuantTsvParser extends TsvParser
         }
     }
 
-    protected double getDoubleValue(TsvRow row, String column)
+    protected Double getDoubleValue(TsvRow row, String column)
     {
         String val = getValue(row, column);
+
         try
         {
-            return Double.parseDouble(val);
+            double parseDouble = Double.parseDouble(val);
+            if (Double.isNaN(parseDouble)){
+                return null;
+            }
+            else return parseDouble;
         }
         catch (NumberFormatException e)
         {

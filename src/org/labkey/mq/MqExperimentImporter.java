@@ -408,7 +408,7 @@ public class MqExperimentImporter
             evidence.setContainer(_container);
             int peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
             evidence.setPeptideId(peptideId);
-            int modifiedPeptideId = maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
+            Integer modifiedPeptideId = maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
             evidence.setModifiedPeptideId(modifiedPeptideId);
             Integer experimentId = experimentNameToDbId.get(row.getExperiment());
             if (experimentId == null)
@@ -436,11 +436,14 @@ public class MqExperimentImporter
 
             // Update the ModifiedPeptide table with the modified sequence.
             // modificationSpecificPeptides.txt does not have modified sequences.
-            ModifiedPeptide modPeptide = ModifiedPeptideManager.get(evidence.getModifiedPeptideId());
-            if(!StringUtils.isBlank(row.getModifiedSequence()))
+            if(evidence.getModifiedPeptideId() != null)
             {
-                modPeptide.setSequence(row.getModifiedSequence());
-                Table.update(_user, MqManager.getTableInfoModifiedPeptide(), modPeptide, modPeptide.getId());
+                ModifiedPeptide modPeptide = ModifiedPeptideManager.get(evidence.getModifiedPeptideId());
+                if (!StringUtils.isBlank(row.getModifiedSequence()))
+                {
+                    modPeptide.setSequence(row.getModifiedSequence());
+                    Table.update(_user, MqManager.getTableInfoModifiedPeptide(), modPeptide, modPeptide.getId());
+                }
             }
 
             for(EvidenceParser.SilacRatio ratio: row.getSilacRatios())
