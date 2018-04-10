@@ -322,10 +322,9 @@ public class MqExperimentImporter
             for(int mqProteinGroupId: row.getMaxQuantProteinGroupIds())
             {
                 Integer proteinGroupId = maxQuantProteinGroupIdToDbId.get(mqProteinGroupId);
-                if(proteinGroupId == null)
-                {
-                    throw new MqParserException("Could not find database ID form max quant protein group ID " + mqProteinGroupId);
-                }
+                if (proteinGroupId == null)
+                    throw new MqParserException("Could not find database ID for MaxQuant protein group ID " + mqProteinGroupId);
+
                 Map<String, Integer> mapping = new HashMap<>();
                 mapping.put("ProteinGroupId", proteinGroupId);
                 mapping.put("PeptideId", peptide.getId());
@@ -359,7 +358,10 @@ public class MqExperimentImporter
         while((row = pepParser.nextModifiedPeptide()) != null)
         {
             ModifiedPeptide modPeptide = new ModifiedPeptide(row);
-            int peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            Integer peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            if (peptideId == null)
+                throw new MqParserException("Could not find database ID for MaxQuant peptide ID " + row.getMaxQuantPeptideId());
+
             modPeptide.setPeptideId(peptideId);
             modPeptide.setContainer(_container);
 
@@ -406,15 +408,19 @@ public class MqExperimentImporter
         {
             Evidence evidence = new Evidence(row);
             evidence.setContainer(_container);
-            int peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            Integer peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            if (peptideId == null)
+                throw new MqParserException("Could not find database ID for MaxQuant peptide ID " + row.getMaxQuantPeptideId());
             evidence.setPeptideId(peptideId);
+
             Integer modifiedPeptideId = maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
+            if (modifiedPeptideId == null)
+                throw new MqParserException("Could not find database ID for MaxQuant modified peptide ID " + row.getMaxQuantModifiedPeptideId());
             evidence.setModifiedPeptideId(modifiedPeptideId);
+
             Integer experimentId = experimentNameToDbId.get(row.getExperiment());
             if (experimentId == null)
-            {
                 throw new IllegalArgumentException("Unable to find experiment with name:" + row.getExperiment());
-            }
             evidence.setExperimentId(experimentId);
             evidence.setRawFileId(rawfileNameToDbId.get(row.getRawFile()));
             evidence.setMaxQuantId(row.getMaxQuantId());
