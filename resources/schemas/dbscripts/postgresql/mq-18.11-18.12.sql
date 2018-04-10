@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
--- Create schema, tables, indexes, and constraints used for mq module here
--- All SQL VIEW definitions should be created in mq-create.sql and dropped in mq-drop.sql
 ALTER TABLE mq.Evidence ALTER COLUMN ModifiedPeptideId DROP NOT NULL;
 ALTER TABLE mq.Evidence ALTER COLUMN MassErrorPpm DROP NOT NULL;
 ALTER TABLE mq.Evidence ALTER COLUMN UncalibratedMassErrorPpm DROP NOT NULL;

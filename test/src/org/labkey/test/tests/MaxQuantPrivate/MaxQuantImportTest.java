@@ -206,7 +206,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         columnStats.put("Charge", new Pair<>("5,676", "3.325"));
         columnStats.put("MassErrorPpm", new Pair<>("437,531,218", "263,098"));
         columnStats.put("UncalibratedMassErrorPpm", new Pair<>("437,534,439", "263,099"));
-        columnStats.put("RetentionTime", new Pair<>("154,548.5940", "90.5381"));
+        columnStats.put("RetentionTime", new Pair<>(null, "90.5381")); // this column is of type REAL which makes the SUM inconsistent
         columnStats.put("Pep", new Pair<>("5.943", "0.003"));
         columnStats.put("MsmsCount", new Pair<>("2,074", "1.215"));
         columnStats.put("ScanNumber", new Pair<>("41,451,924", "24,283.494"));
@@ -216,7 +216,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         verifyQueryRowCountAndColumnStats("Evidence", 1707, columnStats);
 
         columnStats = new HashMap<>();
-        columnStats.put("Coverage", new Pair<>("1,299.7", "8.495"));
+        columnStats.put("Coverage", new Pair<>(null, "8.495")); // this column is of type REAL which makes the SUM inconsistent
         columnStats.put("Intensity", new Pair<>("107,040,317,490", "699,609,918.235"));
         columnStats.put("LfqIntensity", new Pair<>("n/a", "n/a"));
         verifyQueryRowCountAndColumnStats("ProteinGroupExperimentInfo", 153, columnStats);
@@ -243,9 +243,11 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         {
             for (Map.Entry<String, Pair<String, String>> entry : columnStats.entrySet())
             {
-                drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_SUM, entry.getValue().first);
-                drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_MEAN, entry.getValue().second);
+                if (entry.getValue().first != null)
+                    drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_SUM, entry.getValue().first);
 
+                if (entry.getValue().second != null)
+                    drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_MEAN, entry.getValue().second);
             }
         }
     }
