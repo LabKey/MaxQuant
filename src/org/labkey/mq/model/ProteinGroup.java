@@ -45,7 +45,7 @@ public class ProteinGroup extends MqEntity
         _uniqPeptideCount = row.getUniqPeptideCount();
         _razorUniqPeptideCount = row.getRazorUniqPeptidecount();
         _sequenceCoverage = row.getSequenceCoverage();
-        _score = row.getSequenceCoverage();
+        _score = row.getScore();
         _intensity = row.getIntensity();
         _ms2Count = row.getMs2Count();
         _identifiedBySite = row.isIdentifiedBySite();

@@ -19,18 +19,23 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.api.util.Pair;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
+import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.Git;
 import org.labkey.test.pages.MaxQuantPrivate.PeptideDetails;
 import org.labkey.test.pages.MaxQuantPrivate.ProteinGroupDetails;
 import org.labkey.test.pages.MaxQuantPrivate.ExperimentGroupDetails;
 import org.labkey.test.util.DataRegionTable;
+import org.labkey.test.util.SummaryStatisticsHelper;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -158,12 +163,6 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         proteinSearch("DNA repair protein XRCC1", true, 1);
     }
 
-    @Test
-    public void testMQSchemaTableSummaryStats()
-    {
-        // TODO check row counts and summary stats for all mq schema tables
-    }
-
     private void proteinSearch(String value, boolean exactMatch, int expectedCount)
     {
         goToProjectHome();
@@ -174,6 +173,89 @@ public class MaxQuantImportTest extends BaseWebDriverTest
 
         DataRegionTable mqMatches = new DataRegionTable("MqMatches", this);
         assertEquals("Unexpected protein search results", expectedCount, mqMatches.getDataRowCount());
+    }
+
+    @Test
+    public void testMQSchemaTableSummaryStats()
+    {
+        Map<String, Pair<String, String>> columnStats = new HashMap<>();
+        columnStats.put("ProteinCount", new Pair<>("125", "2.451"));
+        columnStats.put("PeptideCount", new Pair<>("366", "7.176"));
+        columnStats.put("UniqPeptideCount", new Pair<>("299", "5.863"));
+        columnStats.put("RazorUniqPeptideCount", new Pair<>("336", "6.588"));
+        columnStats.put("SequenceCoverage", new Pair<>("751.7", "14.739"));
+        columnStats.put("Score", new Pair<>("4,472.14", "87.69"));
+        columnStats.put("Intensity", new Pair<>("107,040,227,800", "2,098,827,996.078"));
+        columnStats.put("MS2Count", new Pair<>("811", "15.902"));
+        verifyQueryRowCountAndColumnStats("ProteinGroup", 51, columnStats);
+
+        columnStats = new HashMap<>();
+        columnStats.put("Length", new Pair<>("5,444", "16.154"));
+        columnStats.put("Mass", new Pair<>("607,162.87957", "1,801.67027"));
+        columnStats.put("StartPosition", new Pair<>("133,637", "400.111"));
+        columnStats.put("EndPosition", new Pair<>("138,717", "415.32"));
+        columnStats.put("MissedCleavages", new Pair<>("158", "0.469"));
+        verifyQueryRowCountAndColumnStats("Peptide", 337, columnStats);
+
+        columnStats = new HashMap<>();
+        columnStats.put("Mass", new Pair<>("759,046.55605", "1,916.78423"));
+        verifyQueryRowCountAndColumnStats("ModifiedPeptide", 396, columnStats);
+
+        columnStats = new HashMap<>();
+        columnStats.put("MsmsMz", new Pair<>("1,315,255.1001", "770.5068"));
+        columnStats.put("Charge", new Pair<>("5,676", "3.325"));
+        columnStats.put("MassErrorPpm", new Pair<>("437,531,218", "263,098"));
+        columnStats.put("UncalibratedMassErrorPpm", new Pair<>("437,534,439", "263,099"));
+        columnStats.put("RetentionTime", new Pair<>("154,548.5940", "90.5381"));
+        columnStats.put("Pep", new Pair<>("5.943", "0.003"));
+        columnStats.put("MsmsCount", new Pair<>("2,074", "1.215"));
+        columnStats.put("ScanNumber", new Pair<>("41,451,924", "24,283.494"));
+        columnStats.put("Score", new Pair<>("179,817.83", "105.34"));
+        columnStats.put("DeltaScore", new Pair<>("139,934.7538", "81.9770"));
+        columnStats.put("Intensity", new Pair<>("493,456,488,930", "296,726,692.081"));
+        verifyQueryRowCountAndColumnStats("Evidence", 1707, columnStats);
+
+        columnStats = new HashMap<>();
+        columnStats.put("Coverage", new Pair<>("1,299.7", "8.495"));
+        columnStats.put("Intensity", new Pair<>("107,040,317,490", "699,609,918.235"));
+        columnStats.put("LfqIntensity", new Pair<>("n/a", "n/a"));
+        verifyQueryRowCountAndColumnStats("ProteinGroupExperimentInfo", 153, columnStats);
+
+        verifyQueryRowCountAndColumnStats("RawFile", 42, null);
+        verifyQueryRowCountAndColumnStats("Experiment", 3, null);
+        verifyQueryRowCountAndColumnStats("EvidenceIntensitySilac", 0, null);
+        verifyQueryRowCountAndColumnStats("EvidenceRatioSilac", 0, null);
+        verifyQueryRowCountAndColumnStats("ProteinGroupIntensitySilac", 0, null);
+        verifyQueryRowCountAndColumnStats("ProteinGroupRatiosSilac", 0, null);
+    }
+
+    private void verifyQueryRowCountAndColumnStats(String tableName, int rowCount, Map<String, Pair<String, String>> columnStats)
+    {
+        goToMQTable(tableName);
+        DataRegionTable drt = new DataRegionTable("query", getDriver());
+        if (rowCount < 100)
+            assertEquals("Unexpected grid row count: " + tableName, rowCount, drt.getDataRowCount());
+        else if (rowCount < 1000)
+            drt.assertPaginationText(1, 100, rowCount);
+        // TODO issue with assertPaginationText for < 1,000
+
+        if (columnStats != null)
+        {
+            for (Map.Entry<String, Pair<String, String>> entry : columnStats.entrySet())
+            {
+                drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_SUM, entry.getValue().first);
+                drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_MEAN, entry.getValue().second);
+
+            }
+        }
+    }
+
+    private void goToMQTable(String tableName)
+    {
+        Map<String, String> params = new HashMap<>();
+        params.put("schemaName", "mq");
+        params.put("query.queryName", tableName);
+        beginAt(WebTestHelper.buildURL("query", getCurrentContainerPath(), "executeQuery", params));
     }
 
     @Override
