@@ -126,7 +126,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         PeptideDetails peptideDetails = new PeptideDetails(getDriver());
         assertEquals("Unexpected peptide details value: Sequence", "APSPLGPTRDPVATFLETCREPGSQPAGPASLR", peptideDetails.getSequence());
         assertEquals("Unexpected peptide details value: Length", "33", peptideDetails.getLength());
-        assertEquals("Unexpected peptide details value: Mass", "3,431.72560", peptideDetails.getMass());
+        assertEquals("Unexpected peptide details value: Mass", "3,431.7256", peptideDetails.getMass());
         assertEquals("Unexpected peptide details value: Start Position", "514", peptideDetails.getStartPosition());
         assertEquals("Unexpected peptide details value: End Position", "546", peptideDetails.getEndPosition());
         assertEquals("Unexpected peptide details value: Missed Cleavages", "2", peptideDetails.getMissedCleavages());
@@ -183,29 +183,29 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         columnStats.put("PeptideCount", new Pair<>("366", "7.176"));
         columnStats.put("UniqPeptideCount", new Pair<>("299", "5.863"));
         columnStats.put("RazorUniqPeptideCount", new Pair<>("336", "6.588"));
-        columnStats.put("SequenceCoverage", new Pair<>("751.7", "14.739"));
-        columnStats.put("Score", new Pair<>("4,472.14", "87.69"));
+        columnStats.put("SequenceCoverage", new Pair<>("751.70", "14.74"));
+        columnStats.put("Score", new Pair<>("4,472.1424", "87.6891"));
         columnStats.put("Intensity", new Pair<>("107,040,227,800", "2,098,827,996.078"));
         columnStats.put("MS2Count", new Pair<>("811", "15.902"));
         verifyQueryRowCountAndColumnStats("ProteinGroup", 51, columnStats);
 
         columnStats = new HashMap<>();
         columnStats.put("Length", new Pair<>("5,444", "16.154"));
-        columnStats.put("Mass", new Pair<>("607,162.87957", "1,801.67027"));
+        columnStats.put("Mass", new Pair<>("607,162.8796", "1,801.6703"));
         columnStats.put("StartPosition", new Pair<>("133,637", "400.111"));
         columnStats.put("EndPosition", new Pair<>("138,717", "415.32"));
         columnStats.put("MissedCleavages", new Pair<>("158", "0.469"));
         verifyQueryRowCountAndColumnStats("Peptide", 337, columnStats);
 
         columnStats = new HashMap<>();
-        columnStats.put("Mass", new Pair<>("759,046.55605", "1,916.78423"));
+        columnStats.put("Mass", new Pair<>("759,046.5560", "1,916.7842"));
         verifyQueryRowCountAndColumnStats("ModifiedPeptide", 396, columnStats);
 
         columnStats = new HashMap<>();
         columnStats.put("MsmsMz", new Pair<>("1,315,255.1001", "770.5068"));
         columnStats.put("Charge", new Pair<>("5,676", "3.325"));
-        columnStats.put("MassErrorPpm", new Pair<>("437,531,218", "263,098"));
-        columnStats.put("UncalibratedMassErrorPpm", new Pair<>("437,534,439", "263,099"));
+        columnStats.put("MassErrorPpm", new Pair<>("437,531,218.1343", "263,097.5455"));
+        columnStats.put("UncalibratedMassErrorPpm", new Pair<>("437,534,439.0769", "263,099.4823"));
         columnStats.put("RetentionTime", new Pair<>(null, "90.5381")); // this column is of type REAL which makes the SUM inconsistent
         columnStats.put("Pep", new Pair<>("5.943", "0.003"));
         columnStats.put("MsmsCount", new Pair<>("2,074", "1.215"));
@@ -216,7 +216,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         verifyQueryRowCountAndColumnStats("Evidence", 1707, columnStats);
 
         columnStats = new HashMap<>();
-        columnStats.put("Coverage", new Pair<>(null, "8.495")); // this column is of type REAL which makes the SUM inconsistent
+        columnStats.put("Coverage", new Pair<>(null, "8.49")); // this column is of type REAL which makes the SUM inconsistent
         columnStats.put("Intensity", new Pair<>("107,040,317,490", "699,609,918.235"));
         columnStats.put("LfqIntensity", new Pair<>("n/a", "n/a"));
         verifyQueryRowCountAndColumnStats("ProteinGroupExperimentInfo", 153, columnStats);

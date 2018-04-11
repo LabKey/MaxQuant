@@ -212,8 +212,8 @@
    <ns:column columnName="PeptideCount"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="UniqPeptideCount"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="RazorUniqPeptideCount"><ns:formatString>#,###</ns:formatString></ns:column>
-   <ns:column columnName="SequenceCoverage"/>
-   <ns:column columnName="Score"><ns:formatString>#,###.00</ns:formatString></ns:column>
+   <ns:column columnName="SequenceCoverage"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="Score"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
    <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="MS2Count"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="IdentifiedBySite"/>
@@ -261,7 +261,7 @@
     </ns:fk>
     <ns:isHidden>true</ns:isHidden>
    </ns:column>
-   <ns:column columnName="Coverage"/>
+   <ns:column columnName="Coverage"><ns:formatString>#,##0.00</ns:formatString></ns:column>
    <ns:column columnName="ProteinGroupId"/>
    <ns:column columnName="ExperimentId"/>
    <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
@@ -311,8 +311,8 @@
    <ns:column columnName="ProteinGroupId"/>
    <ns:column columnName="ExperimentId"/>
    <ns:column columnName="RatioType"/>
-   <ns:column columnName="Ratio"><ns:formatString>#,###.00</ns:formatString></ns:column>
-   <ns:column columnName="RatioNormalized"><ns:formatString>#,###.00</ns:formatString></ns:column>
+   <ns:column columnName="Ratio"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="RatioNormalized"><ns:formatString>#,##0.00</ns:formatString></ns:column>
    <ns:column columnName="RatioCount"><ns:formatString>#,###</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
@@ -409,7 +409,7 @@
    <ns:column columnName="StartPosition"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="EndPosition"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="MissedCleavages"><ns:formatString>#,###</ns:formatString></ns:column>
-   <ns:column columnName="Mass"><ns:formatString>#,###.00000</ns:formatString></ns:column>
+   <ns:column columnName="Mass"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 
@@ -464,7 +464,7 @@
    <ns:column columnName="MaxQuantId"/>
    <ns:column columnName="Sequence"/>
    <ns:column columnName="Modifications"/>
-   <ns:column columnName="Mass"><ns:formatString>#,###.00000</ns:formatString></ns:column>
+   <ns:column columnName="Mass"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 
@@ -512,16 +512,16 @@
    <ns:column columnName="ExperimentId"/>
    <ns:column columnName="RawFileId"/>
    <ns:column columnName="MaxQuantId"/>
-   <ns:column columnName="MsmsMz"><ns:formatString>#,###.0000</ns:formatString></ns:column>
+   <ns:column columnName="MsmsMz"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
    <ns:column columnName="Charge"><ns:formatString>#,###</ns:formatString></ns:column>
-   <ns:column columnName="MassErrorPpm"><ns:formatString>#,###</ns:formatString></ns:column>
-   <ns:column columnName="UncalibratedMassErrorPpm"><ns:formatString>#,###</ns:formatString></ns:column>
-   <ns:column columnName="RetentionTime"><ns:formatString>#,###.0000</ns:formatString></ns:column>
+   <ns:column columnName="MassErrorPpm"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
+   <ns:column columnName="UncalibratedMassErrorPpm"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
+   <ns:column columnName="RetentionTime"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
    <ns:column columnName="Pep"/>
    <ns:column columnName="MsmsCount"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="ScanNumber"/>
-   <ns:column columnName="Score"><ns:formatString>#,###.00</ns:formatString></ns:column>
-   <ns:column columnName="DeltaScore"><ns:formatString>#,###.0000</ns:formatString></ns:column>
+   <ns:column columnName="Score"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="DeltaScore"><ns:formatString>#,##0.0000</ns:formatString></ns:column>
    <ns:column columnName="Intensity"><ns:formatString>#,###</ns:formatString></ns:column>
    <ns:column columnName="MaxQuantMsmsIds"/>
    <ns:column columnName="MaxQuantBestMsmsId"/>
@@ -614,8 +614,8 @@
    </ns:column>
    <ns:column columnName="EvidenceId"/>
    <ns:column columnName="RatioType"/>
-   <ns:column columnName="Ratio"><ns:formatString>#,###.00</ns:formatString></ns:column>
-   <ns:column columnName="RatioNormalized"><ns:formatString>#,###.00</ns:formatString></ns:column>
+   <ns:column columnName="Ratio"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="RatioNormalized"><ns:formatString>#,##0.00</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 

@@ -113,10 +113,7 @@ public class MaxQuantTsvParser extends TsvParser
         try
         {
             double parseDouble = Double.parseDouble(val);
-            if (Double.isNaN(parseDouble)){
-                return null;
-            }
-            else return parseDouble;
+            return Double.isNaN(parseDouble) ? null : parseDouble;
         }
         catch (NumberFormatException e)
         {
