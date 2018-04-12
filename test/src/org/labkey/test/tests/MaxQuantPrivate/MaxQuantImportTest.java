@@ -80,6 +80,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
     @Test
     public void testDetailsPages()
     {
+        log("Experiment Runs (Imported MaxQuant Results) ");
         DataRegionTable experimentGroupTable = new DataRegionTable("ExperimentGroup", this);
         assertEquals("Unexpected number of experiment group rows", 1, experimentGroupTable.getDataRowCount());
         assertEquals("Unexpected experiment run folder name", "txt", experimentGroupTable.getDataAsText(0, "ExperimentGroup/FolderName"));
@@ -146,18 +147,18 @@ public class MaxQuantImportTest extends BaseWebDriverTest
     @Test
     public void testProteinSearch()
     {
-        // Search for Protein Ids
+        log("Search for Protein Ids");
         proteinSearch("Q58", true, 0);
         proteinSearch("Q58", false, 3);
         proteinSearch("Q9ULS5", false, 1);
 
-        // Search for Protein Names
+        log("Search for Protein Names");
         proteinSearch("Heat shock protein HSP 90", true, 0);
         proteinSearch("Heat shock protein HSP 90", false, 3);
         proteinSearch("Heat shock protein HSP 90-beta", true, 1);
         proteinSearch("Heat shock protein HSP 91", false, 0);
 
-        // Search for Gene Names
+        log("Search for Gene Names");
         proteinSearch("DNA", true, 0);
         proteinSearch("DNA", false, 2);
         proteinSearch("DNA repair protein XRCC1", true, 1);
@@ -178,6 +179,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
     @Test
     public void testMQSchemaTableSummaryStats()
     {
+        log("ProteinGroup: row count and numeric column stats validation");
         Map<String, Pair<String, String>> columnStats = new HashMap<>();
         columnStats.put("ProteinCount", new Pair<>("125", "2.451"));
         columnStats.put("PeptideCount", new Pair<>("366", "7.176"));
@@ -189,6 +191,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         columnStats.put("MS2Count", new Pair<>("811", "15.902"));
         verifyQueryRowCountAndColumnStats("ProteinGroup", 51, columnStats);
 
+        log("Peptide: row count and numeric column stats validation");
         columnStats = new HashMap<>();
         columnStats.put("Length", new Pair<>("5,444", "16.154"));
         columnStats.put("Mass", new Pair<>("607,162.8796", "1,801.6703"));
@@ -197,10 +200,12 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         columnStats.put("MissedCleavages", new Pair<>("158", "0.469"));
         verifyQueryRowCountAndColumnStats("Peptide", 337, columnStats);
 
+        log("ModifiedPeptide: row count and numeric column stats validation");
         columnStats = new HashMap<>();
         columnStats.put("Mass", new Pair<>("759,046.5560", "1,916.7842"));
         verifyQueryRowCountAndColumnStats("ModifiedPeptide", 396, columnStats);
 
+        log("Evidence: row count and numeric column stats validation");
         columnStats = new HashMap<>();
         columnStats.put("MsmsMz", new Pair<>("1,315,255.1001", "770.5068"));
         columnStats.put("Charge", new Pair<>("5,676", "3.325"));
@@ -215,12 +220,14 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         columnStats.put("Intensity", new Pair<>("493,456,488,930", "296,726,692.081"));
         verifyQueryRowCountAndColumnStats("Evidence", 1707, columnStats);
 
+        log("ProteinGroupExperimentInfo: row count and numeric column stats validation");
         columnStats = new HashMap<>();
         columnStats.put("Coverage", new Pair<>(null, "8.49")); // this column is of type REAL which makes the SUM inconsistent
         columnStats.put("Intensity", new Pair<>("107,040,317,490", "699,609,918.235"));
         columnStats.put("LfqIntensity", new Pair<>("n/a", "n/a"));
         verifyQueryRowCountAndColumnStats("ProteinGroupExperimentInfo", 153, columnStats);
 
+        log("Other tables: row count validation");
         verifyQueryRowCountAndColumnStats("RawFile", 42, null);
         verifyQueryRowCountAndColumnStats("Experiment", 3, null);
         verifyQueryRowCountAndColumnStats("EvidenceIntensitySilac", 0, null);
