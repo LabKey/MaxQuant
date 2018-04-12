@@ -47,15 +47,16 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
             protected TableInfo createTable()
             {
                 FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
+                String likeOperator = result.getSqlDialect().getCaseInsensitiveLikeOperator();
 
                 // Apply a filter to restrict to the set of matching proteins
                 SQLFragment sql = new SQLFragment("Id IN (SELECT pg.Id FROM ");
                 sql.append(MqManager.getTableInfoProteinGroup(), "pg");
                 sql.append(" WHERE ");
-                sql.append(getProteinLabelCondition("pg.ProteinIds", getProteinLabels(form.getIdentifier()), form.isExactMatch()));
-                sql.append(" OR ").append(getProteinLabelCondition("pg.MajorityProteinIds", getProteinLabels(form.getIdentifier()), form.isExactMatch()));
-                sql.append(" OR ").append(getProteinLabelCondition("pg.ProteinNames", getProteinLabels(form.getIdentifier()), form.isExactMatch()));
-                sql.append(" OR ").append(getProteinLabelCondition("pg.GeneNames", getProteinLabels(form.getIdentifier()), form.isExactMatch()));
+                sql.append(getProteinLabelCondition("pg.ProteinIds", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
+                sql.append(" OR ").append(getProteinLabelCondition("pg.MajorityProteinIds", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
+                sql.append(" OR ").append(getProteinLabelCondition("pg.ProteinNames", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
+                sql.append(" OR ").append(getProteinLabelCondition("pg.GeneNames", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
                 sql.append(")");
                 result.addCondition(sql);
 
@@ -85,7 +86,7 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
         return Arrays.asList(StringUtils.split(labels, ","));
     }
 
-    private SQLFragment getProteinLabelCondition(String columnName, List<String> labels, boolean exactMatch)
+    private SQLFragment getProteinLabelCondition(String columnName, List<String> labels, boolean exactMatch, String likeOperator)
     {
         SQLFragment sqlFragment = new SQLFragment();
         String separator = "";
@@ -98,7 +99,7 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
         {
             sqlFragment.append(separator);
             sqlFragment.append(columnName);
-            sqlFragment.append(" LIKE ?");
+            sqlFragment.append(" ").append(likeOperator).append(" ?");
             sqlFragment.add(exactMatch ? param : "%" + param + "%");
             separator = " OR ";
         }

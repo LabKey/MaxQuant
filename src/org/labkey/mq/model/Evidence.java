@@ -10,14 +10,14 @@ public class Evidence extends MqEntity
 {
     private int _id;
     private int _peptideId;
-    private int _modifiedPeptideId;
+    private Integer _modifiedPeptideId;
     private int _experimentId;
     private int _rawFileId;
 
     private Double _msmsMz;
     private int _charge;
-    private double _massErrorPpm;
-    private double _uncalibratedMassErrorPpm;
+    private Double _massErrorPpm;
+    private Double _uncalibratedMassErrorPpm;
     private double _retentionTime;
     private Double _pep;
     private int _msmsCount;
@@ -71,12 +71,12 @@ public class Evidence extends MqEntity
         _peptideId = peptideId;
     }
 
-    public int getModifiedPeptideId()
+    public Integer getModifiedPeptideId()
     {
         return _modifiedPeptideId;
     }
 
-    public void setModifiedPeptideId(int modifiedPeptideId)
+    public void setModifiedPeptideId(Integer modifiedPeptideId)
     {
         _modifiedPeptideId = modifiedPeptideId;
     }
@@ -121,22 +121,22 @@ public class Evidence extends MqEntity
         _charge = charge;
     }
 
-    public double getMassErrorPpm()
+    public Double getMassErrorPpm()
     {
         return _massErrorPpm;
     }
 
-    public void setMassErrorPpm(double massErrorPpm)
+    public void setMassErrorPpm(Double massErrorPpm)
     {
         _massErrorPpm = massErrorPpm;
     }
 
-    public double getUncalibratedMassErrorPpm()
+    public Double getUncalibratedMassErrorPpm()
     {
         return _uncalibratedMassErrorPpm;
     }
 
-    public void setUncalibratedMassErrorPpm(double uncalibratedMassErrorPpm)
+    public void setUncalibratedMassErrorPpm(Double uncalibratedMassErrorPpm)
     {
         _uncalibratedMassErrorPpm = uncalibratedMassErrorPpm;
     }

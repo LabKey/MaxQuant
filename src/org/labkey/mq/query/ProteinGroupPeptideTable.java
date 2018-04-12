@@ -34,6 +34,8 @@ public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
         countCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_EVIDENCE, "PeptideId", "PeptideId"));
         addColumn(countCol);
 
+        // TODO need to add filter for Container (lookup from ProteinGroupId or PeptideId?) since this table doesn't have a Container column of its own
+
         //Only display a subset of the columns by default
         ArrayList<FieldKey> visibleColumns = new ArrayList<>();
 

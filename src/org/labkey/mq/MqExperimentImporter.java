@@ -2,6 +2,7 @@ package org.labkey.mq;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.data.SimpleFilter;
@@ -156,7 +157,7 @@ public class MqExperimentImporter
                 // Parse peptides.txt;
                 Map<Integer, Integer> maxQuantPeptideIdToDbId = parsePeptides(txtDir, maxQuantProteinGroupIdToDbId);
 
-                // Parse modificationSpecificPeptides.txt
+                // Parse modificationSpecificPeptides.txt (note: this file is optional)
                 Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId = parseModifiedPeptides(txtDir, maxQuantPeptideIdToDbId);
 
                 // parse evidence.txt
@@ -322,10 +323,9 @@ public class MqExperimentImporter
             for(int mqProteinGroupId: row.getMaxQuantProteinGroupIds())
             {
                 Integer proteinGroupId = maxQuantProteinGroupIdToDbId.get(mqProteinGroupId);
-                if(proteinGroupId == null)
-                {
-                    throw new MqParserException("Could not find database ID form max quant protein group ID " + mqProteinGroupId);
-                }
+                if (proteinGroupId == null)
+                    throw new MqParserException("Could not find database ID for MaxQuant protein group ID " + mqProteinGroupId);
+
                 Map<String, Integer> mapping = new HashMap<>();
                 mapping.put("ProteinGroupId", proteinGroupId);
                 mapping.put("PeptideId", peptide.getId());
@@ -344,22 +344,22 @@ public class MqExperimentImporter
     private Map<Integer, Integer> parseModifiedPeptides(File txtDir, Map<Integer, Integer> maxQuantPeptideIdToDbId)
     {
         File modifiedPeptidesFile = new File(txtDir, ModifiedPeptidesParser.FILE);
-        Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId = new HashMap<>();
-
-        if(!modifiedPeptidesFile.exists())
-        {
-            return Collections.emptyMap();
-        }
+        if (!modifiedPeptidesFile.exists())
+            return null;
 
         logFileProcessingStart(modifiedPeptidesFile.getPath());
 
         int count = 0;
         ModifiedPeptidesParser pepParser = new ModifiedPeptidesParser(modifiedPeptidesFile);
         ModifiedPeptidesParser.ModifiedPeptideRow row;
+        Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId = new HashMap<>();
         while((row = pepParser.nextModifiedPeptide()) != null)
         {
             ModifiedPeptide modPeptide = new ModifiedPeptide(row);
-            int peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            Integer peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            if (peptideId == null)
+                throw new MqParserException("Could not find database ID for MaxQuant peptide ID " + row.getMaxQuantPeptideId());
+
             modPeptide.setPeptideId(peptideId);
             modPeptide.setContainer(_container);
 
@@ -375,7 +375,8 @@ public class MqExperimentImporter
         return maxQuantModifiedPeptideIdToDbId;
     }
 
-    private void parseEvidence(File txtDir, ExperimentGroup experimentGroup, Map<Integer, Integer> maxQuantPeptideIdToDbId, Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId, String derivedExperimentName)
+    private void parseEvidence(File txtDir, ExperimentGroup experimentGroup, Map<Integer, Integer> maxQuantPeptideIdToDbId,
+                               @Nullable Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId, String derivedExperimentName)
     {
         File evidenceFile = new File(txtDir, EvidenceParser.FILE);
 
@@ -406,15 +407,22 @@ public class MqExperimentImporter
         {
             Evidence evidence = new Evidence(row);
             evidence.setContainer(_container);
-            int peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            Integer peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            if (peptideId == null)
+                throw new MqParserException("Could not find database ID for MaxQuant peptide ID " + row.getMaxQuantPeptideId());
             evidence.setPeptideId(peptideId);
-            int modifiedPeptideId = maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
-            evidence.setModifiedPeptideId(modifiedPeptideId);
+
+            if (maxQuantModifiedPeptideIdToDbId != null)
+            {
+                Integer modifiedPeptideId = maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
+                if (modifiedPeptideId == null)
+                    throw new MqParserException("Could not find database ID for MaxQuant modified peptide ID " + row.getMaxQuantModifiedPeptideId());
+                evidence.setModifiedPeptideId(modifiedPeptideId);
+            }
+
             Integer experimentId = experimentNameToDbId.get(row.getExperiment());
             if (experimentId == null)
-            {
                 throw new IllegalArgumentException("Unable to find experiment with name:" + row.getExperiment());
-            }
             evidence.setExperimentId(experimentId);
             evidence.setRawFileId(rawfileNameToDbId.get(row.getRawFile()));
             evidence.setMaxQuantId(row.getMaxQuantId());
@@ -436,11 +444,14 @@ public class MqExperimentImporter
 
             // Update the ModifiedPeptide table with the modified sequence.
             // modificationSpecificPeptides.txt does not have modified sequences.
-            ModifiedPeptide modPeptide = ModifiedPeptideManager.get(evidence.getModifiedPeptideId());
-            if(!StringUtils.isBlank(row.getModifiedSequence()))
+            if(evidence.getModifiedPeptideId() != null)
             {
-                modPeptide.setSequence(row.getModifiedSequence());
-                Table.update(_user, MqManager.getTableInfoModifiedPeptide(), modPeptide, modPeptide.getId());
+                ModifiedPeptide modPeptide = ModifiedPeptideManager.get(evidence.getModifiedPeptideId());
+                if (!StringUtils.isBlank(row.getModifiedSequence()))
+                {
+                    modPeptide.setSequence(row.getModifiedSequence());
+                    Table.update(_user, MqManager.getTableInfoModifiedPeptide(), modPeptide, modPeptide.getId());
+                }
             }
 
             for(EvidenceParser.SilacRatio ratio: row.getSilacRatios())

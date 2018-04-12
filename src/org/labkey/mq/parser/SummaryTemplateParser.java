@@ -126,7 +126,7 @@ public class SummaryTemplateParser
             String[] parts = getParts(line);
             if (!parts[SUMMARY_TXT_RAW_FILE_INDEX].equalsIgnoreCase("Raw file"))
             {
-                throw new MqParserException("Expected header: \\'Raw File   Fraction    Experiment\\'; found " + line);
+                throw new MqParserException("Expected header starting with: \\'Raw File\\'; found " + line);
             }
         }
     }
