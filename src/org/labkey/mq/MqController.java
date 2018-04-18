@@ -58,10 +58,10 @@ import org.labkey.mq.model.ExperimentGroup;
 import org.labkey.mq.model.Peptide;
 import org.labkey.mq.model.ProteinGroup;
 import org.labkey.mq.parser.EvidenceParser;
-import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.parser.ModifiedPeptidesParser;
 import org.labkey.mq.parser.PeptidesParser;
 import org.labkey.mq.parser.ProteinGroupsParser;
+import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.query.PeptideManager;
 import org.labkey.mq.query.ProteinGroupManager;
 import org.springframework.validation.BindException;
@@ -632,7 +632,7 @@ public class MqController extends SpringActionController
         ActionURL downloadFileUrl = new ActionURL(DownloadFileAction.class, getContainer());
         downloadFileUrl.addParameter("experimentGroupId", experimentGroupId);
         StringBuilder html = new StringBuilder();
-        html.append("<ul>");
+        html.append("<ul name=\"downloadLinks\">");
 
         for(String file: files)
         {

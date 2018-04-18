@@ -25,9 +25,9 @@ import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.Git;
+import org.labkey.test.pages.MaxQuantPrivate.ExperimentGroupDetails;
 import org.labkey.test.pages.MaxQuantPrivate.PeptideDetails;
 import org.labkey.test.pages.MaxQuantPrivate.ProteinGroupDetails;
-import org.labkey.test.pages.MaxQuantPrivate.ExperimentGroupDetails;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.SummaryStatisticsHelper;
 
@@ -91,9 +91,9 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         log("Protein Groups for Experiment Group");
         clickAndWait(experimentGroupTable.link(0, "ExperimentGroup"));
         ExperimentGroupDetails experimentGroupDetails = new ExperimentGroupDetails(getDriver());
-        assertTrue("Unexpected protein groups link", experimentGroupDetails.hasProteinGroupsLink(PROTEIN_GROUPS_COUNT));
-        assertTrue("Unexpected peptides link", experimentGroupDetails.hasPeptidesLink(PEPTIDES_COUNT));
-        assertTrue("Unexpected files links", experimentGroupDetails.hasFilesLinks(Arrays.asList("summary.txt", "proteinGroups.txt", "peptides.txt", "modificationSpecificPeptides.txt", "evidence.txt")));
+        assertEquals("Unexpected protein groups link", PROTEIN_GROUPS_COUNT, experimentGroupDetails.getProteinGroupsCount());
+        assertEquals("Unexpected peptides link", PEPTIDES_COUNT, experimentGroupDetails.getPeptidesCount());
+        assertEquals("Unexpected files links", Arrays.asList("summary.txt", "proteinGroups.txt", "peptides.txt", "modificationSpecificPeptides.txt", "evidence.txt"), getTexts(experimentGroupDetails.getExperimentFileDownloadLinks()));
         DataRegionTable proteinGroupsTable = experimentGroupDetails.getProteinGroupsGrid();
         assertEquals("Unexpected number of protein group rows", 51, proteinGroupsTable.getDataRowCount());
         proteinGroupsTable.setFilter("MaxQuantId", "Equals", "2900");
@@ -105,7 +105,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         pushLocation();
         proteinGroupsTable.clickRowDetails(0);
         ProteinGroupDetails proteinGroupDetails = validateProteinGroupDetails();
-        assertTrue("Unexpected files links", proteinGroupDetails.hasFilesLinks(Arrays.asList("proteinGroups.txt")));
+        assertTrue("Missing download link for: proteinGroups.txt", proteinGroupDetails.hasFilesLinks(Arrays.asList("proteinGroups.txt")));
         assertEquals("Unexpected grid row count: IntensityAndCoverage", 3, proteinGroupDetails.getIntensityAndCoverageGrid().getDataRowCount());
         assertEquals("Unexpected grid row count: SilacRatios", 0, proteinGroupDetails.getSilacRatiosGrid().getDataRowCount());
         assertEquals("Unexpected grid row count: SilacIntensities", 0, proteinGroupDetails.getSilacIntensitiesGrid().getDataRowCount());
@@ -116,7 +116,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         proteinGroupsTable = experimentGroupDetails.getProteinGroupsGrid();
         clickAndWait(proteinGroupsTable.link(0, "PeptideCount"));
         proteinGroupDetails = validateProteinGroupDetails();
-        assertTrue("Unexpected files links", proteinGroupDetails.hasFilesLinks(Arrays.asList("peptides.txt")));
+        assertTrue("Missing download link for: peptides.txt", proteinGroupDetails.hasFilesLinks(Arrays.asList("peptides.txt")));
         DataRegionTable peptidesTable = proteinGroupDetails.getPeptidesGrid();
         assertEquals("Unexpected grid row count: Peptides", 3, peptidesTable.getDataRowCount());
         peptidesTable.setFilter("PeptideId", "Equals", "APSPLGPTRDPVATFLETCREPGSQPAGPASLR");

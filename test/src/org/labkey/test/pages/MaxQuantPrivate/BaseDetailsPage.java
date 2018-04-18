@@ -4,6 +4,7 @@ import org.labkey.test.Locator;
 import org.labkey.test.pages.LabKeyPage;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import java.util.List;
 
@@ -12,6 +13,11 @@ abstract class BaseDetailsPage<EC extends BaseDetailsPage.ElementCache> extends 
     public BaseDetailsPage(WebDriver driver)
     {
         super(driver);
+    }
+
+    public List<WebElement> getExperimentFileDownloadLinks()
+    {
+        return Locator.tagWithName("ul", "downloadLinks").append(Locator.tag("a")).findElements(getDriver());
     }
 
     public boolean hasFilesLinks(List<String> txtFileNames)

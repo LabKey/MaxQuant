@@ -4,6 +4,7 @@ import org.labkey.test.Locator;
 import org.labkey.test.pages.LabKeyPage;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 public class ExperimentGroupDetails extends BaseDetailsPage<ExperimentGroupDetails.ElementCache>
 {
@@ -12,14 +13,24 @@ public class ExperimentGroupDetails extends BaseDetailsPage<ExperimentGroupDetai
         super(driver);
     }
 
-    public boolean hasProteinGroupsLink(int value)
+    public int getProteinGroupsCount()
     {
-        return elementCache().getProteinGroupsLinkLoc(value).findElements(getDriver()).size() == 1;
+        return Integer.parseInt(getProteinGroupsLink().getText());
+    }
+    
+    public WebElement getProteinGroupsLink()
+    {
+        return elementCache().getProteinGroupsLinkLoc().waitForElement(getDriver(), 1000);
     }
 
-    public boolean hasPeptidesLink(int value)
+    public int getPeptidesCount()
     {
-        return elementCache().getPeptidesLinkLoc(value).findElements(getDriver()).size() == 1;
+        return Integer.parseInt(getPeptidesLink().getText());
+    }
+
+    public WebElement getPeptidesLink()
+    {
+        return elementCache().getPeptidesLinkLoc().waitForElement(getDriver(), 1000);
     }
 
     public DataRegionTable getProteinGroupsGrid()
@@ -34,14 +45,14 @@ public class ExperimentGroupDetails extends BaseDetailsPage<ExperimentGroupDetai
 
     protected class ElementCache extends LabKeyPage.ElementCache
     {
-        public Locator getProteinGroupsLinkLoc(int value)
+        public Locator getProteinGroupsLinkLoc()
         {
-            return Locator.id("lk-mq-proteingroups").append(Locator.linkWithText(""+value));
+            return Locator.id("lk-mq-proteingroups").childTag("a");
         }
 
-        public Locator getPeptidesLinkLoc(int value)
+        public Locator getPeptidesLinkLoc()
         {
-            return Locator.id("lk-mq-peptides").append(Locator.linkWithText(""+value));
+            return Locator.id("lk-mq-peptides").childTag("a");
         }
     }
 }
