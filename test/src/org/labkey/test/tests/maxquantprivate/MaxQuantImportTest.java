@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.labkey.test.tests.MaxQuantPrivate;
+package org.labkey.test.tests.maxquantprivate;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,9 +25,9 @@ import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.Git;
-import org.labkey.test.pages.MaxQuantPrivate.ExperimentGroupDetails;
-import org.labkey.test.pages.MaxQuantPrivate.PeptideDetails;
-import org.labkey.test.pages.MaxQuantPrivate.ProteinGroupDetails;
+import org.labkey.test.pages.maxquantprivate.ExperimentGroupDetails;
+import org.labkey.test.pages.maxquantprivate.PeptideDetails;
+import org.labkey.test.pages.maxquantprivate.ProteinGroupDetails;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.SummaryStatisticsHelper;
 
