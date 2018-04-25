@@ -1,8 +1,10 @@
 package org.labkey.mq.parser;
 
 import org.apache.commons.lang3.StringUtils;
+import org.labkey.mq.model.Experiment;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created by vsharma on 3/16/2016.
@@ -26,7 +28,7 @@ public class PeptidesParser extends MaxQuantTsvParser
         super(file);
     }
 
-    public PeptideRow nextPeptide()
+    public PeptideRow nextPeptide(List<Experiment> experiments)
     {
         TsvRow row = super.nextRow();
         if(row == null)
@@ -42,6 +44,7 @@ public class PeptidesParser extends MaxQuantTsvParser
         pepRow.setMass(getDoubleValue(row, Mass));
         pepRow.setMaxQuantId(getIntValue(row, MaxQuantId));
         pepRow.setMaxQuantProteinGroupIds(getValue(row, ProteinGroupIds));
+        pepRow.setTMTInfos(getTMTInfosFromRow(row, experiments));
         return pepRow;
     }
 

@@ -64,15 +64,20 @@ public class MqSchema extends SimpleUserSchema
     public static final String TABLE_EXPERIMENT = "Experiment";
     public static final String TABLE_RAW_FILE = "RawFile";
     public static final String TABLE_PROTEIN_GROUP = "ProteinGroup";
+    public static final String TABLE_PROTEIN_GROUP_TMT = "ProteinGroupTMT";
     public static final String TABLE_PROTEIN_GROUP_EXPERIMENT_INFO = "ProteinGroupExperimentInfo";
     public static final String TABLE_PROTEIN_GROUP_RATIOS_SILAC = "ProteinGroupRatiosSilac";
     public static final String TABLE_PROTEIN_GROUP_INTENSITY_SILAC = "ProteinGroupIntensitySilac";
     public static final String TABLE_PEPTIDE = "Peptide";
+    public static final String TABLE_PEPTIDE_TMT = "PeptideTMT";
     public static final String TABLE_PROTEIN_GROUP_PEPTIDE = "ProteinGroupPeptide";
     public static final String TABLE_MODIFIED_PEPTIDE = "ModifiedPeptide";
+    public static final String TABLE_MODIFIED_PEPTIDE_TMT = "ModifiedPeptideTMT";
     public static final String TABLE_EVIDENCE = "Evidence";
+    public static final String TABLE_EVIDENCE_TMT = "EvidenceTMT";
     public static final String TABLE_EVIDENCE_INETNSITY_SILAC = "EvidenceIntensitySilac";
     public static final String TABLE_EVIDENCE_RATIO_SILAC = "EvidenceRatioSilac";
+    public static final String TABLE_TMT_CHANNEL = "TMTChannel";
 
     private static final String PROTOCOL_PATTERN_PREFIX = "urn:lsid:%:Protocol.%:";
 
@@ -303,15 +308,20 @@ public class MqSchema extends SimpleUserSchema
         hs.add(TABLE_EXPERIMENT);
         hs.add(TABLE_RAW_FILE);
         hs.add(TABLE_PROTEIN_GROUP);
+        hs.add(TABLE_PROTEIN_GROUP_TMT);
         hs.add(TABLE_PROTEIN_GROUP_EXPERIMENT_INFO);
         hs.add(TABLE_PROTEIN_GROUP_RATIOS_SILAC);
         hs.add(TABLE_PROTEIN_GROUP_INTENSITY_SILAC);
         hs.add(TABLE_PEPTIDE);
+        hs.add(TABLE_PEPTIDE_TMT);
         hs.add(TABLE_PROTEIN_GROUP_PEPTIDE);
         hs.add(TABLE_MODIFIED_PEPTIDE);
+        hs.add(TABLE_MODIFIED_PEPTIDE_TMT);
         hs.add(TABLE_EVIDENCE);
+        hs.add(TABLE_EVIDENCE_TMT);
         hs.add(TABLE_EVIDENCE_INETNSITY_SILAC);
         hs.add(TABLE_EVIDENCE_RATIO_SILAC);
+        hs.add(TABLE_TMT_CHANNEL);
         return hs;
     }
 }

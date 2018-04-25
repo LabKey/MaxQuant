@@ -64,6 +64,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         pgRow.setReverse(getBooleanValue(row, Reverse));
         pgRow.setContaminant(getBooleanValue(row, PotentialContaminant));
         pgRow.setMaxQuantId(getIntValue(row, MaxQuantId));
+        pgRow.setTMTInfos(getTMTInfosFromRow(row, experiments));
 
         for(Experiment experiment: experiments)
         {
@@ -134,7 +135,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         private boolean _reverse;
         private boolean _contaminant;
 
-        private Map<Experiment, ExperimentInfo> _experimentIntensity = new HashMap<Experiment, ExperimentInfo>();
+        private Map<Experiment, ExperimentInfo> _experimentIntensity = new HashMap<>();
 
         // Ratios for SILAC experiment
         private Map<Experiment, List<SilacRatio>> _experimentRatios = new HashMap<>();

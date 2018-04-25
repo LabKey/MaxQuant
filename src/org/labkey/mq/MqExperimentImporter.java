@@ -2,7 +2,6 @@ package org.labkey.mq;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.data.SimpleFilter;
@@ -17,15 +16,21 @@ import org.labkey.api.util.FileUtil;
 import org.labkey.mq.model.Evidence;
 import org.labkey.mq.model.EvidenceIntensitySilac;
 import org.labkey.mq.model.EvidenceRatioSilac;
+import org.labkey.mq.model.EvidenceTMT;
 import org.labkey.mq.model.Experiment;
 import org.labkey.mq.model.ExperimentGroup;
 import org.labkey.mq.model.ModifiedPeptide;
+import org.labkey.mq.model.ModifiedPeptideTMT;
 import org.labkey.mq.model.Peptide;
+import org.labkey.mq.model.PeptideTMT;
 import org.labkey.mq.model.ProteinGroup;
 import org.labkey.mq.model.ProteinGroupExperimentInfo;
 import org.labkey.mq.model.ProteinGroupIntensitySilac;
 import org.labkey.mq.model.ProteinGroupRatioSilac;
+import org.labkey.mq.model.ProteinGroupTMT;
 import org.labkey.mq.model.RawFile;
+import org.labkey.mq.model.TMTChannel;
+import org.labkey.mq.model.TMTInfo;
 import org.labkey.mq.parser.EvidenceParser;
 import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.parser.ModifiedPeptidesParser;
@@ -36,7 +41,6 @@ import org.labkey.mq.query.ModifiedPeptideManager;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +57,10 @@ public class MqExperimentImporter
     private String _description;
 
     private int _experimentGroupId;
+    private Map<Integer, Integer> _maxQuantProteinGroupIdToDbId;
+    private Map<Integer, Integer> _maxQuantPeptideIdToDbId;
+    private Map<Integer, Integer> _maxQuantModifiedPeptideIdToDbId;
+    private Map<Integer, Integer> _maxQuantTMTChannelToDbId;
 
     // Use passed in logger for import status, information, and file format problems.  This should
     // end up in the pipeline log.
@@ -152,16 +160,16 @@ public class MqExperimentImporter
                 }
 
                 // Parse proteinGroups.txt;
-                Map<Integer, Integer> maxQuantProteinGroupIdToDbId = parseProteinGroups(experimentGroup, txtDir);
+                parseProteinGroups(txtDir, experimentGroup);
 
                 // Parse peptides.txt;
-                Map<Integer, Integer> maxQuantPeptideIdToDbId = parsePeptides(txtDir, maxQuantProteinGroupIdToDbId);
+                parsePeptides(txtDir, experimentGroup);
 
                 // Parse modificationSpecificPeptides.txt (note: this file is optional)
-                Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId = parseModifiedPeptides(txtDir, maxQuantPeptideIdToDbId);
+                parseModifiedPeptides(txtDir, experimentGroup);
 
                 // parse evidence.txt
-                parseEvidence(txtDir, experimentGroup, maxQuantPeptideIdToDbId, maxQuantModifiedPeptideIdToDbId, derivedExperimentName);
+                parseEvidence(txtDir, experimentGroup, derivedExperimentName);
 
                 transaction.commit();
             }
@@ -189,10 +197,8 @@ public class MqExperimentImporter
         }
     }
 
-    private Map<Integer, Integer> parseProteinGroups(ExperimentGroup experimentGroup, File txtDir)
+    private void parseProteinGroups(File txtDir, ExperimentGroup experimentGroup)
     {
-        Map<Integer, Integer> maxQuantProteinGroupIdToDbId = new HashMap<>();
-
         File proteinGrpsFile = new File(txtDir, ProteinGroupsParser.FILE);
         if(!proteinGrpsFile.exists())
         {
@@ -204,6 +210,8 @@ public class MqExperimentImporter
         int count = 0;
         ProteinGroupsParser pgParser = new ProteinGroupsParser(proteinGrpsFile);
         ProteinGroupsParser.ProteinGroupRow row;
+        _maxQuantProteinGroupIdToDbId = new HashMap<>();
+        _maxQuantTMTChannelToDbId = new HashMap<>();
         while((row = pgParser.nextProteinGroup(experimentGroup.getExperiments())) != null)
         {
             ProteinGroup pg = new ProteinGroup();
@@ -212,7 +220,7 @@ public class MqExperimentImporter
             pg.copyFrom(row);
 
             Table.insert(_user, MqManager.getTableInfoProteinGroup(), pg);
-            maxQuantProteinGroupIdToDbId.put(pg.getMaxQuantId(), pg.getId());
+            _maxQuantProteinGroupIdToDbId.put(pg.getMaxQuantId(), pg.getId());
 
             Map<Experiment, ProteinGroupsParser.ExperimentInfo> experimentCoverages = row.getExperimentInfos();
             for(Map.Entry<Experiment, ProteinGroupsParser.ExperimentInfo> entry: experimentCoverages.entrySet())
@@ -269,12 +277,34 @@ public class MqExperimentImporter
                 }
             }
 
+            for (TMTInfo tmtInfo : row.getTMTInfos())
+            {
+                // ensure that the distinct tagNumbers are added to the TMTChannel table
+                if (_maxQuantTMTChannelToDbId.get(tmtInfo.getTagNumber()) == null)
+                {
+                    TMTChannel tmtChannel = new TMTChannel();
+                    tmtChannel.setContainer(_container);
+                    tmtChannel.setExperimentGroupId(_experimentGroupId);
+                    tmtChannel.setTagNumber(tmtInfo.getTagNumber());
+                    Table.insert(_user, MqManager.getTableInfoTMTChannel(), tmtChannel);
+                    _maxQuantTMTChannelToDbId.put(tmtInfo.getTagNumber(), tmtChannel.getId());
+                }
+
+                // update the record with the DB id for the TMTChannel
+                Integer tmtChannelId = _maxQuantTMTChannelToDbId.get(tmtInfo.getTagNumber());
+                tmtInfo.setTMTChannelId(tmtChannelId);
+
+                ProteinGroupTMT proteinGroupTMT = new ProteinGroupTMT();
+                proteinGroupTMT.setContainer(_container);
+                proteinGroupTMT.setProteinGroupId(pg.getId());
+                proteinGroupTMT.copyFrom(tmtInfo);
+                Table.insert(_user, MqManager.getTableInfoProteinGroupTMT(), proteinGroupTMT);
+            }
+
             printStatus(++count, 200, "protein groups");
         }
 
         logFileProcessingEnd(proteinGrpsFile.getPath(), count + " protein groups");
-
-        return maxQuantProteinGroupIdToDbId;
     }
 
     private void logFileProcessingStart(String file)
@@ -295,11 +325,9 @@ public class MqExperimentImporter
         }
     }
 
-    private Map<Integer, Integer> parsePeptides(File txtDir, Map<Integer, Integer> maxQuantProteinGroupIdToDbId)
+    private void parsePeptides(File txtDir, ExperimentGroup experimentGroup)
     {
         File peptidesFile = new File(txtDir, PeptidesParser.FILE);
-        Map<Integer, Integer> maxQuantPeptideIdToDbId = new HashMap<>();
-
         if(!peptidesFile.exists())
         {
             throw new MqParserException("Could not find " + peptidesFile.getName() + " in " + txtDir.getPath());
@@ -310,19 +338,19 @@ public class MqExperimentImporter
         int count = 0;
         PeptidesParser pepParser = new PeptidesParser(peptidesFile);
         PeptidesParser.PeptideRow row;
-        while((row = pepParser.nextPeptide()) != null)
+        _maxQuantPeptideIdToDbId = new HashMap<>();
+        while((row = pepParser.nextPeptide(experimentGroup.getExperiments())) != null)
         {
             Peptide peptide = new Peptide(row);
             peptide.setExperimentGroupId(_experimentGroupId);
             peptide.setContainer(_container);
 
             Table.insert(_user, MqManager.getTableInfoPeptide(), peptide);
-
-            maxQuantPeptideIdToDbId.put(peptide.getMaxQuantId(), peptide.getId());
+            _maxQuantPeptideIdToDbId.put(peptide.getMaxQuantId(), peptide.getId());
 
             for(int mqProteinGroupId: row.getMaxQuantProteinGroupIds())
             {
-                Integer proteinGroupId = maxQuantProteinGroupIdToDbId.get(mqProteinGroupId);
+                Integer proteinGroupId = _maxQuantProteinGroupIdToDbId.get(mqProteinGroupId);
                 if (proteinGroupId == null)
                     throw new MqParserException("Could not find database ID for MaxQuant protein group ID " + mqProteinGroupId);
 
@@ -333,30 +361,43 @@ public class MqExperimentImporter
                 Table.insert(_user, MqManager.getTableInfoProteinGroupPeptide(), mapping);
             }
 
+            for (TMTInfo tmtInfo : row.getTMTInfos())
+            {
+                // update the record with the DB id for the TMTChannel
+                Integer tmtChannelId = _maxQuantTMTChannelToDbId.get(tmtInfo.getTagNumber());
+                if (tmtChannelId == null)
+                    throw new MqParserException("Could not find database ID for MaxQuant TMT Channel " + tmtInfo.getTagNumber());
+                tmtInfo.setTMTChannelId(tmtChannelId);
+
+                PeptideTMT peptideTMT = new PeptideTMT();
+                peptideTMT.setContainer(_container);
+                peptideTMT.setPeptideId(peptide.getId());
+                peptideTMT.copyFrom(tmtInfo);
+                Table.insert(_user, MqManager.getTableInfoPeptideTMT(), peptideTMT);
+            }
+
             printStatus(++count, 5000, "peptides");
         }
 
         logFileProcessingEnd(peptidesFile.getPath(), count + " peptides");
-
-        return maxQuantPeptideIdToDbId;
     }
 
-    private Map<Integer, Integer> parseModifiedPeptides(File txtDir, Map<Integer, Integer> maxQuantPeptideIdToDbId)
+    private void parseModifiedPeptides(File txtDir, ExperimentGroup experimentGroup)
     {
         File modifiedPeptidesFile = new File(txtDir, ModifiedPeptidesParser.FILE);
         if (!modifiedPeptidesFile.exists())
-            return null;
+            return;
 
         logFileProcessingStart(modifiedPeptidesFile.getPath());
 
         int count = 0;
         ModifiedPeptidesParser pepParser = new ModifiedPeptidesParser(modifiedPeptidesFile);
         ModifiedPeptidesParser.ModifiedPeptideRow row;
-        Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId = new HashMap<>();
-        while((row = pepParser.nextModifiedPeptide()) != null)
+        _maxQuantModifiedPeptideIdToDbId = new HashMap<>();
+        while((row = pepParser.nextModifiedPeptide(experimentGroup.getExperiments())) != null)
         {
             ModifiedPeptide modPeptide = new ModifiedPeptide(row);
-            Integer peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            Integer peptideId = _maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
             if (peptideId == null)
                 throw new MqParserException("Could not find database ID for MaxQuant peptide ID " + row.getMaxQuantPeptideId());
 
@@ -364,19 +405,30 @@ public class MqExperimentImporter
             modPeptide.setContainer(_container);
 
             Table.insert(_user, MqManager.getTableInfoModifiedPeptide(), modPeptide);
+            _maxQuantModifiedPeptideIdToDbId.put(modPeptide.getMaxQuantId(), modPeptide.getId());
 
-            maxQuantModifiedPeptideIdToDbId.put(modPeptide.getMaxQuantId(), modPeptide.getId());
+            for (TMTInfo tmtInfo : row.getTMTInfos())
+            {
+                // update the record with the DB id for the TMTChannel
+                Integer tmtChannelId = _maxQuantTMTChannelToDbId.get(tmtInfo.getTagNumber());
+                if (tmtChannelId == null)
+                    throw new MqParserException("Could not find database ID for MaxQuant TMT Channel " + tmtInfo.getTagNumber());
+                tmtInfo.setTMTChannelId(tmtChannelId);
+
+                ModifiedPeptideTMT modifiedPeptideTMT = new ModifiedPeptideTMT();
+                modifiedPeptideTMT.setContainer(_container);
+                modifiedPeptideTMT.setModifiedPeptideId(modPeptide.getId());
+                modifiedPeptideTMT.copyFrom(tmtInfo);
+                Table.insert(_user, MqManager.getTableInfoModifiedPeptideTMT(), modifiedPeptideTMT);
+            }
 
             printStatus(++count, 5000, "modified peptides");
         }
 
         logFileProcessingEnd(modifiedPeptidesFile.getPath(), count + " modified peptides");
-
-        return maxQuantModifiedPeptideIdToDbId;
     }
 
-    private void parseEvidence(File txtDir, ExperimentGroup experimentGroup, Map<Integer, Integer> maxQuantPeptideIdToDbId,
-                               @Nullable Map<Integer, Integer> maxQuantModifiedPeptideIdToDbId, String derivedExperimentName)
+    private void parseEvidence(File txtDir, ExperimentGroup experimentGroup, String derivedExperimentName)
     {
         File evidenceFile = new File(txtDir, EvidenceParser.FILE);
 
@@ -403,18 +455,18 @@ public class MqExperimentImporter
         }
         int count = 0;
 
-        while((row = pepParser.nextEvidence(derivedExperimentName)) != null)
+        while((row = pepParser.nextEvidence(experimentGroup.getExperiments(), derivedExperimentName)) != null)
         {
             Evidence evidence = new Evidence(row);
             evidence.setContainer(_container);
-            Integer peptideId = maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
+            Integer peptideId = _maxQuantPeptideIdToDbId.get(row.getMaxQuantPeptideId());
             if (peptideId == null)
                 throw new MqParserException("Could not find database ID for MaxQuant peptide ID " + row.getMaxQuantPeptideId());
             evidence.setPeptideId(peptideId);
 
-            if (maxQuantModifiedPeptideIdToDbId != null)
+            if (_maxQuantModifiedPeptideIdToDbId != null)
             {
-                Integer modifiedPeptideId = maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
+                Integer modifiedPeptideId = _maxQuantModifiedPeptideIdToDbId.get(row.getMaxQuantModifiedPeptideId());
                 if (modifiedPeptideId == null)
                     throw new MqParserException("Could not find database ID for MaxQuant modified peptide ID " + row.getMaxQuantModifiedPeptideId());
                 evidence.setModifiedPeptideId(modifiedPeptideId);
@@ -473,6 +525,21 @@ public class MqExperimentImporter
                 eiSilac.setLabelType(entry.getKey());
                 eiSilac.setIntensity(entry.getValue());
                 Table.insert(_user, MqManager.getTableInfoEvidenceIntensitySilac(), eiSilac);
+            }
+
+            for (TMTInfo tmtInfo : row.getTMTInfos())
+            {
+                // update the record with the DB id for the TMTChannel
+                Integer tmtChannelId = _maxQuantTMTChannelToDbId.get(tmtInfo.getTagNumber());
+                if (tmtChannelId == null)
+                    throw new MqParserException("Could not find database ID for MaxQuant TMT Channel " + tmtInfo.getTagNumber());
+                tmtInfo.setTMTChannelId(tmtChannelId);
+
+                EvidenceTMT evidenceTMT = new EvidenceTMT();
+                evidenceTMT.setContainer(_container);
+                evidenceTMT.setEvidenceId(evidence.getId());
+                evidenceTMT.copyFrom(tmtInfo);
+                Table.insert(_user, MqManager.getTableInfoEvidenceTMT(), evidenceTMT);
             }
 
             printStatus(++count, 10000, "evidence");
