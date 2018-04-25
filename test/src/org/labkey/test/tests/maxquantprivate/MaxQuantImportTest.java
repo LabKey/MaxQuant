@@ -104,7 +104,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         log("Experiment Details for Protein Group");
         pushLocation();
         proteinGroupsTable.clickRowDetails(0);
-        ProteinGroupDetails proteinGroupDetails = validateProteinGroupDetails();
+        ProteinGroupDetails proteinGroupDetails = validateProteinGroupDetails(4);
         assertTrue("Missing download link for: proteinGroups.txt", proteinGroupDetails.hasFilesLinks(Arrays.asList("proteinGroups.txt")));
         assertEquals("Unexpected grid row count: IntensityAndCoverage", 3, proteinGroupDetails.getIntensityAndCoverageGrid().getDataRowCount());
         assertEquals("Unexpected grid row count: SilacRatios", 0, proteinGroupDetails.getSilacRatiosGrid().getDataRowCount());
@@ -115,7 +115,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         experimentGroupDetails = new ExperimentGroupDetails(getDriver());
         proteinGroupsTable = experimentGroupDetails.getProteinGroupsGrid();
         clickAndWait(proteinGroupsTable.link(0, "PeptideCount"));
-        proteinGroupDetails = validateProteinGroupDetails();
+        proteinGroupDetails = validateProteinGroupDetails(0);
         assertTrue("Missing download link for: peptides.txt", proteinGroupDetails.hasFilesLinks(Arrays.asList("peptides.txt")));
         DataRegionTable peptidesTable = proteinGroupDetails.getPeptidesGrid();
         assertEquals("Unexpected grid row count: Peptides", 3, peptidesTable.getDataRowCount());
@@ -134,13 +134,13 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         assertEquals("Unexpected grid row count: Evidence", 4, peptideDetails.getEvidenceGrid().getDataRowCount());
     }
 
-    private ProteinGroupDetails validateProteinGroupDetails()
+    private ProteinGroupDetails validateProteinGroupDetails(int countFromPivotGrid)
     {
         ProteinGroupDetails proteinGroupDetails = new ProteinGroupDetails(getDriver());
         assertElementPresent(Locator.tagWithText("td", "Q0VG06-3, Q0VG06, Q0VG06-2"), 1);
         assertElementPresent(Locator.tagWithText("td", "Q0VG06-3, Q0VG06"), 1);
-        assertTrue("Unexpected number of protein id links", proteinGroupDetails.hasProteinIdLink("Q0VG06-3", 1));
-        assertTrue("Unexpected number of protein id links", proteinGroupDetails.hasProteinIdLink("Q0VG06", 3));
+        assertTrue("Unexpected number of protein id links", proteinGroupDetails.hasProteinIdLink("Q0VG06-3", 1 + countFromPivotGrid));
+        assertTrue("Unexpected number of protein id links", proteinGroupDetails.hasProteinIdLink("Q0VG06", 3 + countFromPivotGrid));
         return proteinGroupDetails;
     }
 
