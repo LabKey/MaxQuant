@@ -81,15 +81,15 @@ public class MaxQuantImportTest extends BaseWebDriverTest
     public void testDetailsPages()
     {
         log("Experiment Runs (Imported MaxQuant Results) ");
-        DataRegionTable experimentGroupTable = new DataRegionTable("ExperimentGroup", this);
+        DataRegionTable experimentGroupTable = new DataRegionTable("ExperimentGroups", this);
         assertEquals("Unexpected number of experiment group rows", 1, experimentGroupTable.getDataRowCount());
-        assertEquals("Unexpected experiment run folder name", "txt", experimentGroupTable.getDataAsText(0, "ExperimentGroup/FolderName"));
-        assertEquals("Unexpected experiment run file name", "summary.txt", experimentGroupTable.getDataAsText(0, "ExperimentGroup/Filename"));
+        //assertEquals("Unexpected experiment run folder name", "txt", experimentGroupTable.getDataAsText(0, "ExperimentGroup/FolderName"));
+        assertEquals("Unexpected experiment run file name", "summary.txt", experimentGroupTable.getDataAsText(0, "FileName"));
         assertEquals("Unexpected experiment run protein groups count", ""+PROTEIN_GROUPS_COUNT, experimentGroupTable.getDataAsText(0, "ProteinGroups"));
         assertEquals("Unexpected experiment run peptides count", ""+PEPTIDES_COUNT, experimentGroupTable.getDataAsText(0, "Peptides"));
 
         log("Protein Groups for Experiment Group");
-        clickAndWait(experimentGroupTable.link(0, "ExperimentGroup"));
+        clickAndWait(experimentGroupTable.link(0, "Id"));
         ExperimentGroupDetails experimentGroupDetails = new ExperimentGroupDetails(getDriver());
         assertEquals("Unexpected protein groups link", PROTEIN_GROUPS_COUNT, experimentGroupDetails.getProteinGroupsCount());
         assertEquals("Unexpected peptides link", PEPTIDES_COUNT, experimentGroupDetails.getPeptidesCount());
