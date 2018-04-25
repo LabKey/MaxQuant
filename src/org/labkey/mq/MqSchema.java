@@ -74,6 +74,12 @@ public class MqSchema extends SimpleUserSchema
     public static final String TABLE_EVIDENCE_RATIO_SILAC = "EvidenceRatioSilac";
     public static final String TABLE_TMT_CHANNEL = "TMTChannel";
 
+    public static final String QUERY_EVIDENCE_RATIO_SILAC_PIVOT = "EvidenceRatioSilacPivot";
+    public static final String QUERY_PROTEIN_GROUP_TMT_PIVOT = "ProteinGroupTMTPivot";
+    public static final String QUERY_PEPTIDE_TMT_PIVOT = "PeptideTMTPivot";
+    public static final String QUERY_MODIFIED_PEPTIDE_TMT_PIVOT = "ModifiedPeptideTMTPivot";
+    public static final String QUERY_EVIDENCE_TMT_PIVOT = "EvidenceTMTPivot";
+
     private static final String PROTOCOL_PATTERN_PREFIX = "urn:lsid:%:Protocol.%:";
 
     private ExpSchema _expSchema;

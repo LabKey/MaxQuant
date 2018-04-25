@@ -81,13 +81,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.labkey.mq.MqSchema.QUERY_PEPTIDE_TMT_PIVOT;
+import static org.labkey.mq.MqSchema.QUERY_PROTEIN_GROUP_TMT_PIVOT;
 import static org.labkey.mq.MqSchema.TABLE_PEPTIDE;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_INTENSITY_SILAC;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC;
-import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_TMT;
 
 public class MqController extends SpringActionController
 {
@@ -551,8 +552,8 @@ public class MqController extends SpringActionController
             QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
             silacInteisitiesView.setTitle("Silac Intensities");
 
-            // ProteinGroupTMT table
-            QuerySettings s4 = getQuerySettings("TMT", TABLE_PROTEIN_GROUP_TMT, form.getId());
+            // ProteinGroupTMT pivot query
+            QuerySettings s4 = getQuerySettings(QUERY_PROTEIN_GROUP_TMT_PIVOT, QUERY_PROTEIN_GROUP_TMT_PIVOT, form.getId());
             QueryView tmtView = new QueryView(new MqSchema(getUser(), getContainer()), s4, errors);
             tmtView.setTitle("TMT");
 
@@ -628,9 +629,16 @@ public class MqController extends SpringActionController
             QueryView evidenceGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             evidenceGridView.setTitle("Evidence");
 
+            // PeptideTMT pivot query
+            QuerySettings tmtPivotSettings = new QuerySettings(getViewContext(), QUERY_PEPTIDE_TMT_PIVOT, QUERY_PEPTIDE_TMT_PIVOT);
+            tmtPivotSettings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideId"), form.getId()));
+            QueryView tmtGridView = new QueryView(new MqSchema(getUser(), getContainer()), tmtPivotSettings, errors);
+            tmtGridView.setTitle("TMT");
+
             VBox view = new VBox();
             view.addView(detailsBox);
             view.addView(evidenceGridView);
+            view.addView(tmtGridView);
             return view;
         }
     }
