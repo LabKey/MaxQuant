@@ -28,14 +28,20 @@ import org.labkey.api.module.FolderTypeManager;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.protein.ProteinService;
+import org.labkey.api.query.QueryService;
+import org.labkey.api.query.QuerySettings;
+import org.labkey.api.query.QueryView;
+import org.labkey.api.query.UserSchema;
 import org.labkey.api.services.ServiceRegistry;
 import org.labkey.api.view.BaseWebPartFactory;
+import org.labkey.api.view.HtmlView;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.api.view.WebPartView;
 import org.labkey.mq.parser.SummaryTemplateParser;
+import org.springframework.validation.BindException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,11 +49,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static org.labkey.mq.MqSchema.TABLE_EXPERIMENT_GROUP_DETAILS;
+
 public class MqModule extends DefaultModule
 {
     public static final String NAME = "mq";
     public static final ExperimentRunType EXP_RUN_TYPE = new MqExperimentRunType();
     public static final String SEARCH_WEBPART_NAME = "MaxQuant Protein Search";
+    public static final String EXPERIMENT_GROUPS_WEBPART_NAME = "Experiment Groups";
 
     // Protocol prefix for importing .zip archives from Skyline
     public static final String IMPORT_MQ_PROTOCOL_OBJECT_PREFIX = "MaxQuant.Import";
@@ -124,8 +133,26 @@ public class MqModule extends DefaultModule
             }
         };
 
+        BaseWebPartFactory expGroupsSearchWebPart = new BaseWebPartFactory(EXPERIMENT_GROUPS_WEBPART_NAME)
+        {
+            @Override
+            public WebPartView getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
+            {
+                UserSchema schema = QueryService.get().getUserSchema(portalCtx.getUser(), portalCtx.getContainer(), MqSchema.NAME);
+                if (null == schema)
+                    return new HtmlView(EXPERIMENT_GROUPS_WEBPART_NAME, "Schema 'mq' could not be found.");
+
+                BindException errors = new BindException(new Object(), "dummy");
+                QuerySettings settings = new QuerySettings(portalCtx, "ExperimentGroups", TABLE_EXPERIMENT_GROUP_DETAILS);
+                QueryView view = schema.createView(portalCtx, settings, errors);
+                view.setTitle(EXPERIMENT_GROUPS_WEBPART_NAME);
+                return view;
+            }
+        };
+
         List<WebPartFactory> webpartFactoryList = new ArrayList<>();
         webpartFactoryList.add(proteinSearchWebPart);
+        webpartFactoryList.add(expGroupsSearchWebPart);
         return webpartFactoryList;
     }
 

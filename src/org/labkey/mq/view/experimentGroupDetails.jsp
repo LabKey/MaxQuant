@@ -37,15 +37,15 @@
     +function ($) {
         LABKEY.Query.selectRows({
             schemaName: 'mq',
-            queryName: 'ExperimentGroup',
-            filterArray: LABKEY.Filter.create('ExperimentGroup', <%=bean.getId()%>),
+            queryName: 'ExperimentGroupDetails',
+            filterArray: [LABKEY.Filter.create('Id', <%=bean.getId()%>)],
             requiredVersion: '17.1',
-            columns: 'ExperimentGroup, ExperimentGroup/ProteinGroups, ExperimentGroup/Peptides',
+            columns: 'Id, ProteinGroups, Peptides',
             success: function(data) {
                 if (data.rows.length === 1) {
                     var row = data.rows[0];
-                    showValue('lk-mq-proteingroups', row.data['ExperimentGroup/ProteinGroups']);
-                    showValue('lk-mq-peptides', row.data['ExperimentGroup/Peptides']);
+                    showValue('lk-mq-proteingroups', row.data['ProteinGroups']);
+                    showValue('lk-mq-peptides', row.data['Peptides']);
                 }
                 else {
                     showValue('lk-mq-proteingroups', null);

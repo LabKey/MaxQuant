@@ -24,6 +24,7 @@ import org.labkey.api.view.ViewContext;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.labkey.mq.MqModule.EXPERIMENT_GROUPS_WEBPART_NAME;
 import static org.labkey.mq.MqModule.SEARCH_WEBPART_NAME;
 
 /**
@@ -42,7 +43,7 @@ public class MqFolderType extends MultiPortalFolderType
             Collections.<Portal.WebPart>emptyList(),
             Arrays.asList(
                     Portal.getPortalPart(SEARCH_WEBPART_NAME).createWebPart(),
-                    Portal.getPortalPart("Experiment Runs").createWebPart(),
+                    Portal.getPortalPart(EXPERIMENT_GROUPS_WEBPART_NAME).createWebPart(),
                     Portal.getPortalPart("Data Pipeline").createWebPart()
             ),
             getDefaultModuleSet(module, getModule("mq"), getModule("Pipeline"), getModule("Experiment")),

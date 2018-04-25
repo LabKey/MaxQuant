@@ -82,6 +82,7 @@ import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_INTENSITY_SILAC;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC;
+import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_TMT;
 
 public class MqController extends SpringActionController
 {
@@ -514,11 +515,17 @@ public class MqController extends SpringActionController
             QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
             silacInteisitiesView.setTitle("Silac Intensities");
 
+            // ProteinGroupTMT table
+            QuerySettings s4 = getQuerySettings("TMT", TABLE_PROTEIN_GROUP_TMT, form.getId());
+            QueryView tmtView = new QueryView(new MqSchema(getUser(), getContainer()), s4, errors);
+            tmtView.setTitle("TMT");
+
             VBox view = new VBox();
             view.addView(detailsBox);
             view.addView(protGrpExpInfoView);
             view.addView(silacRatiosView);
             view.addView(silacInteisitiesView);
+            view.addView(tmtView);
             return view;
         }
 

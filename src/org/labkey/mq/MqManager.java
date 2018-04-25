@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
 import org.fhcrc.cpas.exp.xml.ExperimentArchiveDocument;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.DbScope;
@@ -321,12 +322,13 @@ public class MqManager
     }
 
     // pulled out into separate method so could be called by itself from data handlers
-    public static void markDeleted(List<Integer> runIds, Container c, User user)
+    public static void markDeleted(@Nullable List<Integer> runIds, Container c, User user)
     {
         SQLFragment markDeleted = new SQLFragment("UPDATE " + getTableInfoExperimentGroup() + " SET ExperimentRunLSID = NULL, Deleted=?, Modified=? ", Boolean.TRUE, new Date());
         SimpleFilter where = new SimpleFilter();
         where.addCondition(FieldKey.fromParts("Container"), c.getId());
-        where.addInClause(FieldKey.fromParts("Id"), runIds);
+        if (runIds != null)
+            where.addInClause(FieldKey.fromParts("Id"), runIds);
         markDeleted.append(where.getSQLFragment(getSqlDialect()));
 
         new SqlExecutor(getSchema()).execute(markDeleted);

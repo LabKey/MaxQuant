@@ -54,7 +54,7 @@ public class MqImportPipelineJob extends PipelineJob
         boolean completeStatus = false;
         try
         {
-            XarContext context = new XarContext(getDescription(), getContainer(), getUser());
+            XarContext context = new XarContext(this);
             MqExperimentImporter importer = new MqExperimentImporter(getUser(), getContainer(), getDescription(), _expData, getLogger(), context);
             ExperimentGroup expGrp = importer.importExperiment(_runInfo);
 
