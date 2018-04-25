@@ -1,14 +1,20 @@
 package org.labkey.mq.query;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.AbstractTableInfo;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.exp.query.ExpSchema;
+import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryForeignKey;
+import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.security.UserPrincipal;
+import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.view.ActionURL;
 import org.labkey.mq.MqController;
 import org.labkey.mq.MqManager;
@@ -32,7 +38,10 @@ public class ExperimentGroupTable extends DefaultMqTable
         ActionURL detailsUrl = new ActionURL(MqController.ViewProteinGroupsAction.class, getContainer());
         setDetailsURL(new DetailsURL(detailsUrl, "id", FieldKey.fromParts("Id")));
 
-        // only allow delete
+        // add explicit delete url to allow for deletion of a partially imported results set (i.e. failed pipeline job)
+        ActionURL deleteUrl = new ActionURL(MqController.DeleteExperimentGroupsAction.class, getContainer());
+        setDeleteURL(new DetailsURL(deleteUrl));
+
         setInsertURL(AbstractTableInfo.LINK_DISABLER);
         setImportURL(AbstractTableInfo.LINK_DISABLER);
         setUpdateURL(AbstractTableInfo.LINK_DISABLER);
@@ -84,5 +93,17 @@ public class ExperimentGroupTable extends DefaultMqTable
         sqlFragment.append(" WHERE p.ExperimentGroupId = ");
         sqlFragment.append(ExprColumn.STR_TABLE_ALIAS + ".Id");
         return sqlFragment;
+    }
+
+    @Override
+    public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
+    {
+        return getContainer().hasPermission(user, perm);
+    }
+
+    @Override
+    public @Nullable QueryUpdateService getUpdateService()
+    {
+        return new DefaultQueryUpdateService(this, getRealTable());
     }
 }

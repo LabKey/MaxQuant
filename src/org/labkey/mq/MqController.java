@@ -18,6 +18,7 @@ package org.labkey.mq;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.labkey.api.action.FormHandlerAction;
 import org.labkey.api.action.RedirectAction;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
@@ -26,6 +27,7 @@ import org.labkey.api.data.ButtonBar;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DataRegion;
+import org.labkey.api.data.DataRegionSelection;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.exp.api.ExpData;
@@ -35,15 +37,18 @@ import org.labkey.api.exp.api.ExperimentUrls;
 import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.browse.PipelinePathForm;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.query.QueryForm;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.RequiresPermission;
+import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.NetworkDrive;
 import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.util.URLHelper;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.DetailsView;
 import org.labkey.api.view.HtmlView;
@@ -273,6 +278,37 @@ public class MqController extends SpringActionController
         public void setFileName(String fileName)
         {
             _fileName = fileName;
+        }
+    }
+
+    @RequiresPermission(DeletePermission.class)
+    public class DeleteExperimentGroupsAction extends FormHandlerAction<QueryForm>
+    {
+        private ActionURL _returnURL;
+
+        @Override
+        public void validateCommand(QueryForm target, Errors errors)
+        {
+        }
+
+        @Override
+        public boolean handlePost(QueryForm form, BindException errors)
+        {
+            _returnURL = form.getReturnActionURL();
+
+            List<Integer> rowIds = new ArrayList<>();
+            for (String selectedIdStr : DataRegionSelection.getSelected(getViewContext(), true))
+                rowIds.add(Integer.parseInt(selectedIdStr));
+
+            MqManager.markDeleted(rowIds, getContainer(), getUser());
+            MqManager.purgeDeletedExperimentGroups();
+            return true;
+        }
+
+        @Override
+        public URLHelper getSuccessURL(QueryForm form)
+        {
+            return _returnURL;
         }
     }
 
