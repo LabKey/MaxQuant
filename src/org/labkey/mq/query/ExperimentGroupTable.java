@@ -2,7 +2,6 @@ package org.labkey.mq.query;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.labkey.api.data.AbstractTableInfo;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
@@ -14,6 +13,7 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.security.UserPrincipal;
+import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.view.ActionURL;
 import org.labkey.mq.MqController;
@@ -41,10 +41,6 @@ public class ExperimentGroupTable extends DefaultMqTable
         // add explicit delete url to allow for deletion of a partially imported results set (i.e. failed pipeline job)
         ActionURL deleteUrl = new ActionURL(MqController.DeleteExperimentGroupsAction.class, getContainer());
         setDeleteURL(new DetailsURL(deleteUrl));
-
-        setInsertURL(AbstractTableInfo.LINK_DISABLER);
-        setImportURL(AbstractTableInfo.LINK_DISABLER);
-        setUpdateURL(AbstractTableInfo.LINK_DISABLER);
 
         ExpSchema expSchema = new ExpSchema(getUserSchema().getUser(), getContainer());
         getColumn("ExperimentRunLSID").setFk(new QueryForeignKey(expSchema, getContainer(), "Runs", "LSID", null, true));
@@ -98,7 +94,7 @@ public class ExperimentGroupTable extends DefaultMqTable
     @Override
     public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
     {
-        return getContainer().hasPermission(user, perm);
+        return perm.equals(DeletePermission.class) && getContainer().hasPermission(user, perm);
     }
 
     @Override
