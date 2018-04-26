@@ -109,6 +109,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         assertEquals("Unexpected grid row count: IntensityAndCoverage", 3, proteinGroupDetails.getIntensityAndCoverageGrid().getDataRowCount());
         assertEquals("Unexpected grid row count: SilacRatios", 0, proteinGroupDetails.getSilacRatiosGrid().getDataRowCount());
         assertEquals("Unexpected grid row count: SilacIntensities", 0, proteinGroupDetails.getSilacIntensitiesGrid().getDataRowCount());
+        assertEquals("Unexpected grid row count: TMT", 4, proteinGroupDetails.getProteinGroupTMTPivotGrid().getDataRowCount());
 
         log("Peptides for Protein Group");
         popLocation();
@@ -132,6 +133,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         assertEquals("Unexpected peptide details value: End Position", "546", peptideDetails.getEndPosition());
         assertEquals("Unexpected peptide details value: Missed Cleavages", "2", peptideDetails.getMissedCleavages());
         assertEquals("Unexpected grid row count: Evidence", 4, peptideDetails.getEvidenceGrid().getDataRowCount());
+        assertEquals("Unexpected grid row count: Evidence", 4, peptideDetails.getPeptideTMTPivotGrid().getDataRowCount());
     }
 
     private ProteinGroupDetails validateProteinGroupDetails(int countFromPivotGrid)
@@ -227,6 +229,34 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         columnStats.put("LfqIntensity", new Pair<>("n/a", "n/a"));
         verifyQueryRowCountAndColumnStats("ProteinGroupExperimentInfo", 153, columnStats);
 
+        log("ProteinGroupTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("0::ReporterIntensity", new Pair<>("6,234,516.56", "30,561.36"));
+        columnStats.put("0::ReporterIntensityCorrected", new Pair<>("6,588,380.37", "32,295.98"));
+        columnStats.put("0::ReporterIntensityCount", new Pair<>("1,564", "7.667"));
+        verifyQueryRowCountAndColumnStats("ProteinGroupTMTPivot", 204, columnStats);
+
+        log("PeptideTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("3::ReporterIntensity", new Pair<>("9,002,574.96", "6,678.47"));
+        columnStats.put("3::ReporterIntensityCorrected", new Pair<>("8,805,197.14", "6,532.05"));
+        columnStats.put("3::ReporterIntensityCount", new Pair<>("1,868", "1.386"));
+        verifyQueryRowCountAndColumnStats("PeptideTMTPivot", 1348, columnStats);
+
+        log("ModifiedPeptideTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("6::ReporterIntensity", new Pair<>("20,769,467.04", "13,112.04"));
+        columnStats.put("6::ReporterIntensityCorrected", new Pair<>("20,394,903.94", "12,875.57"));
+        columnStats.put("6::ReporterIntensityCount", new Pair<>("4,018", "2.537"));
+        verifyQueryRowCountAndColumnStats("ModifiedPeptideTMTPivot", 1584, columnStats);
+
+        log("EvidenceTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("9::ReporterIntensity", new Pair<>("1,972,389.32", "1,155.47"));
+        columnStats.put("9::ReporterIntensityCorrected", new Pair<>("1,822,296.77", "1,067.54"));
+        columnStats.put("9::ReporterIntensityCount", new Pair<>("1,836", "1.076"));
+        verifyQueryRowCountAndColumnStats("EvidenceTMTPivot", 1707, columnStats);
+
         log("Other tables: row count validation");
         verifyQueryRowCountAndColumnStats("RawFile", 42, null);
         verifyQueryRowCountAndColumnStats("Experiment", 3, null);
@@ -244,7 +274,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
             assertEquals("Unexpected grid row count: " + tableName, rowCount, drt.getDataRowCount());
         else if (rowCount < 1000)
             drt.assertPaginationText(1, 100, rowCount);
-        // TODO issue with assertPaginationText for < 1,000
+        // TODO issue with assertPaginationText for > 1,000
 
         if (columnStats != null)
         {

@@ -31,6 +31,11 @@ public class ProteinGroupDetails extends BaseDetailsPage
         return getGrid("SilacIntensities");
     }
 
+    public DataRegionTable getProteinGroupTMTPivotGrid()
+    {
+        return getGrid("ProteinGroupTMTPivot");
+    }
+
     public DataRegionTable getPeptidesGrid()
     {
         return getGrid("Peptides");

@@ -50,4 +50,9 @@ public class PeptideDetails extends BaseDetailsPage
     {
         return getGrid("Evidence");
     }
+
+    public DataRegionTable getPeptideTMTPivotGrid()
+    {
+        return getGrid("PeptideTMTPivot");
+    }
 }
