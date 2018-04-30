@@ -225,6 +225,16 @@ public class MaxQuantTsvParser extends TsvParser
         info.setReporterIntensityCorrected(tryGetDoubleValue(row, TMT_REPORTER_INTENSITY_CORRECTED_PREFIX + tagPlusSuffix));
         info.setReporterIntensityCount(tryGetIntValue(row, TMT_REPORTER_INTENSITY_COUNT_PREFIX + tagPlusSuffix));
         info.setExperimentId(experiment != null ? experiment.getId() : null);
+
+        // Issue 34091: Improve log output for MaxQuant TMT results parsing
+        if (info.getMissingFields() != null)
+        {
+            String missingFieldMsg = "Missing required field(s) for TMT row";
+            if (experiment != null)
+                missingFieldMsg += " for experiment " + experiment.getExperimentName();
+            throw new MqParserException(super.getFileName(), row, missingFieldMsg + ": " + info.getMissingFields() + ".");
+        }
+
         return info;
     }
 }

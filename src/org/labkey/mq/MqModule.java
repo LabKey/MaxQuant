@@ -57,8 +57,6 @@ public class MqModule extends DefaultModule
     public static final ExperimentRunType EXP_RUN_TYPE = new MqExperimentRunType();
     public static final String SEARCH_WEBPART_NAME = "MaxQuant Protein Search";
     public static final String EXPERIMENT_GROUPS_WEBPART_NAME = "Experiment Groups";
-
-    // Protocol prefix for importing .zip archives from Skyline
     public static final String IMPORT_MQ_PROTOCOL_OBJECT_PREFIX = "MaxQuant.Import";
 
     @Override

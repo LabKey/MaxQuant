@@ -169,7 +169,7 @@ public class MqExperimentImporter
             // parse evidence.txt
             parseEvidence(txtDir, experimentGroup, derivedExperimentName);
 
-            _log.info("Completed import of Skyline document from " + run.getFileName());
+            _log.info("Completed import of MaxQuant document from " + run.getFileName());
 
             updateRunStatus(IMPORT_SUCCEEDED, STATUS_SUCCESS);
 

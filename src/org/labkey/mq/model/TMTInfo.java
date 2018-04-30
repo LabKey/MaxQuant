@@ -78,4 +78,24 @@ public class TMTInfo extends MqEntity
         setReporterIntensityCorrected(tmtInfo.getReporterIntensityCorrected());
         setReporterIntensityCount(tmtInfo.getReporterIntensityCount());
     }
+
+    public String getMissingFields()
+    {
+        String missing = "", sep = "";
+        if (getReporterIntensity() == null)
+        {
+            missing += "Reporter intensity";
+            sep = ", ";
+        }
+        if (getReporterIntensityCorrected() == null)
+        {
+            missing += sep + "Reporter intensity corrected";
+            sep = ", ";
+        }
+        if (getReporterIntensityCount() == null)
+        {
+            missing += sep + "Reporter intensity count";
+        }
+        return missing.length() > 0 ? missing : null;
+    }
 }
