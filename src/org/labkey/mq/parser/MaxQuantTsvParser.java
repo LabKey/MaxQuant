@@ -200,15 +200,20 @@ public class MaxQuantTsvParser extends TsvParser
         int tagNumber = 0;
         while (row.getValue(TMT_REPORTER_INTENSITY_PREFIX + tagNumber) != null)
         {
-            reporterIntensityInfos.add(getExperimentTMTInfoFromRow(row, tagNumber, null));
-
-            // also look for the experiment name specific columns
+            // Issue 34088: look for the experiment name specific columns, and fall back to the summary columns if no experiment columnns exist
+            boolean hasExperimentData = false;
             for (Experiment experiment : experiments)
             {
                 String tagPlusExperiment = tagNumber + " " + experiment.getExperimentName();
                 if (row.getValue(TMT_REPORTER_INTENSITY_PREFIX + tagPlusExperiment) != null)
+                {
                     reporterIntensityInfos.add(getExperimentTMTInfoFromRow(row, tagNumber, experiment));
+                    hasExperimentData = true;
+                }
             }
+
+            if (!hasExperimentData)
+                reporterIntensityInfos.add(getExperimentTMTInfoFromRow(row, tagNumber, null));
 
             tagNumber++;
         }

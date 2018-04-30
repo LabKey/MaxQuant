@@ -104,7 +104,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         log("Experiment Details for Protein Group");
         pushLocation();
         proteinGroupsTable.clickRowDetails(0);
-        ProteinGroupDetails proteinGroupDetails = validateProteinGroupDetails(4);
+        ProteinGroupDetails proteinGroupDetails = validateProteinGroupDetails(3);
         assertTrue("Missing download link for: proteinGroups.txt", proteinGroupDetails.hasFilesLinks(Arrays.asList("proteinGroups.txt")));
         assertEquals("Unexpected grid row count: IntensityAndCoverage", 3, proteinGroupDetails.getIntensityAndCoverageGrid().getDataRowCount());
         assertEquals("Unexpected grid row count: SilacRatios", 0, proteinGroupDetails.getSilacRatiosGrid().getDataRowCount());
@@ -231,24 +231,24 @@ public class MaxQuantImportTest extends BaseWebDriverTest
 
         log("ProteinGroupTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("0::ReporterIntensity", new Pair<>("6,234,516.56", "30,561.36"));
-        columnStats.put("0::ReporterIntensityCorrected", new Pair<>("6,588,380.37", "32,295.98"));
-        columnStats.put("0::ReporterIntensityCount", new Pair<>("1,564", "7.667"));
-        verifyQueryRowCountAndColumnStats("ProteinGroupTMTPivot", 204, columnStats);
+        columnStats.put("0::ReporterIntensity", new Pair<>("3,117,272.85", "20,374.33"));
+        columnStats.put("0::ReporterIntensityCorrected", new Pair<>("3,294,180.71", "21,530.59"));
+        columnStats.put("0::ReporterIntensityCount", new Pair<>("782", "5.111"));
+        verifyQueryRowCountAndColumnStats("ProteinGroupTMTPivot", 153, columnStats);
 
         log("PeptideTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("3::ReporterIntensity", new Pair<>("9,002,574.96", "6,678.47"));
-        columnStats.put("3::ReporterIntensityCorrected", new Pair<>("8,805,197.14", "6,532.05"));
-        columnStats.put("3::ReporterIntensityCount", new Pair<>("1,868", "1.386"));
-        verifyQueryRowCountAndColumnStats("PeptideTMTPivot", 1348, columnStats);
+        columnStats.put("3::ReporterIntensity", new Pair<>("4,501,291.92", "4,452.32"));
+        columnStats.put("3::ReporterIntensityCorrected", new Pair<>("4,402,597.13", "4,354.70"));
+        columnStats.put("3::ReporterIntensityCount", new Pair<>("934", "0.924"));
+        verifyQueryRowCountAndColumnStats("PeptideTMTPivot", 1011, columnStats);
 
         log("ModifiedPeptideTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("6::ReporterIntensity", new Pair<>("20,769,467.04", "13,112.04"));
-        columnStats.put("6::ReporterIntensityCorrected", new Pair<>("20,394,903.94", "12,875.57"));
-        columnStats.put("6::ReporterIntensityCount", new Pair<>("4,018", "2.537"));
-        verifyQueryRowCountAndColumnStats("ModifiedPeptideTMTPivot", 1584, columnStats);
+        columnStats.put("6::ReporterIntensity", new Pair<>("10,384,734.36", "8,741.36"));
+        columnStats.put("6::ReporterIntensityCorrected", new Pair<>("10,197,450.74", "8,583.71"));
+        columnStats.put("6::ReporterIntensityCount", new Pair<>("2,009", "1.691"));
+        verifyQueryRowCountAndColumnStats("ModifiedPeptideTMTPivot", 1188, columnStats);
 
         log("EvidenceTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
