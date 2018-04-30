@@ -107,9 +107,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         ProteinGroupDetails proteinGroupDetails = validateProteinGroupDetails(3);
         assertTrue("Missing download link for: proteinGroups.txt", proteinGroupDetails.hasFilesLinks(Arrays.asList("proteinGroups.txt")));
         assertEquals("Unexpected grid row count: IntensityAndCoverage", 3, proteinGroupDetails.getIntensityAndCoverageGrid().getDataRowCount());
-        assertEquals("Unexpected grid row count: SilacRatios", 0, proteinGroupDetails.getSilacRatiosGrid().getDataRowCount());
-        assertEquals("Unexpected grid row count: SilacIntensities", 0, proteinGroupDetails.getSilacIntensitiesGrid().getDataRowCount());
-        assertEquals("Unexpected grid row count: TMT", 4, proteinGroupDetails.getProteinGroupTMTPivotGrid().getDataRowCount());
+        assertEquals("Unexpected grid row count: TMT", 3, proteinGroupDetails.getProteinGroupTMTPivotGrid().getDataRowCount());
 
         log("Peptides for Protein Group");
         popLocation();
@@ -133,7 +131,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         assertEquals("Unexpected peptide details value: End Position", "546", peptideDetails.getEndPosition());
         assertEquals("Unexpected peptide details value: Missed Cleavages", "2", peptideDetails.getMissedCleavages());
         assertEquals("Unexpected grid row count: Evidence", 4, peptideDetails.getEvidenceGrid().getDataRowCount());
-        assertEquals("Unexpected grid row count: Evidence", 4, peptideDetails.getPeptideTMTPivotGrid().getDataRowCount());
+        assertEquals("Unexpected grid row count: Evidence", 3, peptideDetails.getPeptideTMTPivotGrid().getDataRowCount());
     }
 
     private ProteinGroupDetails validateProteinGroupDetails(int countFromPivotGrid)

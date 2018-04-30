@@ -543,6 +543,7 @@ public class MqController extends SpringActionController
         @Override
         public ModelAndView getView(IdForm form, BindException errors) throws Exception
         {
+            VBox view = new VBox();
             if (errors.hasErrors())
                 return new SimpleErrorView(errors);
 
@@ -556,33 +557,41 @@ public class MqController extends SpringActionController
             VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Protein Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
+            view.addView(detailsBox);
 
             // ProteinGroupExperimentInfo table
             QuerySettings s1 = getQuerySettings("IntensityAndCoverage", TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, form.getId());
             QueryView protGrpExpInfoView = new QueryView(new MqSchema(getUser(), getContainer()), s1, errors);
             protGrpExpInfoView.setTitle("Intensity And Coverage");
-
-            // ProteinGroupRatiosSilac table
-            QuerySettings s2 = getQuerySettings("SilacRatios", TABLE_PROTEIN_GROUP_RATIOS_SILAC, form.getId());
-            QueryView silacRatiosView = new QueryView(new MqSchema(getUser(), getContainer()), s2, errors);
-            silacRatiosView.setTitle("Silac Ratios");
-
-            // ProteinGroupIntensitySilac table
-            QuerySettings s3 = getQuerySettings("SilacIntensities", TABLE_PROTEIN_GROUP_INTENSITY_SILAC, form.getId());
-            QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
-            silacInteisitiesView.setTitle("Silac Intensities");
+            view.addView(protGrpExpInfoView);
 
             // ProteinGroupTMT pivot query
-            QuerySettings s4 = getQuerySettings(QUERY_PROTEIN_GROUP_TMT_PIVOT, QUERY_PROTEIN_GROUP_TMT_PIVOT, form.getId());
-            QueryView tmtView = new QueryView(new MqSchema(getUser(), getContainer()), s4, errors);
-            tmtView.setTitle("TMT");
+            if (ProteinGroupManager.hasData(MqManager.getTableInfoProteinGroupTMT(), form.getId(), getContainer()))
+            {
+                QuerySettings s4 = getQuerySettings(QUERY_PROTEIN_GROUP_TMT_PIVOT, QUERY_PROTEIN_GROUP_TMT_PIVOT, form.getId());
+                QueryView tmtView = new QueryView(new MqSchema(getUser(), getContainer()), s4, errors);
+                tmtView.setTitle("TMT");
+                view.addView(tmtView);
+            }
 
-            VBox view = new VBox();
-            view.addView(detailsBox);
-            view.addView(protGrpExpInfoView);
-            view.addView(silacRatiosView);
-            view.addView(silacInteisitiesView);
-            view.addView(tmtView);
+            // ProteinGroupRatiosSilac table
+            if (ProteinGroupManager.hasData(MqManager.getTableInfoProteinGroupRatiosSilac(), form.getId(), getContainer()))
+            {
+                QuerySettings s2 = getQuerySettings("SilacRatios", TABLE_PROTEIN_GROUP_RATIOS_SILAC, form.getId());
+                QueryView silacRatiosView = new QueryView(new MqSchema(getUser(), getContainer()), s2, errors);
+                silacRatiosView.setTitle("Silac Ratios");
+                view.addView(silacRatiosView);
+            }
+
+            // ProteinGroupIntensitySilac table
+            if (ProteinGroupManager.hasData(MqManager.getTableInfoProteinGroupIntensitySilac(), form.getId(), getContainer()))
+            {
+                QuerySettings s3 = getQuerySettings("SilacIntensities", TABLE_PROTEIN_GROUP_INTENSITY_SILAC, form.getId());
+                QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
+                silacInteisitiesView.setTitle("Silac Intensities");
+                view.addView(silacInteisitiesView);
+            }
+            
             return view;
         }
 
