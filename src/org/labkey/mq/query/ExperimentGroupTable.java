@@ -3,7 +3,9 @@ package org.labkey.mq.query;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.JdbcType;
+import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.query.DefaultQueryUpdateService;
@@ -20,6 +22,7 @@ import org.labkey.mq.MqController;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.MqSchema;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +47,19 @@ public class ExperimentGroupTable extends DefaultMqTable
 
         ExpSchema expSchema = new ExpSchema(getUserSchema().getUser(), getContainer());
         getColumn("ExperimentRunLSID").setFk(new QueryForeignKey(expSchema, getContainer(), "Runs", "LSID", null, true));
+        getColumn("DataId").setFk(new QueryForeignKey(expSchema, getContainer(), "Data", "RowId", null));
+
+        ColumnInfo folderName = addWrapColumn("ParentFolderName", getRealTable().getColumn("LocationOnFileSystem"));
+        folderName.setDisplayColumnFactory(colInfo -> new DataColumn(colInfo)
+        {
+            @Override
+            @NotNull
+            public String getFormattedValue(RenderContext ctx)
+            {
+                String result = h(getValue(ctx));
+                return new File(result).getParentFile().getName();
+            }
+        });
 
         // ProteinGroup count column
         SQLFragment sql = new SQLFragment("(").append(getRunProteinGroupCountSQL()).append(")");
@@ -64,6 +80,7 @@ public class ExperimentGroupTable extends DefaultMqTable
         columns.add(FieldKey.fromParts("ExperimentRunLSID", "Links"));
         columns.add(FieldKey.fromParts("Id"));
         columns.add(FieldKey.fromParts("Container"));
+        columns.add(FieldKey.fromParts("ParentFolderName"));
         columns.add(FieldKey.fromParts("Filename"));
         columns.add(FieldKey.fromParts("Status"));
         columns.add(FieldKey.fromParts("ProteinGroups"));
