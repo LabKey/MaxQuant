@@ -35,9 +35,6 @@ public class ExperimentGroupTable extends DefaultMqTable
     {
         super(MqManager.getTableInfoExperimentGroup(), schema);
 
-        setTitleColumn("Id");
-        setDescription("Contains a row per MaxQuant experiment loaded in this folder.");
-
         ActionURL detailsUrl = new ActionURL(MqController.ViewProteinGroupsAction.class, getContainer());
         setDetailsURL(new DetailsURL(detailsUrl, "id", FieldKey.fromParts("Id")));
 

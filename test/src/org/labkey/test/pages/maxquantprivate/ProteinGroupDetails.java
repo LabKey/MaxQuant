@@ -11,9 +11,9 @@ public class ProteinGroupDetails extends BaseDetailsPage
         super(driver);
     }
 
-    public boolean hasProteinIdLink(String value, int count)
+    public int proteinIdLinkCount(String value)
     {
-        return Locator.linkContainingText(value).findElements(getDriver()).size() == count;
+        return Locator.linkContainingText(value).findElements(getDriver()).size();
     }
 
     public DataRegionTable getIntensityAndCoverageGrid()
