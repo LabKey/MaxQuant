@@ -28,6 +28,7 @@ import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DataRegion;
 import org.labkey.api.data.DataRegionSelection;
+import org.labkey.api.data.DbScope;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.exp.api.ExpData;
@@ -78,6 +79,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -301,8 +303,26 @@ public class MqController extends SpringActionController
             for (String selectedIdStr : DataRegionSelection.getSelected(getViewContext(), true))
                 rowIds.add(Integer.parseInt(selectedIdStr));
 
-            MqManager.markDeleted(rowIds, getContainer(), getUser());
-            MqManager.purgeDeletedExperimentGroups();
+            try (DbScope.Transaction transaction = MqSchema.getSchema().getScope().ensureTransaction())
+            {
+                // Issue 34093: if the experiment group is part of a successful ExpRun, delete from the run level
+                for (Integer rowId : rowIds)
+                {
+                    ExperimentGroup expGrp = MqManager.getExperimentGroup(rowId, getContainer());
+                    if (expGrp != null)
+                    {
+                        ExpRun expRun = ExperimentService.get().getExpRun(expGrp.getExperimentRunLSID());
+                        if (expRun != null)
+                            expRun.delete(getUser());
+                        else
+                            MqManager.markDeleted(Collections.singletonList(expGrp.getId()), getContainer(), getUser());
+                    }
+                }
+
+                MqManager.purgeDeletedExperimentGroups();
+                transaction.commit();
+            }
+
             return true;
         }
 
