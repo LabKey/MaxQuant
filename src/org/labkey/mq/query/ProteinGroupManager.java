@@ -1,8 +1,9 @@
 package org.labkey.mq.query;
 
+import org.labkey.api.data.Container;
+import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
 import org.labkey.mq.MqManager;
-import org.labkey.mq.model.ModifiedPeptide;
 import org.labkey.mq.model.ProteinGroup;
 
 /**
@@ -12,8 +13,9 @@ public class ProteinGroupManager
 {
     private ProteinGroupManager() {}
 
-    public static ProteinGroup get(int id)
+    public static ProteinGroup get(int id, Container c)
     {
-        return new TableSelector(MqManager.getTableInfoProteinGroup()).getObject(id, ProteinGroup.class);
+        SimpleFilter filter = SimpleFilter.createContainerFilter(c);
+        return new TableSelector(MqManager.getTableInfoProteinGroup(), filter, null).getObject(id, ProteinGroup.class);
     }
 }

@@ -4,14 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
-import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.Table;
-import org.labkey.api.data.TableSelector;
 import org.labkey.api.exp.XarContext;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.pipeline.PipelineJob;
-import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
 import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.FileUtil;
@@ -103,7 +100,7 @@ public class MqExperimentImporter
     {
         _experimentGroupId = runInfo.getRunId();
 
-        ExperimentGroup run = MqManager.getExperimentGroup(_experimentGroupId);
+        ExperimentGroup run = MqManager.getExperimentGroup(_experimentGroupId, _container);
 
         // Skip if run was already fully imported
         if (runInfo.isAlreadyImported() && run != null && run.getStatusId() == STATUS_SUCCESS)
@@ -176,7 +173,7 @@ public class MqExperimentImporter
 
             updateRunStatus(IMPORT_SUCCEEDED, STATUS_SUCCESS);
 
-            return MqManager.getExperimentGroup(_experimentGroupId);
+            return MqManager.getExperimentGroup(_experimentGroupId, _container);
         }
         catch (MqParserException mqe)
         {
@@ -523,7 +520,7 @@ public class MqExperimentImporter
                 // modificationSpecificPeptides.txt does not have modified sequences.
                 if(evidence.getModifiedPeptideId() != null)
                 {
-                    ModifiedPeptide modPeptide = ModifiedPeptideManager.get(evidence.getModifiedPeptideId());
+                    ModifiedPeptide modPeptide = ModifiedPeptideManager.get(evidence.getModifiedPeptideId(), _container);
                     if (!StringUtils.isBlank(row.getModifiedSequence()))
                     {
                         modPeptide.setSequence(row.getModifiedSequence());
@@ -590,7 +587,7 @@ public class MqExperimentImporter
             boolean alreadyImported = false;
 
             // Don't import if we've already imported this file (undeleted run exists matching this file name)
-            _experimentGroupId = getExperimentGroup();
+            _experimentGroupId = getExperimentGroupId();
             if (_experimentGroupId != -1)
             {
                 alreadyImported = true;
@@ -606,12 +603,9 @@ public class MqExperimentImporter
         }
     }
 
-    private int getExperimentGroup()
+    private int getExperimentGroupId()
     {
-        SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("DataId"), _expData.getRowId());
-        filter.addCondition(FieldKey.fromParts("Container"), _container.getId());
-        filter.addCondition(FieldKey.fromParts("Deleted"), Boolean.FALSE);
-        ExperimentGroup expGrp = new TableSelector(MqManager.getTableInfoExperimentGroup(), filter, null).getObject(ExperimentGroup.class);
+        ExperimentGroup expGrp = MqManager.getExperimentGroupByDataId(_expData.getRowId(), _container);
         return expGrp != null ? expGrp.getId() : -1;
     }
 

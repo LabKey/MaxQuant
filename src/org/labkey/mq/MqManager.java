@@ -178,11 +178,11 @@ public class MqManager
         throw new IllegalStateException("There is more than one non-deleted ExperimentGroup for dataId " + dataId);
     }
 
-    public static ExperimentGroup getExperimentGroup(int experimentGroupId)
+    public static ExperimentGroup getExperimentGroup(int experimentGroupId, Container c)
     {
         ExperimentGroup run = null;
 
-        ExperimentGroup[] runs = getExperimentGroups("Id = ? AND deleted = ?", experimentGroupId, false);
+        ExperimentGroup[] runs = getExperimentGroups("Id = ? AND deleted = ? AND Container = ?", experimentGroupId, Boolean.FALSE, c.getId());
 
         if (runs != null && runs.length == 1)
         {

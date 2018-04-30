@@ -1,9 +1,10 @@
 package org.labkey.mq.query;
 
+import org.labkey.api.data.Container;
+import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.model.Peptide;
-import org.labkey.mq.model.ProteinGroup;
 
 /**
  * Created by vsharma on 3/17/2016.
@@ -12,8 +13,9 @@ public class PeptideManager
 {
     private PeptideManager() {}
 
-    public static Peptide get(int id)
+    public static Peptide get(int id, Container c)
     {
-        return new TableSelector(MqManager.getTableInfoPeptide()).getObject(id, Peptide.class);
+        SimpleFilter filter = SimpleFilter.createContainerFilter(c);
+        return new TableSelector(MqManager.getTableInfoPeptide(), filter, null).getObject(id, Peptide.class);
     }
 }

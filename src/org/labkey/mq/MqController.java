@@ -191,10 +191,10 @@ public class MqController extends SpringActionController
                 throw new NotFoundException("No file name specified.");
             }
 
-            ExperimentGroup expGrp = MqManager.getExperimentGroup(form.getExperimentGroupId());
+            ExperimentGroup expGrp = MqManager.getExperimentGroup(form.getExperimentGroupId(), getContainer());
             if(expGrp == null)
             {
-                throw new NotFoundException("Could not find an experiment group with ID " + form.getExperimentGroupId());
+                throw new NotFoundException("Could not find an experiment group with ID " + form.getExperimentGroupId() + " in this container.");
             }
             if(!expGrp.getContainer().equals(getContainer()))
             {
@@ -335,9 +335,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _experimentGroup = MqManager.getExperimentGroup(form.getId());
+            _experimentGroup = MqManager.getExperimentGroup(form.getId(), getContainer());
             if (_experimentGroup == null)
-                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist in this container.");
         }
 
         @Override
@@ -393,9 +393,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _experimentGroup = MqManager.getExperimentGroup(form.getId());
+            _experimentGroup = MqManager.getExperimentGroup(form.getId(), getContainer());
             if (_experimentGroup == null)
-                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist in this container.");
         }
 
         @Override
@@ -452,9 +452,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _proteinGroup = ProteinGroupManager.get(form.getId());
+            _proteinGroup = ProteinGroupManager.get(form.getId(), getContainer());
             if (_proteinGroup == null)
-                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist in this container.");
             else
                 _experimentGroupId = _proteinGroup.getExperimentGroupId();
         }
@@ -513,9 +513,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _proteinGroup = ProteinGroupManager.get(form.getId());
+            _proteinGroup = ProteinGroupManager.get(form.getId(), getContainer());
             if (_proteinGroup == null)
-                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist in this container.");
             else
                 _experimentGroupId = _proteinGroup.getExperimentGroupId();
         }
@@ -599,7 +599,7 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _peptide = PeptideManager.get(form.getId());
+            _peptide = PeptideManager.get(form.getId(), getContainer());
             if (_peptide == null)
                 errors.reject(ERROR_MSG, "Peptide with ID " + form.getId() + " does not exist.");
             else
