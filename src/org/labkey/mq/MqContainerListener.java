@@ -35,6 +35,8 @@ public class MqContainerListener implements ContainerListener
     @Override
     public void containerDeleted(Container c, User user)
     {
+        MqManager.markDeleted(null, c, user);
+        MqManager.purgeDeletedExperimentGroups();
     }
 
     @Override

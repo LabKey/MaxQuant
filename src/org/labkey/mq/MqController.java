@@ -18,6 +18,7 @@ package org.labkey.mq;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.labkey.api.action.FormHandlerAction;
 import org.labkey.api.action.RedirectAction;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
@@ -26,6 +27,8 @@ import org.labkey.api.data.ButtonBar;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DataRegion;
+import org.labkey.api.data.DataRegionSelection;
+import org.labkey.api.data.DbScope;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.exp.api.ExpData;
@@ -35,15 +38,18 @@ import org.labkey.api.exp.api.ExperimentUrls;
 import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.browse.PipelinePathForm;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.query.QueryForm;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.RequiresPermission;
+import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.NetworkDrive;
 import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.util.URLHelper;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.DetailsView;
 import org.labkey.api.view.HtmlView;
@@ -73,9 +79,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.labkey.mq.MqSchema.QUERY_PEPTIDE_TMT_PIVOT;
+import static org.labkey.mq.MqSchema.QUERY_PROTEIN_GROUP_TMT_PIVOT;
 import static org.labkey.mq.MqSchema.TABLE_PEPTIDE;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP;
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO;
@@ -184,10 +193,10 @@ public class MqController extends SpringActionController
                 throw new NotFoundException("No file name specified.");
             }
 
-            ExperimentGroup expGrp = MqManager.getExperimentGroup(form.getExperimentGroupId());
+            ExperimentGroup expGrp = MqManager.getExperimentGroup(form.getExperimentGroupId(), getContainer());
             if(expGrp == null)
             {
-                throw new NotFoundException("Could not find an experiment group with ID " + form.getExperimentGroupId());
+                throw new NotFoundException("Could not find an experiment group with ID " + form.getExperimentGroupId() + " in this container.");
             }
             if(!expGrp.getContainer().equals(getContainer()))
             {
@@ -275,6 +284,55 @@ public class MqController extends SpringActionController
         }
     }
 
+    @RequiresPermission(DeletePermission.class)
+    public class DeleteExperimentGroupsAction extends FormHandlerAction<QueryForm>
+    {
+        private ActionURL _returnURL;
+
+        @Override
+        public void validateCommand(QueryForm target, Errors errors)
+        {
+        }
+
+        @Override
+        public boolean handlePost(QueryForm form, BindException errors)
+        {
+            _returnURL = form.getReturnActionURL();
+
+            List<Integer> rowIds = new ArrayList<>();
+            for (String selectedIdStr : DataRegionSelection.getSelected(getViewContext(), true))
+                rowIds.add(Integer.parseInt(selectedIdStr));
+
+            try (DbScope.Transaction transaction = MqSchema.getSchema().getScope().ensureTransaction())
+            {
+                // Issue 34093: if the experiment group is part of a successful ExpRun, delete from the run level
+                for (Integer rowId : rowIds)
+                {
+                    ExperimentGroup expGrp = MqManager.getExperimentGroup(rowId, getContainer());
+                    if (expGrp != null)
+                    {
+                        ExpRun expRun = ExperimentService.get().getExpRun(expGrp.getExperimentRunLSID());
+                        if (expRun != null)
+                            expRun.delete(getUser());
+                        else
+                            MqManager.markDeleted(Collections.singletonList(expGrp.getId()), getContainer(), getUser());
+                    }
+                }
+
+                MqManager.purgeDeletedExperimentGroups();
+                transaction.commit();
+            }
+
+            return true;
+        }
+
+        @Override
+        public URLHelper getSuccessURL(QueryForm form)
+        {
+            return _returnURL;
+        }
+    }
+
     // ------------------------------------------------------------------------
     // View protein groups in an experiment group
     // ------------------------------------------------------------------------
@@ -297,9 +355,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _experimentGroup = MqManager.getExperimentGroup(form.getId());
+            _experimentGroup = MqManager.getExperimentGroup(form.getId(), getContainer());
             if (_experimentGroup == null)
-                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist in this container.");
         }
 
         @Override
@@ -355,9 +413,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _experimentGroup = MqManager.getExperimentGroup(form.getId());
+            _experimentGroup = MqManager.getExperimentGroup(form.getId(), getContainer());
             if (_experimentGroup == null)
-                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Experiment group with ID " + form.getId() + " does not exist in this container.");
         }
 
         @Override
@@ -414,9 +472,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _proteinGroup = ProteinGroupManager.get(form.getId());
+            _proteinGroup = ProteinGroupManager.get(form.getId(), getContainer());
             if (_proteinGroup == null)
-                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist in this container.");
             else
                 _experimentGroupId = _proteinGroup.getExperimentGroupId();
         }
@@ -475,9 +533,9 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _proteinGroup = ProteinGroupManager.get(form.getId());
+            _proteinGroup = ProteinGroupManager.get(form.getId(), getContainer());
             if (_proteinGroup == null)
-                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist.");
+                errors.reject(ERROR_MSG, "Protein group with ID " + form.getId() + " does not exist in this container.");
             else
                 _experimentGroupId = _proteinGroup.getExperimentGroupId();
         }
@@ -485,6 +543,7 @@ public class MqController extends SpringActionController
         @Override
         public ModelAndView getView(IdForm form, BindException errors) throws Exception
         {
+            VBox view = new VBox();
             if (errors.hasErrors())
                 return new SimpleErrorView(errors);
 
@@ -498,27 +557,41 @@ public class MqController extends SpringActionController
             VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Protein Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
+            view.addView(detailsBox);
 
             // ProteinGroupExperimentInfo table
             QuerySettings s1 = getQuerySettings("IntensityAndCoverage", TABLE_PROTEIN_GROUP_EXPERIMENT_INFO, form.getId());
             QueryView protGrpExpInfoView = new QueryView(new MqSchema(getUser(), getContainer()), s1, errors);
             protGrpExpInfoView.setTitle("Intensity And Coverage");
+            view.addView(protGrpExpInfoView);
+
+            // ProteinGroupTMT pivot query
+            if (ProteinGroupManager.hasData(MqManager.getTableInfoProteinGroupTMT(), form.getId(), getContainer()))
+            {
+                QuerySettings s4 = getQuerySettings(QUERY_PROTEIN_GROUP_TMT_PIVOT, QUERY_PROTEIN_GROUP_TMT_PIVOT, form.getId());
+                QueryView tmtView = new QueryView(new MqSchema(getUser(), getContainer()), s4, errors);
+                tmtView.setTitle("TMT");
+                view.addView(tmtView);
+            }
 
             // ProteinGroupRatiosSilac table
-            QuerySettings s2 = getQuerySettings("SilacRatios", TABLE_PROTEIN_GROUP_RATIOS_SILAC, form.getId());
-            QueryView silacRatiosView = new QueryView(new MqSchema(getUser(), getContainer()), s2, errors);
-            silacRatiosView.setTitle("Silac Ratios");
+            if (ProteinGroupManager.hasData(MqManager.getTableInfoProteinGroupRatiosSilac(), form.getId(), getContainer()))
+            {
+                QuerySettings s2 = getQuerySettings("SilacRatios", TABLE_PROTEIN_GROUP_RATIOS_SILAC, form.getId());
+                QueryView silacRatiosView = new QueryView(new MqSchema(getUser(), getContainer()), s2, errors);
+                silacRatiosView.setTitle("Silac Ratios");
+                view.addView(silacRatiosView);
+            }
 
             // ProteinGroupIntensitySilac table
-            QuerySettings s3 = getQuerySettings("SilacIntensities", TABLE_PROTEIN_GROUP_INTENSITY_SILAC, form.getId());
-            QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
-            silacInteisitiesView.setTitle("Silac Intensities");
-
-            VBox view = new VBox();
-            view.addView(detailsBox);
-            view.addView(protGrpExpInfoView);
-            view.addView(silacRatiosView);
-            view.addView(silacInteisitiesView);
+            if (ProteinGroupManager.hasData(MqManager.getTableInfoProteinGroupIntensitySilac(), form.getId(), getContainer()))
+            {
+                QuerySettings s3 = getQuerySettings("SilacIntensities", TABLE_PROTEIN_GROUP_INTENSITY_SILAC, form.getId());
+                QueryView silacInteisitiesView = new QueryView(new MqSchema(getUser(), getContainer()), s3, errors);
+                silacInteisitiesView.setTitle("Silac Intensities");
+                view.addView(silacInteisitiesView);
+            }
+            
             return view;
         }
 
@@ -555,7 +628,7 @@ public class MqController extends SpringActionController
         @Override
         public void validate(IdForm form, BindException errors)
         {
-            _peptide = PeptideManager.get(form.getId());
+            _peptide = PeptideManager.get(form.getId(), getContainer());
             if (_peptide == null)
                 errors.reject(ERROR_MSG, "Peptide with ID " + form.getId() + " does not exist.");
             else
@@ -585,9 +658,16 @@ public class MqController extends SpringActionController
             QueryView evidenceGridView = new QueryView(new MqSchema(getUser(), getContainer()), settings, errors);
             evidenceGridView.setTitle("Evidence");
 
+            // PeptideTMT pivot query
+            QuerySettings tmtPivotSettings = new QuerySettings(getViewContext(), QUERY_PEPTIDE_TMT_PIVOT, QUERY_PEPTIDE_TMT_PIVOT);
+            tmtPivotSettings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideId"), form.getId()));
+            QueryView tmtGridView = new QueryView(new MqSchema(getUser(), getContainer()), tmtPivotSettings, errors);
+            tmtGridView.setTitle("TMT");
+
             VBox view = new VBox();
             view.addView(detailsBox);
             view.addView(evidenceGridView);
+            view.addView(tmtGridView);
             return view;
         }
     }

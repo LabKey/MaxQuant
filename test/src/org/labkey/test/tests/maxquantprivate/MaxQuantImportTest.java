@@ -81,15 +81,15 @@ public class MaxQuantImportTest extends BaseWebDriverTest
     public void testDetailsPages()
     {
         log("Experiment Runs (Imported MaxQuant Results) ");
-        DataRegionTable experimentGroupTable = new DataRegionTable("ExperimentGroup", this);
+        DataRegionTable experimentGroupTable = new DataRegionTable("ExperimentGroups", this);
         assertEquals("Unexpected number of experiment group rows", 1, experimentGroupTable.getDataRowCount());
-        assertEquals("Unexpected experiment run folder name", "txt", experimentGroupTable.getDataAsText(0, "ExperimentGroup/FolderName"));
-        assertEquals("Unexpected experiment run file name", "summary.txt", experimentGroupTable.getDataAsText(0, "ExperimentGroup/Filename"));
-        assertEquals("Unexpected experiment run protein groups count", ""+PROTEIN_GROUPS_COUNT, experimentGroupTable.getDataAsText(0, "ExperimentGroup/ProteinGroups"));
-        assertEquals("Unexpected experiment run peptides count", ""+PEPTIDES_COUNT, experimentGroupTable.getDataAsText(0, "ExperimentGroup/Peptides"));
+        //assertEquals("Unexpected experiment run folder name", "txt", experimentGroupTable.getDataAsText(0, "ExperimentGroup/FolderName"));
+        assertEquals("Unexpected experiment run file name", "summary.txt", experimentGroupTable.getDataAsText(0, "FileName"));
+        assertEquals("Unexpected experiment run protein groups count", ""+PROTEIN_GROUPS_COUNT, experimentGroupTable.getDataAsText(0, "ProteinGroups"));
+        assertEquals("Unexpected experiment run peptides count", ""+PEPTIDES_COUNT, experimentGroupTable.getDataAsText(0, "Peptides"));
 
         log("Protein Groups for Experiment Group");
-        clickAndWait(experimentGroupTable.link(0, "ExperimentGroup"));
+        clickAndWait(experimentGroupTable.link(0, "Id"));
         ExperimentGroupDetails experimentGroupDetails = new ExperimentGroupDetails(getDriver());
         assertEquals("Unexpected protein groups link", PROTEIN_GROUPS_COUNT, experimentGroupDetails.getProteinGroupsCount());
         assertEquals("Unexpected peptides link", PEPTIDES_COUNT, experimentGroupDetails.getPeptidesCount());
@@ -107,8 +107,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         ProteinGroupDetails proteinGroupDetails = validateProteinGroupDetails();
         assertTrue("Missing download link for: proteinGroups.txt", proteinGroupDetails.hasFilesLinks(Arrays.asList("proteinGroups.txt")));
         assertEquals("Unexpected grid row count: IntensityAndCoverage", 3, proteinGroupDetails.getIntensityAndCoverageGrid().getDataRowCount());
-        assertEquals("Unexpected grid row count: SilacRatios", 0, proteinGroupDetails.getSilacRatiosGrid().getDataRowCount());
-        assertEquals("Unexpected grid row count: SilacIntensities", 0, proteinGroupDetails.getSilacIntensitiesGrid().getDataRowCount());
+        assertEquals("Unexpected grid row count: TMT", 3, proteinGroupDetails.getProteinGroupTMTPivotGrid().getDataRowCount());
 
         log("Peptides for Protein Group");
         popLocation();
@@ -132,6 +131,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         assertEquals("Unexpected peptide details value: End Position", "546", peptideDetails.getEndPosition());
         assertEquals("Unexpected peptide details value: Missed Cleavages", "2", peptideDetails.getMissedCleavages());
         assertEquals("Unexpected grid row count: Evidence", 4, peptideDetails.getEvidenceGrid().getDataRowCount());
+        assertEquals("Unexpected grid row count: Evidence", 3, peptideDetails.getPeptideTMTPivotGrid().getDataRowCount());
     }
 
     private ProteinGroupDetails validateProteinGroupDetails()
@@ -139,8 +139,8 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         ProteinGroupDetails proteinGroupDetails = new ProteinGroupDetails(getDriver());
         assertElementPresent(Locator.tagWithText("td", "Q0VG06-3, Q0VG06, Q0VG06-2"), 1);
         assertElementPresent(Locator.tagWithText("td", "Q0VG06-3, Q0VG06"), 1);
-        assertTrue("Unexpected number of protein id links", proteinGroupDetails.hasProteinIdLink("Q0VG06-3", 1));
-        assertTrue("Unexpected number of protein id links", proteinGroupDetails.hasProteinIdLink("Q0VG06", 3));
+        assertEquals("Unexpected number of protein id links", 0, proteinGroupDetails.proteinIdLinkCount("Q0VG06-3"));
+        assertEquals("Unexpected number of protein id links", 2, proteinGroupDetails.proteinIdLinkCount("Q0VG06"));
         return proteinGroupDetails;
     }
 
@@ -227,6 +227,34 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         columnStats.put("LfqIntensity", new Pair<>("n/a", "n/a"));
         verifyQueryRowCountAndColumnStats("ProteinGroupExperimentInfo", 153, columnStats);
 
+        log("ProteinGroupTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("0::ReporterIntensity", new Pair<>("3,117,272.85", "20,374.33"));
+        columnStats.put("0::ReporterIntensityCorrected", new Pair<>("3,294,180.71", "21,530.59"));
+        columnStats.put("0::ReporterIntensityCount", new Pair<>("782", "5.111"));
+        verifyQueryRowCountAndColumnStats("ProteinGroupTMTPivot", 153, columnStats);
+
+        log("PeptideTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("3::ReporterIntensity", new Pair<>("4,501,291.92", "4,452.32"));
+        columnStats.put("3::ReporterIntensityCorrected", new Pair<>("4,402,597.13", "4,354.70"));
+        columnStats.put("3::ReporterIntensityCount", new Pair<>("934", "0.924"));
+        verifyQueryRowCountAndColumnStats("PeptideTMTPivot", 1011, columnStats);
+
+        log("ModifiedPeptideTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("6::ReporterIntensity", new Pair<>("10,384,734.36", "8,741.36"));
+        columnStats.put("6::ReporterIntensityCorrected", new Pair<>("10,197,450.74", "8,583.71"));
+        columnStats.put("6::ReporterIntensityCount", new Pair<>("2,009", "1.691"));
+        verifyQueryRowCountAndColumnStats("ModifiedPeptideTMTPivot", 1188, columnStats);
+
+        log("EvidenceTMTPivot: row count and numeric column stats validation");
+        columnStats = new HashMap<>();
+        columnStats.put("9::ReporterIntensity", new Pair<>("1,972,389.32", "1,155.47"));
+        columnStats.put("9::ReporterIntensityCorrected", new Pair<>("1,822,296.77", "1,067.54"));
+        columnStats.put("9::ReporterIntensityCount", new Pair<>("1,836", "1.076"));
+        verifyQueryRowCountAndColumnStats("EvidenceTMTPivot", 1707, columnStats);
+
         log("Other tables: row count validation");
         verifyQueryRowCountAndColumnStats("RawFile", 42, null);
         verifyQueryRowCountAndColumnStats("Experiment", 3, null);
@@ -244,7 +272,7 @@ public class MaxQuantImportTest extends BaseWebDriverTest
             assertEquals("Unexpected grid row count: " + tableName, rowCount, drt.getDataRowCount());
         else if (rowCount < 1000)
             drt.assertPaginationText(1, 100, rowCount);
-        // TODO issue with assertPaginationText for < 1,000
+        // TODO issue with assertPaginationText for > 1,000
 
         if (columnStats != null)
         {

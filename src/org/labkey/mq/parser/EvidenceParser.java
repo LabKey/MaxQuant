@@ -41,7 +41,7 @@ public class EvidenceParser extends MaxQuantTsvParser
         super(file);
     }
 
-    public EvidenceRow nextEvidence(String derivedExperimentName)
+    public EvidenceRow nextEvidence(List<Experiment> experiments, String derivedExperimentName)
     {
         TsvRow row = super.nextRow();
         if(row == null)
@@ -69,6 +69,7 @@ public class EvidenceParser extends MaxQuantTsvParser
         evidenceRow.setMsmsIds(tryGetValue(row, MsmsIds));
         evidenceRow.setBestMsMsId(tryGetIntValue(row, BestMsmsId)); // Found missing values in LFQ data
         evidenceRow.setMaxQuantId(getIntValue(row, MaxQuantId));
+        evidenceRow.setTMTInfos(getTMTInfosFromRow(row, experiments));
 
         for(String ratioType: Constants.RatioTypes)
         {

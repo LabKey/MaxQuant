@@ -1,6 +1,8 @@
 package org.labkey.mq.query;
 
 import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.Container;
+import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.query.ExprColumn;
@@ -17,6 +19,8 @@ import java.util.ArrayList;
  */
 public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
 {
+    private static final FieldKey CONTAINER_FAKE_COLUMN_NAME = FieldKey.fromParts("Container");
+
     public ProteinGroupPeptideTable(MqSchema schema)
     {
         super(MqManager.getTableInfoProteinGroupPeptide(), schema);
@@ -34,8 +38,6 @@ public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
         countCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_EVIDENCE, "PeptideId", "PeptideId"));
         addColumn(countCol);
 
-        // TODO need to add filter for Container (lookup from ProteinGroupId or PeptideId?) since this table doesn't have a Container column of its own
-
         //Only display a subset of the columns by default
         ArrayList<FieldKey> visibleColumns = new ArrayList<>();
 
@@ -52,5 +54,22 @@ public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
         visibleColumns.add(FieldKey.fromParts("EvidenceCount"));
 
         setDefaultVisibleColumns(visibleColumns);
+    }
+
+    @Override
+    protected void applyContainerFilter(ContainerFilter filter)
+    {
+        clearConditions(CONTAINER_FAKE_COLUMN_NAME);
+        addCondition(createContainerFilterSQL(filter, _userSchema.getContainer()), CONTAINER_FAKE_COLUMN_NAME);
+    }
+
+    private  SQLFragment createContainerFilterSQL(ContainerFilter filter, Container container)
+    {
+        SQLFragment sql = new SQLFragment("ProteinGroupId IN (SELECT Id FROM ");
+        sql.append(MqManager.getTableInfoProteinGroup(), "pg");
+        sql.append(" WHERE ");
+        sql.append(filter.getSQLFragment(getSchema(), new SQLFragment("Container"), container));
+        sql.append(")");
+        return sql;
     }
 }

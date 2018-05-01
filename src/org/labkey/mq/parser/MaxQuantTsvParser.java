@@ -2,8 +2,14 @@ package org.labkey.mq.parser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.labkey.mq.model.Experiment;
+import org.labkey.mq.model.TMTInfo;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by vsharma on 3/16/2016.
@@ -11,6 +17,10 @@ import java.io.File;
 public class MaxQuantTsvParser extends TsvParser
 {
     protected static final String MaxQuantId = "id";
+
+    protected static final String TMT_REPORTER_INTENSITY_PREFIX = "Reporter intensity ";
+    protected static final String TMT_REPORTER_INTENSITY_CORRECTED_PREFIX = "Reporter intensity corrected ";
+    protected static final String TMT_REPORTER_INTENSITY_COUNT_PREFIX = "Reporter intensity count ";
 
     public MaxQuantTsvParser(File file) throws MqParserException
     {
@@ -159,6 +169,7 @@ public class MaxQuantTsvParser extends TsvParser
     public static class MaxQuantTsvRow
     {
         private int _maxQuantId;
+        private List<TMTInfo> _tmtInfos = new ArrayList<>();
 
         public int getMaxQuantId()
         {
@@ -169,5 +180,66 @@ public class MaxQuantTsvParser extends TsvParser
         {
             _maxQuantId = maxQuantId;
         }
+
+        public void setTMTInfos(List<TMTInfo> tmtInfos)
+        {
+            _tmtInfos = tmtInfos;
+        }
+
+        public List<TMTInfo> getTMTInfos()
+        {
+            return Collections.unmodifiableList(_tmtInfos);
+        }
+    }
+
+    protected List<TMTInfo> getTMTInfosFromRow(TsvRow row, @NotNull List<Experiment> experiments)
+    {
+        List<TMTInfo> reporterIntensityInfos = new ArrayList<>();
+
+        // starting with 0, look for reporter intensity columns by tag number (until we get to a tag number that doesn't exist)
+        int tagNumber = 0;
+        while (row.getValue(TMT_REPORTER_INTENSITY_PREFIX + tagNumber) != null)
+        {
+            // Issue 34088: look for the experiment name specific columns, and fall back to the summary columns if no experiment columnns exist
+            boolean hasExperimentData = false;
+            for (Experiment experiment : experiments)
+            {
+                String tagPlusExperiment = tagNumber + " " + experiment.getExperimentName();
+                if (row.getValue(TMT_REPORTER_INTENSITY_PREFIX + tagPlusExperiment) != null)
+                {
+                    reporterIntensityInfos.add(getExperimentTMTInfoFromRow(row, tagNumber, experiment));
+                    hasExperimentData = true;
+                }
+            }
+
+            if (!hasExperimentData)
+                reporterIntensityInfos.add(getExperimentTMTInfoFromRow(row, tagNumber, null));
+
+            tagNumber++;
+        }
+
+        return reporterIntensityInfos;
+    }
+
+    private TMTInfo getExperimentTMTInfoFromRow(TsvRow row, int tagNumber, @Nullable Experiment experiment)
+    {
+        String tagPlusSuffix = String.valueOf(tagNumber) + (experiment != null ? " " + experiment.getExperimentName() : "");
+        TMTInfo info = new TMTInfo();
+        info.setTagNumber(tagNumber);
+        info.setReporterIntensity(tryGetDoubleValue(row, TMT_REPORTER_INTENSITY_PREFIX + tagPlusSuffix));
+        info.setReporterIntensityCorrected(tryGetDoubleValue(row, TMT_REPORTER_INTENSITY_CORRECTED_PREFIX + tagPlusSuffix));
+        info.setReporterIntensityCount(tryGetIntValue(row, TMT_REPORTER_INTENSITY_COUNT_PREFIX + tagPlusSuffix));
+        info.setExperimentId(experiment != null ? experiment.getId() : null);
+
+        // Issue 34091: Improve log output for MaxQuant TMT results parsing
+        if (info.getMissingFields() != null)
+        {
+            String missingFieldMsg = "Missing required field(s) for TMT row";
+            if (experiment != null)
+                missingFieldMsg += " for experiment " + experiment.getExperimentName();
+            throw new MqParserException(super.getFileName(), row, missingFieldMsg + ": " + info.getMissingFields() + ".");
+        }
+
+        return info;
     }
 }

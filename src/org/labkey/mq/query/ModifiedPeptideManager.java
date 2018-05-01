@@ -1,5 +1,7 @@
 package org.labkey.mq.query;
 
+import org.labkey.api.data.Container;
+import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
 import org.labkey.mq.MqManager;
 import org.labkey.mq.model.ModifiedPeptide;
@@ -11,8 +13,9 @@ public class ModifiedPeptideManager
 {
     private ModifiedPeptideManager() {}
 
-    public static ModifiedPeptide get(int id)
+    public static ModifiedPeptide get(int id, Container c)
     {
-        return new TableSelector(MqManager.getTableInfoModifiedPeptide()).getObject(id, ModifiedPeptide.class);
+        SimpleFilter filter = SimpleFilter.createContainerFilter(c);
+        return new TableSelector(MqManager.getTableInfoModifiedPeptide(), filter, null).getObject(id, ModifiedPeptide.class);
     }
 }

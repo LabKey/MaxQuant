@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
 import org.fhcrc.cpas.exp.xml.ExperimentArchiveDocument;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.DbScope;
@@ -88,6 +89,11 @@ public class MqManager
         return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP);
     }
 
+    public static TableInfo getTableInfoProteinGroupTMT()
+    {
+        return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_TMT);
+    }
+
     public static TableInfo getTableInfoProteinGroupExperimentInfo()
     {
         return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_EXPERIMENT_INFO);
@@ -108,6 +114,11 @@ public class MqManager
         return getSchema().getTable(MqSchema.TABLE_PEPTIDE);
     }
 
+    public static TableInfo getTableInfoPeptideTMT()
+    {
+        return getSchema().getTable(MqSchema.TABLE_PEPTIDE_TMT);
+    }
+
     public static TableInfo getTableInfoProteinGroupPeptide()
     {
         return getSchema().getTable(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE);
@@ -118,9 +129,19 @@ public class MqManager
         return getSchema().getTable(MqSchema.TABLE_MODIFIED_PEPTIDE);
     }
 
+    public static TableInfo getTableInfoModifiedPeptideTMT()
+    {
+        return getSchema().getTable(MqSchema.TABLE_MODIFIED_PEPTIDE_TMT);
+    }
+
     public static TableInfo getTableInfoEvidence()
     {
         return getSchema().getTable(MqSchema.TABLE_EVIDENCE);
+    }
+
+    public static TableInfo getTableInfoEvidenceTMT()
+    {
+        return getSchema().getTable(MqSchema.TABLE_EVIDENCE_TMT);
     }
 
     public static TableInfo getTableInfoEvidenceIntensitySilac()
@@ -131,6 +152,11 @@ public class MqManager
     public static TableInfo getTableInfoEvidenceRatioSilac()
     {
         return getSchema().getTable(MqSchema.TABLE_EVIDENCE_RATIO_SILAC);
+    }
+
+    public static TableInfo getTableInfoTMTChannel()
+    {
+        return getSchema().getTable(MqSchema.TABLE_TMT_CHANNEL);
     }
 
     public static DbSchema getSchema()
@@ -152,11 +178,11 @@ public class MqManager
         throw new IllegalStateException("There is more than one non-deleted ExperimentGroup for dataId " + dataId);
     }
 
-    public static ExperimentGroup getExperimentGroup(int experimentGroupId)
+    public static ExperimentGroup getExperimentGroup(int experimentGroupId, Container c)
     {
         ExperimentGroup run = null;
 
-        ExperimentGroup[] runs = getExperimentGroups("Id = ? AND deleted = ?", experimentGroupId, false);
+        ExperimentGroup[] runs = getExperimentGroups("Id = ? AND deleted = ? AND Container = ?", experimentGroupId, Boolean.FALSE, c.getId());
 
         if (runs != null && runs.length == 1)
         {
@@ -296,12 +322,13 @@ public class MqManager
     }
 
     // pulled out into separate method so could be called by itself from data handlers
-    public static void markDeleted(List<Integer> runIds, Container c, User user)
+    public static void markDeleted(@Nullable List<Integer> runIds, Container c, User user)
     {
         SQLFragment markDeleted = new SQLFragment("UPDATE " + getTableInfoExperimentGroup() + " SET ExperimentRunLSID = NULL, Deleted=?, Modified=? ", Boolean.TRUE, new Date());
         SimpleFilter where = new SimpleFilter();
         where.addCondition(FieldKey.fromParts("Container"), c.getId());
-        where.addInClause(FieldKey.fromParts("Id"), runIds);
+        if (runIds != null)
+            where.addInClause(FieldKey.fromParts("Id"), runIds);
         markDeleted.append(where.getSQLFragment(getSqlDialect()));
 
         new SqlExecutor(getSchema()).execute(markDeleted);
@@ -314,74 +341,63 @@ public class MqManager
 
     public static void purgeDeletedExperimentGroups()
     {
-        // Delete from the EvidenceIntensitySilac
-        execute("DELETE FROM " + getTableInfoEvidenceIntensitySilac() + " WHERE EvidenceId IN (SELECT Id FROM "
-                + getTableInfoEvidence() + " WHERE ExperimentId IN (SELECT Id FROM "
-                + getTableInfoExperiment() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?)))", true);
+        String experimentGroupIdWhereClause = " WHERE ExperimentGroupId IN (SELECT Id FROM " + getTableInfoExperimentGroup() + " WHERE Deleted = ?)";
+        String experimentIdWhereClause = " WHERE ExperimentId IN (SELECT Id FROM " + getTableInfoExperiment() + experimentGroupIdWhereClause + ")";
+        String proteinGroupIdWhereClause = " WHERE ProteinGroupId IN (SELECT Id FROM " + getTableInfoProteinGroup() + experimentGroupIdWhereClause + ")";
+        String peptideIdWhereClause = " WHERE PeptideId IN (SELECT Id FROM " + getTableInfoPeptide() + experimentGroupIdWhereClause + ")";
+        String modifiedPeptideIdWhereClause = " WHERE ModifiedPeptideId IN (SELECT Id FROM " + getTableInfoModifiedPeptide() + peptideIdWhereClause + ")";
+        String evidenceIdWhereClause = " WHERE EvidenceId IN (SELECT Id FROM " + getTableInfoEvidence() + experimentIdWhereClause + ")";
 
-        // Delete from the EvidenceRatiosSilac
-        execute("DELETE FROM " + getTableInfoEvidenceRatioSilac() + " WHERE EvidenceId IN (SELECT Id FROM "
-                + getTableInfoEvidence() + " WHERE ExperimentId IN (SELECT Id FROM "
-                + getTableInfoExperiment() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?)))", true);
+        // Delete from the EvidenceIntensitySilac
+        execute("DELETE FROM " + getTableInfoEvidenceIntensitySilac() + evidenceIdWhereClause, true);
+
+        // Delete from the EvidenceRatioSilac
+        execute("DELETE FROM " + getTableInfoEvidenceRatioSilac() + evidenceIdWhereClause, true);
+
+        // Delete from the EvidenceTMT
+        execute("DELETE FROM " + getTableInfoEvidenceTMT() + evidenceIdWhereClause, true);
 
         // Delete from the Evidence
-        execute("DELETE FROM " + getTableInfoEvidence() + " WHERE ExperimentId IN (SELECT Id FROM "
-                + getTableInfoExperiment() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
-
-        // Delete from the RawFile
-        execute("DELETE FROM " + getTableInfoRawFile() + " WHERE ExperimentId IN (SELECT Id FROM "
-                + getTableInfoExperiment() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
+        execute("DELETE FROM " + getTableInfoEvidence() + experimentIdWhereClause, true);
 
         // Delete from ProteinGroupExperimentInfo
-        execute("DELETE FROM " + getTableInfoProteinGroupExperimentInfo() + " WHERE ProteinGroupId IN (SELECT Id FROM "
-                + getTableInfoProteinGroup() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
+        execute("DELETE FROM " + getTableInfoProteinGroupExperimentInfo() + proteinGroupIdWhereClause, true);
 
         // Delete from ProteinGroupRatiosSilac
-        execute("DELETE FROM " + getTableInfoProteinGroupRatiosSilac() + " WHERE ProteinGroupId IN (SELECT Id FROM "
-                + getTableInfoProteinGroup() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
+        execute("DELETE FROM " + getTableInfoProteinGroupRatiosSilac() + proteinGroupIdWhereClause, true);
 
         // Delete from ProteinGroupIntensitySilac
-        execute("DELETE FROM " + getTableInfoProteinGroupIntensitySilac() + " WHERE ProteinGroupId IN (SELECT Id FROM "
-                + getTableInfoProteinGroup() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
-
-        // Delete from Experiment
-        execute("DELETE FROM " + getTableInfoExperiment() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?)", true);
+        execute("DELETE FROM " + getTableInfoProteinGroupIntensitySilac() + proteinGroupIdWhereClause, true);
 
         // Delete from ProteinGroupPeptide
-        execute("DELETE FROM " + getTableInfoProteinGroupPeptide() + " WHERE ProteinGroupId IN (SELECT Id FROM "
-                + getTableInfoProteinGroup() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
+        execute("DELETE FROM " + getTableInfoProteinGroupPeptide() + proteinGroupIdWhereClause, true);
 
-        // Delete from ProteinGroupPeptide
-        execute("DELETE FROM " + getTableInfoModifiedPeptide() + " WHERE PeptideId IN (SELECT Id FROM "
-                + getTableInfoPeptide() + " WHERE " +
-                "ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?))", true);
-
-        // Delete from Peptide
-        execute("DELETE FROM " + getTableInfoPeptide() + " WHERE ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?)", true);
+        // Delete from ProteinGroupTMT
+        execute("DELETE FROM " + getTableInfoProteinGroupTMT() + proteinGroupIdWhereClause, true);
 
         // Delete from ProteinGroup
-        execute("DELETE FROM " + getTableInfoProteinGroup() + " WHERE ExperimentGroupId IN (SELECT Id FROM " +
-                getTableInfoExperimentGroup() + " WHERE Deleted = ?)", true);
+        execute("DELETE FROM " + getTableInfoProteinGroup() + experimentGroupIdWhereClause, true);
+
+        // Delete from ModifiedPeptideTMT
+        execute("DELETE FROM " + getTableInfoModifiedPeptideTMT() + modifiedPeptideIdWhereClause, true);
+
+        // Delete from ModifiedPeptide
+        execute("DELETE FROM " + getTableInfoModifiedPeptide() + peptideIdWhereClause, true);
+
+        // Delete from PeptideTMT
+        execute("DELETE FROM " + getTableInfoPeptideTMT() + peptideIdWhereClause, true);
+
+        // Delete from Peptide
+        execute("DELETE FROM " + getTableInfoPeptide() + experimentGroupIdWhereClause, true);
+
+        // Delete from the RawFile
+        execute("DELETE FROM " + getTableInfoRawFile() + experimentIdWhereClause, true);
+
+        // Delete from TMTChannel
+        execute("DELETE FROM " + getTableInfoTMTChannel() + experimentGroupIdWhereClause, true);
+
+        // Delete from Experiment
+        execute("DELETE FROM " + getTableInfoExperiment() + experimentGroupIdWhereClause, true);
 
         // Delete from ExperimentGroup
         execute("DELETE FROM " + getTableInfoExperimentGroup() + " WHERE Deleted = ?", true);

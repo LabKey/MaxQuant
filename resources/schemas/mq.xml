@@ -19,8 +19,8 @@
 <ns:tables xsi:schemaLocation="http://labkey.org/data/xml ..\..\..\..\schemas\tableInfo.xsd" xmlns:ns="http://labkey.org/data/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
  <ns:table tableName="ExperimentGroup" tableDbType="TABLE">
-  <ns:description>Contains a row for each MaxQuant data import.</ns:description>
-  <ns:titleColumn>LocationOnFileSystem</ns:titleColumn>
+  <ns:description>Contains a row per MaxQuant experiment loaded in this folder.</ns:description>
+  <ns:titleColumn>Id</ns:titleColumn>
   <ns:columns>
    <ns:column columnName="Id">
     <ns:isHidden>true</ns:isHidden>
@@ -164,6 +164,7 @@
 
  <ns:table tableName="ProteinGroup" tableDbType="TABLE">
   <ns:description>Contains a row for each protein group in the MaxQuant run.</ns:description>
+  <ns:titleColumn>Id</ns:titleColumn>
   <ns:columns>
    <ns:column columnName="Id">
     <ns:isHidden>true</ns:isHidden>
@@ -616,6 +617,123 @@
    <ns:column columnName="RatioType"/>
    <ns:column columnName="Ratio"><ns:formatString>#,##0.00</ns:formatString></ns:column>
    <ns:column columnName="RatioNormalized"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+  </ns:columns>
+ </ns:table>
+
+ <ns:table tableName="TMTChannel" tableDbType="TABLE">
+  <ns:description>Contains a row for each TMT channel of the experiment.</ns:description>
+  <ns:titleColumn>TagNumber</ns:titleColumn>
+  <ns:columns>
+   <ns:column columnName="Id">
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Container">
+    <ns:isReadOnly>false</ns:isReadOnly>
+    <ns:isHidden>true</ns:isHidden>
+    <ns:fk>
+     <ns:fkColumnName>EntityId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>containers</ns:fkTable>
+    </ns:fk>
+   </ns:column>
+   <ns:column columnName="ExperimentGroupId"/>
+   <ns:column columnName="TagNumber"/>
+  </ns:columns>
+ </ns:table>
+
+ <ns:table tableName="ProteinGroupTMT" tableDbType="TABLE">
+  <ns:description>Contains a row of TMT reporter intensity data for each ProteinGroup/TMTChannel combination.</ns:description>
+  <ns:columns>
+   <ns:column columnName="Id">
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Container">
+    <ns:isReadOnly>false</ns:isReadOnly>
+    <ns:isHidden>true</ns:isHidden>
+    <ns:fk>
+     <ns:fkColumnName>EntityId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>containers</ns:fkTable>
+    </ns:fk>
+   </ns:column>
+   <ns:column columnName="ProteinGroupId"/>
+   <ns:column columnName="TMTChannelId"/>
+   <ns:column columnName="ExperimentId"/>
+   <ns:column columnName="ReporterIntensity"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCorrected"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCount"><ns:formatString>#,###</ns:formatString></ns:column>
+  </ns:columns>
+ </ns:table>
+
+ <ns:table tableName="PeptideTMT" tableDbType="TABLE">
+  <ns:description>Contains a row of TMT reporter intensity data for each Peptide/TMTChannel combination.</ns:description>
+  <ns:columns>
+   <ns:column columnName="Id">
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Container">
+    <ns:isReadOnly>false</ns:isReadOnly>
+    <ns:isHidden>true</ns:isHidden>
+    <ns:fk>
+     <ns:fkColumnName>EntityId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>containers</ns:fkTable>
+    </ns:fk>
+   </ns:column>
+   <ns:column columnName="PeptideId"/>
+   <ns:column columnName="TMTChannelId"/>
+   <ns:column columnName="ExperimentId"/>
+   <ns:column columnName="ReporterIntensity"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCorrected"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCount"><ns:formatString>#,###</ns:formatString></ns:column>
+  </ns:columns>
+ </ns:table>
+
+ <ns:table tableName="EvidenceTMT" tableDbType="TABLE">
+  <ns:description>Contains a row of TMT reporter intensity data for each Evidence/TMTChannel combination.</ns:description>
+  <ns:columns>
+   <ns:column columnName="Id">
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Container">
+    <ns:isReadOnly>false</ns:isReadOnly>
+    <ns:isHidden>true</ns:isHidden>
+    <ns:fk>
+     <ns:fkColumnName>EntityId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>containers</ns:fkTable>
+    </ns:fk>
+   </ns:column>
+   <ns:column columnName="EvidenceId"/>
+   <ns:column columnName="TMTChannelId"/>
+   <ns:column columnName="ExperimentId"/>
+   <ns:column columnName="ReporterIntensity"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCorrected"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCount"><ns:formatString>#,###</ns:formatString></ns:column>
+  </ns:columns>
+ </ns:table>
+
+ <ns:table tableName="ModifiedPeptideTMT" tableDbType="TABLE">
+  <ns:description>Contains a row of TMT reporter intensity data for each ModifiedPeptide/TMTChannel combination.</ns:description>
+  <ns:columns>
+   <ns:column columnName="Id">
+    <ns:isHidden>true</ns:isHidden>
+   </ns:column>
+   <ns:column columnName="Container">
+    <ns:isReadOnly>false</ns:isReadOnly>
+    <ns:isHidden>true</ns:isHidden>
+    <ns:fk>
+     <ns:fkColumnName>EntityId</ns:fkColumnName>
+     <ns:fkDbSchema>core</ns:fkDbSchema>
+     <ns:fkTable>containers</ns:fkTable>
+    </ns:fk>
+   </ns:column>
+   <ns:column columnName="ModifiedPeptideId"/>
+   <ns:column columnName="TMTChannelId"/>
+   <ns:column columnName="ExperimentId"/>
+   <ns:column columnName="ReporterIntensity"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCorrected"><ns:formatString>#,##0.00</ns:formatString></ns:column>
+   <ns:column columnName="ReporterIntensityCount"><ns:formatString>#,###</ns:formatString></ns:column>
   </ns:columns>
  </ns:table>
 
