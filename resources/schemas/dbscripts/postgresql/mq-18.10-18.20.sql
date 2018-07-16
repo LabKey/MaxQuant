@@ -13,10 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* mq-18.10-18.11.sql */
-
--- Do nothing as this is a placeholder to be in sync with sqlserver scripts.
-;
 
 /* mq-18.11-18.12.sql */
 

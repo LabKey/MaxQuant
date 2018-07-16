@@ -16,10 +16,6 @@
 
 /* mq-18.10-18.11.sql */
 
--- Create schema, tables, indexes, and constraints used for mq module here
--- All SQL VIEW definitions should be created in mq-create.sql and dropped in mq-drop.sql
-
-
 -- ExperimentGroup table
 CREATE TABLE mq.ExperimentGroup
 (
