@@ -1,5 +1,7 @@
 package org.labkey.mq;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.labkey.api.data.Container;
@@ -657,7 +659,8 @@ public class MqExperimentImporter
         private final int _runId;
         private final boolean _alreadyImported;
 
-        private RunInfo(int runId, boolean alreadyImported)
+        @JsonCreator
+        private RunInfo(@JsonProperty("_runId") int runId, @JsonProperty("_alreadyImported") boolean alreadyImported)
         {
             _runId = runId;
 

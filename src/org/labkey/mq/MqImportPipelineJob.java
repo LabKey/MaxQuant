@@ -1,5 +1,7 @@
 package org.labkey.mq;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.labkey.api.exp.XarContext;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpRun;
@@ -20,6 +22,14 @@ public class MqImportPipelineJob extends PipelineJob
     private final ExpData _expData;
     private MqExperimentImporter.RunInfo _runInfo;
 
+    @JsonCreator
+    protected MqImportPipelineJob(@JsonProperty("_expData") ExpData expData, @JsonProperty("_runInfo") MqExperimentImporter.RunInfo runInfo)
+    {
+        super();
+        _expData = expData;
+        _runInfo = runInfo;
+    }
+
     public MqImportPipelineJob(ViewBackgroundInfo info, ExpData expData, MqExperimentImporter.RunInfo runInfo, PipeRoot root) throws SQLException
     {
         super(MqPipelineProvider.NAME, info, root);
@@ -28,6 +38,12 @@ public class MqImportPipelineJob extends PipelineJob
 
         String basename = FileUtil.getBaseName(_expData.getFile(), 1);
         setLogFile(FT_LOG.newFile(_expData.getFile().getParentFile(), basename));
+    }
+
+    @Override
+    public boolean hasJacksonSerialization()
+    {
+        return true;
     }
 
     public ActionURL getStatusHref()
