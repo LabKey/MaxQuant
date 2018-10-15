@@ -40,12 +40,6 @@ public class MqImportPipelineJob extends PipelineJob
         setLogFile(FT_LOG.newFile(_expData.getFile().getParentFile(), basename));
     }
 
-    @Override
-    public boolean hasJacksonSerialization()
-    {
-        return true;
-    }
-
     public ActionURL getStatusHref()
     {
 //        if (_runInfo.getRunId() > 0)
