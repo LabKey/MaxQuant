@@ -1,4 +1,4 @@
-package org.labkey.test.pages.maxquantprivate;
+package org.labkey.test.pages.maxquant;
 
 import org.labkey.test.Locator;
 import org.labkey.test.util.DataRegionTable;

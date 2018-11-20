@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.labkey.test.tests.maxquantprivate;
+package org.labkey.test.tests.maxquant;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,9 +25,9 @@ import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.Git;
-import org.labkey.test.pages.maxquantprivate.ExperimentGroupDetails;
-import org.labkey.test.pages.maxquantprivate.PeptideDetails;
-import org.labkey.test.pages.maxquantprivate.ProteinGroupDetails;
+import org.labkey.test.pages.maxquant.ExperimentGroupDetails;
+import org.labkey.test.pages.maxquant.PeptideDetails;
+import org.labkey.test.pages.maxquant.ProteinGroupDetails;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.SummaryStatisticsHelper;
 
@@ -310,6 +310,6 @@ public class MaxQuantImportTest extends BaseWebDriverTest
     @Override
     public List<String> getAssociatedModules()
     {
-        return Arrays.asList("MaxQuantPrivate");
+        return Arrays.asList("MaxQuant");
     }
 }
