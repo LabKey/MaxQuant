@@ -41,6 +41,7 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.api.view.WebPartView;
 import org.labkey.mq.parser.SummaryTemplateParser;
+import org.labkey.mq.view.ProteinSearchWebPart;
 import org.springframework.validation.BindException;
 
 import java.util.ArrayList;
@@ -113,7 +114,10 @@ public class MqModule extends DefaultModule
 
         ProteinService proteinService = ServiceRegistry.get().getService(ProteinService.class);
         if (proteinService != null)
+        {
             proteinService.registerProteinSearchView(new MqProteinSearchViewProvider());
+            proteinService.registerProteinSearchFormView(new ProteinSearchWebPart.ProteinSearchFormViewProvider());
+        }
     }
 
     @NotNull
@@ -125,9 +129,20 @@ public class MqModule extends DefaultModule
             @Override
             public WebPartView getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
             {
-                JspView view = new JspView("/org/labkey/mq/view/proteinSearch.jsp");
-                view.setTitle(SEARCH_WEBPART_NAME);
-                return view;
+                return new ProteinSearchWebPart(new ProteinService.ProteinSearchForm()
+                {
+                    @Override
+                    public int[] getSeqId()
+                    {
+                        return new int[0];
+                    }
+
+                    @Override
+                    public boolean isExactMatch()
+                    {
+                        return true;
+                    }
+                });
             }
         };
 
