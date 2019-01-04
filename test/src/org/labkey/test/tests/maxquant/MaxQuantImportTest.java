@@ -15,11 +15,11 @@
  */
 package org.labkey.test.tests.maxquant;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.labkey.api.util.Pair;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
@@ -181,78 +181,78 @@ public class MaxQuantImportTest extends BaseWebDriverTest
     {
         log("ProteinGroup: row count and numeric column stats validation");
         Map<String, Pair<String, String>> columnStats = new HashMap<>();
-        columnStats.put("ProteinCount", new Pair<>("125", "2.451"));
-        columnStats.put("PeptideCount", new Pair<>("366", "7.176"));
-        columnStats.put("UniqPeptideCount", new Pair<>("299", "5.863"));
-        columnStats.put("RazorUniqPeptideCount", new Pair<>("336", "6.588"));
-        columnStats.put("SequenceCoverage", new Pair<>("751.70", "14.74"));
-        columnStats.put("Score", new Pair<>("4,472.1424", "87.6891"));
-        columnStats.put("Intensity", new Pair<>("107,040,227,800", "2,098,827,996.078"));
-        columnStats.put("MS2Count", new Pair<>("811", "15.902"));
+        columnStats.put("ProteinCount", Pair.of("125", "2.451"));
+        columnStats.put("PeptideCount", Pair.of("366", "7.176"));
+        columnStats.put("UniqPeptideCount", Pair.of("299", "5.863"));
+        columnStats.put("RazorUniqPeptideCount", Pair.of("336", "6.588"));
+        columnStats.put("SequenceCoverage", Pair.of("751.70", "14.74"));
+        columnStats.put("Score", Pair.of("4,472.1424", "87.6891"));
+        columnStats.put("Intensity", Pair.of("107,040,227,800", "2,098,827,996.078"));
+        columnStats.put("MS2Count", Pair.of("811", "15.902"));
         verifyQueryRowCountAndColumnStats("ProteinGroup", 51, columnStats);
 
         log("Peptide: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("Length", new Pair<>("5,444", "16.154"));
-        columnStats.put("Mass", new Pair<>("607,162.8796", "1,801.6703"));
-        columnStats.put("StartPosition", new Pair<>("133,637", "400.111"));
-        columnStats.put("EndPosition", new Pair<>("138,717", "415.32"));
-        columnStats.put("MissedCleavages", new Pair<>("158", "0.469"));
+        columnStats.put("Length", Pair.of("5,444", "16.154"));
+        columnStats.put("Mass", Pair.of("607,162.8796", "1,801.6703"));
+        columnStats.put("StartPosition", Pair.of("133,637", "400.111"));
+        columnStats.put("EndPosition", Pair.of("138,717", "415.32"));
+        columnStats.put("MissedCleavages", Pair.of("158", "0.469"));
         verifyQueryRowCountAndColumnStats("Peptide", 337, columnStats);
 
         log("ModifiedPeptide: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("Mass", new Pair<>("759,046.5560", "1,916.7842"));
+        columnStats.put("Mass", Pair.of("759,046.5560", "1,916.7842"));
         verifyQueryRowCountAndColumnStats("ModifiedPeptide", 396, columnStats);
 
         log("Evidence: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("MsmsMz", new Pair<>("1,315,255.1001", "770.5068"));
-        columnStats.put("Charge", new Pair<>("5,676", "3.325"));
-        columnStats.put("MassErrorPpm", new Pair<>("437,531,218.1343", "263,097.5455"));
-        columnStats.put("UncalibratedMassErrorPpm", new Pair<>("437,534,439.0769", "263,099.4823"));
-        columnStats.put("RetentionTime", new Pair<>(null, "90.5381")); // this column is of type REAL which makes the SUM inconsistent
-        columnStats.put("Pep", new Pair<>("5.943", "0.003"));
-        columnStats.put("MsmsCount", new Pair<>("2,074", "1.215"));
-        columnStats.put("ScanNumber", new Pair<>("41,451,924", "24,283.494"));
-        columnStats.put("Score", new Pair<>("179,817.83", "105.34"));
-        columnStats.put("DeltaScore", new Pair<>("139,934.7538", "81.9770"));
-        columnStats.put("Intensity", new Pair<>("493,456,488,930", "296,726,692.081"));
+        columnStats.put("MsmsMz", Pair.of("1,315,255.1001", "770.5068"));
+        columnStats.put("Charge", Pair.of("5,676", "3.325"));
+        columnStats.put("MassErrorPpm", Pair.of("437,531,218.1343", "263,097.5455"));
+        columnStats.put("UncalibratedMassErrorPpm", Pair.of("437,534,439.0769", "263,099.4823"));
+        columnStats.put("RetentionTime", Pair.of(null, "90.5381")); // this column is of type REAL which makes the SUM inconsistent
+        columnStats.put("Pep", Pair.of("5.943", "0.003"));
+        columnStats.put("MsmsCount", Pair.of("2,074", "1.215"));
+        columnStats.put("ScanNumber", Pair.of("41,451,924", "24,283.494"));
+        columnStats.put("Score", Pair.of("179,817.83", "105.34"));
+        columnStats.put("DeltaScore", Pair.of("139,934.7538", "81.9770"));
+        columnStats.put("Intensity", Pair.of("493,456,488,930", "296,726,692.081"));
         verifyQueryRowCountAndColumnStats("Evidence", 1707, columnStats);
 
         log("ProteinGroupExperimentInfo: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("Coverage", new Pair<>(null, "8.49")); // this column is of type REAL which makes the SUM inconsistent
-        columnStats.put("Intensity", new Pair<>("107,040,317,490", "699,609,918.235"));
-        columnStats.put("LfqIntensity", new Pair<>("n/a", "n/a"));
+        columnStats.put("Coverage", Pair.of(null, "8.49")); // this column is of type REAL which makes the SUM inconsistent
+        columnStats.put("Intensity", Pair.of("107,040,317,490", "699,609,918.235"));
+        columnStats.put("LfqIntensity", Pair.of("n/a", "n/a"));
         verifyQueryRowCountAndColumnStats("ProteinGroupExperimentInfo", 153, columnStats);
 
         log("ProteinGroupTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("0::ReporterIntensity", new Pair<>("3,117,272.85", "20,374.33"));
-        columnStats.put("0::ReporterIntensityCorrected", new Pair<>("3,294,180.71", "21,530.59"));
-        columnStats.put("0::ReporterIntensityCount", new Pair<>("782", "5.111"));
+        columnStats.put("0::ReporterIntensity", Pair.of("3,117,272.85", "20,374.33"));
+        columnStats.put("0::ReporterIntensityCorrected", Pair.of("3,294,180.71", "21,530.59"));
+        columnStats.put("0::ReporterIntensityCount", Pair.of("782", "5.111"));
         verifyQueryRowCountAndColumnStats("ProteinGroupTMTPivot", 153, columnStats);
 
         log("PeptideTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("3::ReporterIntensity", new Pair<>("4,501,291.92", "4,452.32"));
-        columnStats.put("3::ReporterIntensityCorrected", new Pair<>("4,402,597.13", "4,354.70"));
-        columnStats.put("3::ReporterIntensityCount", new Pair<>("934", "0.924"));
+        columnStats.put("3::ReporterIntensity", Pair.of("4,501,291.92", "4,452.32"));
+        columnStats.put("3::ReporterIntensityCorrected", Pair.of("4,402,597.13", "4,354.70"));
+        columnStats.put("3::ReporterIntensityCount", Pair.of("934", "0.924"));
         verifyQueryRowCountAndColumnStats("PeptideTMTPivot", 1011, columnStats);
 
         log("ModifiedPeptideTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("6::ReporterIntensity", new Pair<>("10,384,734.36", "8,741.36"));
-        columnStats.put("6::ReporterIntensityCorrected", new Pair<>("10,197,450.74", "8,583.71"));
-        columnStats.put("6::ReporterIntensityCount", new Pair<>("2,009", "1.691"));
+        columnStats.put("6::ReporterIntensity", Pair.of("10,384,734.36", "8,741.36"));
+        columnStats.put("6::ReporterIntensityCorrected", Pair.of("10,197,450.74", "8,583.71"));
+        columnStats.put("6::ReporterIntensityCount", Pair.of("2,009", "1.691"));
         verifyQueryRowCountAndColumnStats("ModifiedPeptideTMTPivot", 1188, columnStats);
 
         log("EvidenceTMTPivot: row count and numeric column stats validation");
         columnStats = new HashMap<>();
-        columnStats.put("9::ReporterIntensity", new Pair<>("1,972,389.32", "1,155.47"));
-        columnStats.put("9::ReporterIntensityCorrected", new Pair<>("1,822,296.77", "1,067.54"));
-        columnStats.put("9::ReporterIntensityCount", new Pair<>("1,836", "1.076"));
+        columnStats.put("9::ReporterIntensity", Pair.of("1,972,389.32", "1,155.47"));
+        columnStats.put("9::ReporterIntensityCorrected", Pair.of("1,822,296.77", "1,067.54"));
+        columnStats.put("9::ReporterIntensityCount", Pair.of("1,836", "1.076"));
         verifyQueryRowCountAndColumnStats("EvidenceTMTPivot", 1707, columnStats);
 
         log("Other tables: row count validation");
