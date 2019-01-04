@@ -278,11 +278,11 @@ public class MaxQuantImportTest extends BaseWebDriverTest
         {
             for (Map.Entry<String, Pair<String, String>> entry : columnStats.entrySet())
             {
-                if (entry.getValue().first != null)
-                    drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_SUM, entry.getValue().first);
+                if (entry.getValue().getLeft() != null)
+                    drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_SUM, entry.getValue().getLeft());
 
-                if (entry.getValue().second != null)
-                    drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_MEAN, entry.getValue().second);
+                if (entry.getValue().getRight() != null)
+                    drt.setSummaryStatistic(entry.getKey(), SummaryStatisticsHelper.BASE_STAT_MEAN, entry.getValue().getRight());
             }
         }
     }
