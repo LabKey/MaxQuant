@@ -127,10 +127,6 @@ public class MqController extends SpringActionController
             return PageFlowUtil.urlProvider(PipelineUrls.class).urlBegin(getContainer());
         }
 
-        public void validateCommand(MaxQuantPipelinePathForm form, Errors errors)
-        {
-        }
-
         public boolean doAction(MaxQuantPipelinePathForm form, BindException errors) throws Exception
         {
             for (File file : form.getValidatedFiles(getContainer()))
