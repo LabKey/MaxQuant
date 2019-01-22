@@ -19,7 +19,7 @@ package org.labkey.mq;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.action.FormHandlerAction;
-import org.labkey.api.action.RedirectAction;
+import org.labkey.api.action.OldRedirectAction;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
@@ -120,7 +120,7 @@ public class MqController extends SpringActionController
     // MaxQuant results upload action
     // ------------------------------------------------------------------------
     @RequiresPermission(InsertPermission.class)
-    public class MaxQuantUploadAction extends RedirectAction<MaxQuantPipelinePathForm>
+    public class MaxQuantUploadAction extends OldRedirectAction<MaxQuantPipelinePathForm>
     {
         public ActionURL getSuccessURL(MaxQuantPipelinePathForm form)
         {
