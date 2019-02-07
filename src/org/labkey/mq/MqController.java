@@ -120,14 +120,15 @@ public class MqController extends SpringActionController
     // MaxQuant results upload action
     // ------------------------------------------------------------------------
     @RequiresPermission(InsertPermission.class)
-    public class MaxQuantUploadAction extends OldRedirectAction<MaxQuantPipelinePathForm>
+    public class MaxQuantUploadAction extends FormHandlerAction<MaxQuantPipelinePathForm>
     {
-        public ActionURL getSuccessURL(MaxQuantPipelinePathForm form)
+        @Override
+        public void validateCommand(MaxQuantPipelinePathForm form, Errors errors)
         {
-            return PageFlowUtil.urlProvider(PipelineUrls.class).urlBegin(getContainer());
         }
 
-        public boolean doAction(MaxQuantPipelinePathForm form, BindException errors) throws Exception
+        @Override
+        public boolean handlePost(MaxQuantPipelinePathForm form, BindException errors) throws Exception
         {
             for (File file : form.getValidatedFiles(getContainer()))
             {
@@ -141,12 +142,7 @@ public class MqController extends SpringActionController
                 {
                     MqManager.addRunToQueue(info, file, form.getPipeRoot(getContainer()));
                 }
-                catch (IOException e)
-                {
-                    errors.reject(ERROR_MSG, e.getMessage());
-                    return false;
-                }
-                catch (SQLException e)
+                catch (IOException | SQLException e)
                 {
                     errors.reject(ERROR_MSG, e.getMessage());
                     return false;
@@ -154,6 +150,12 @@ public class MqController extends SpringActionController
             }
 
             return true;
+        }
+
+        @Override
+        public ActionURL getSuccessURL(MaxQuantPipelinePathForm form)
+        {
+            return PageFlowUtil.urlProvider(PipelineUrls.class).urlBegin(getContainer());
         }
     }
 
