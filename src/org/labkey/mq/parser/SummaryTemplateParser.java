@@ -78,8 +78,7 @@ public class SummaryTemplateParser
         boolean hasFractionColumn = headerParts[SUMMARY_TXT_FRACTION_INDEX].equalsIgnoreCase("Fraction");
 
         Experiment experiment = null;
-        int linesToIgnoreCount = 1;
-        for (int i = 1; i< lines.length- linesToIgnoreCount; i++)
+        for (int i = 1; i < lines.length; i++)
         {
             String[] parts = getParts(lines[i]);
             if (parts.length < 3)
@@ -87,18 +86,30 @@ public class SummaryTemplateParser
                 throw new MqParserException("Expected at least 3 tab separated values; found " + parts.length);
             }
 
+            String rawFileName = parts[SUMMARY_TXT_RAW_FILE_INDEX];
+
+            if ("Total".equals(rawFileName))
+            {
+                // Skip the "Total" line at the end of the file
+                continue;
+            }
+
             String experimentName = null;
             if (hasExperimentColumn)
             {
                 experimentName = parts[SUMMARY_TXT_EXPERIMENT_INDEX];
-                experiment = experimentMap.get(parts[SUMMARY_TXT_EXPERIMENT_INDEX]);
+
+                if (experimentMap.containsKey(rawFileName) && experimentName.trim().isEmpty())
+                {
+                    // Skip experiment subtotal lines near the end of the file, if present
+                    continue;
+                }
+
+                experiment = experimentMap.get(experimentName);
             }
 
             if (experiment == null)
             {
-                if(hasExperimentColumn){
-                    linesToIgnoreCount++;
-                }
                 experiment = new Experiment();
                 experiment.setExperimentName(experimentName);
                 experimentMap.put(experiment.getExperimentName(), experiment);
@@ -110,7 +121,7 @@ public class SummaryTemplateParser
                 fraction = parts[SUMMARY_TXT_FRACTION_INDEX];
             }
 
-            experiment.addRawfile(new RawFile(parts[SUMMARY_TXT_RAW_FILE_INDEX], fraction));
+            experiment.addRawfile(new RawFile(rawFileName, fraction));
         }
         return experimentMap;
     }
