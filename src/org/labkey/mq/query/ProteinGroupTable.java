@@ -2,6 +2,7 @@ package org.labkey.mq.query;
 
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
@@ -27,18 +28,18 @@ import java.util.regex.Pattern;
  */
 public class ProteinGroupTable extends DefaultMqTable
 {
-    public ProteinGroupTable(MqSchema schema)
+    public ProteinGroupTable(MqSchema schema, ContainerFilter cf)
     {
-        super(MqManager.getTableInfoProteinGroup(), schema);
+        super(MqManager.getTableInfoProteinGroup(), schema, cf);
 
-        getColumn("ExperimentGroupId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
+        getMutableColumn("ExperimentGroupId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
 
-        getColumn("ProteinIds").setDisplayColumnFactory(new UniProtLinkDisplayFactory());
-        getColumn("MajorityProteinIds").setDisplayColumnFactory(new UniProtLinkDisplayFactory());
-        getColumn("FastaHeaders").setDisplayColumnFactory(new MultiLineDisplayFactory());
-        getColumn("ProteinNames").setDisplayColumnFactory(new MultiLineDisplayFactory());
-        getColumn("GeneNames").setDisplayColumnFactory(new MultiLineDisplayFactory());
-        getColumn("PeptideCount").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE, "Id", "ProteinGroupId"));
+        getMutableColumn("ProteinIds").setDisplayColumnFactory(new UniProtLinkDisplayFactory());
+        getMutableColumn("MajorityProteinIds").setDisplayColumnFactory(new UniProtLinkDisplayFactory());
+        getMutableColumn("FastaHeaders").setDisplayColumnFactory(new MultiLineDisplayFactory());
+        getMutableColumn("ProteinNames").setDisplayColumnFactory(new MultiLineDisplayFactory());
+        getMutableColumn("GeneNames").setDisplayColumnFactory(new MultiLineDisplayFactory());
+        getMutableColumn("PeptideCount").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PROTEIN_GROUP_PEPTIDE, "Id", "ProteinGroupId"));
 
         ActionURL detailsUrl = new ActionURL(MqController.ViewProteinGroupInfoAction.class, getContainer());
         setDetailsURL(new DetailsURL(detailsUrl, "id", FieldKey.fromParts("Id")));

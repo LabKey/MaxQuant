@@ -2,7 +2,8 @@ package org.labkey.mq.query;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.BaseColumnInfo;
+import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.RenderContext;
@@ -31,9 +32,9 @@ import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP;
 
 public class ExperimentGroupTable extends DefaultMqTable
 {
-    public ExperimentGroupTable(MqSchema schema)
+    public ExperimentGroupTable(MqSchema schema, ContainerFilter cf)
     {
-        super(MqManager.getTableInfoExperimentGroup(), schema);
+        super(MqManager.getTableInfoExperimentGroup(), schema, cf);
 
         ActionURL detailsUrl = new ActionURL(MqController.ViewProteinGroupsAction.class, getContainer());
         setDetailsURL(new DetailsURL(detailsUrl, "id", FieldKey.fromParts("Id")));
@@ -43,10 +44,10 @@ public class ExperimentGroupTable extends DefaultMqTable
         setDeleteURL(new DetailsURL(deleteUrl));
 
         ExpSchema expSchema = new ExpSchema(getUserSchema().getUser(), getContainer());
-        getColumn("ExperimentRunLSID").setFk(new QueryForeignKey(expSchema, getContainer(), "Runs", "LSID", null, true));
-        getColumn("DataId").setFk(new QueryForeignKey(expSchema, getContainer(), "Data", "RowId", null));
+        getMutableColumn("ExperimentRunLSID").setFk(QueryForeignKey.from(expSchema, cf).container(getContainer()).to("Runs", "LSID", null).raw(true));
+        getMutableColumn("DataId").setFk(QueryForeignKey.from(expSchema, cf).container(getContainer()).to("Data", "RowId", null));
 
-        ColumnInfo folderName = addWrapColumn("ParentFolderName", getRealTable().getColumn("LocationOnFileSystem"));
+        BaseColumnInfo folderName = addWrapColumn("ParentFolderName", getRealTable().getColumn("LocationOnFileSystem"));
         folderName.setDisplayColumnFactory(colInfo -> new DataColumn(colInfo)
         {
             @Override
@@ -60,7 +61,7 @@ public class ExperimentGroupTable extends DefaultMqTable
 
         // ProteinGroup count column
         SQLFragment sql = new SQLFragment("(").append(getRunProteinGroupCountSQL()).append(")");
-        ColumnInfo countCol = new ExprColumn(this, "ProteinGroups", sql, JdbcType.INTEGER);
+        BaseColumnInfo countCol = new ExprColumn(this, "ProteinGroups", sql, JdbcType.INTEGER);
         countCol.setFormat("#,###");
         countCol.setDisplayColumnFactory(new MqSchema.CountColumnDisplayFactory(TABLE_PROTEIN_GROUP));
         addColumn(countCol);
@@ -87,7 +88,7 @@ public class ExperimentGroupTable extends DefaultMqTable
         setDefaultVisibleColumns(columns);
     }
 
-    public static SQLFragment getRunProteinGroupCountSQL()
+    private static SQLFragment getRunProteinGroupCountSQL()
     {
         SQLFragment sqlFragment = new SQLFragment("SELECT COUNT(pg.id) FROM ");
         sqlFragment.append(MqManager.getTableInfoProteinGroup(), "pg");
@@ -96,7 +97,7 @@ public class ExperimentGroupTable extends DefaultMqTable
         return sqlFragment;
     }
 
-    public static SQLFragment getRunPeptideCountSQL()
+    private static SQLFragment getRunPeptideCountSQL()
     {
         SQLFragment sqlFragment = new SQLFragment("SELECT COUNT(p.id) FROM ");
         sqlFragment.append(MqManager.getTableInfoPeptide(), "p");
