@@ -94,7 +94,7 @@ import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP_RATIOS_SILAC;
 public class MqController extends SpringActionController
 {
     private static final DefaultActionResolver _actionResolver = new DefaultActionResolver(MqController.class);
-    public static final String NAME = "mq";
+    static final String NAME = "mq";
 
     public MqController()
     {
@@ -104,7 +104,7 @@ public class MqController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public class BeginAction extends SimpleViewAction
     {
-        public ModelAndView getView(Object o, BindException errors) throws Exception
+        public ModelAndView getView(Object o, BindException errors)
         {
             return new JspView("/org/labkey/mq/view/hello.jsp");
         }
@@ -358,7 +358,7 @@ public class MqController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        public ModelAndView getView(IdForm form, BindException errors)
         {
             if (errors.hasErrors())
                 return new SimpleErrorView(errors);
@@ -416,7 +416,7 @@ public class MqController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        public ModelAndView getView(IdForm form, BindException errors)
         {
             if (errors.hasErrors())
                 return new SimpleErrorView(errors);
@@ -477,7 +477,7 @@ public class MqController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        public ModelAndView getView(IdForm form, BindException errors)
         {
             if (errors.hasErrors())
                 return new SimpleErrorView(errors);
@@ -538,7 +538,7 @@ public class MqController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        public ModelAndView getView(IdForm form, BindException errors)
         {
             VBox view = new VBox();
             if (errors.hasErrors())
@@ -633,7 +633,7 @@ public class MqController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getView(IdForm form, BindException errors) throws Exception
+        public ModelAndView getView(IdForm form, BindException errors)
         {
             if (errors.hasErrors())
                 return new SimpleErrorView(errors);
@@ -753,7 +753,7 @@ public class MqController extends SpringActionController
     private DetailsView getProteinGroupDetailsView(int proteinGroupid)
     {
         MqSchema schema = new MqSchema(getUser(), getContainer());
-        TableInfo table = schema.createTable(TABLE_PROTEIN_GROUP);
+        TableInfo table = schema.createTable(TABLE_PROTEIN_GROUP, null);
 
         Collection<FieldKey> columns = new ArrayList<>();
         columns.add(FieldKey.fromParts("ProteinIds"));
@@ -769,7 +769,7 @@ public class MqController extends SpringActionController
     private DetailsView getPeptideDetailsView(int peptideId)
     {
         MqSchema schema = new MqSchema(getUser(), getContainer());
-        TableInfo table = schema.createTable(TABLE_PEPTIDE);
+        TableInfo table = schema.createTable(TABLE_PEPTIDE, null);
 
         Collection<FieldKey> columns = new ArrayList<>();
         columns.add(FieldKey.fromParts("Sequence"));
