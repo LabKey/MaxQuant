@@ -52,7 +52,7 @@ import java.util.Set;
 public class MqSchema extends SimpleUserSchema
 {
     public static final String NAME = "mq";
-    public static final String SCHEMA_DESCR = "Contains data imported from MaxQuant results";
+    private static final String SCHEMA_DESCR = "Contains data imported from MaxQuant results";
 
     // Tables
     public static final String TABLE_EXPERIMENT_GROUP = "ExperimentGroup";
@@ -85,7 +85,7 @@ public class MqSchema extends SimpleUserSchema
 
     private ExpSchema _expSchema;
 
-    static public void register(Module module)
+    static void register(Module module)
     {
         DefaultSchema.registerProvider(NAME, new DefaultSchema.SchemaProvider(module)
         {
@@ -102,7 +102,7 @@ public class MqSchema extends SimpleUserSchema
         _expSchema = new ExpSchema(user, container);
     }
 
-    public static DbSchema getSchema()
+    static DbSchema getSchema()
     {
         return DbSchema.get(NAME, DbSchemaType.Module);
     }
@@ -170,7 +170,7 @@ public class MqSchema extends SimpleUserSchema
     private ExpRunTable getRunsTable()
     {
         // Start with a standard experiment run table
-        ExpRunTable result = _expSchema.getRunsTable();
+        ExpRunTable result = _expSchema.getRunsTable(true);
 
         result.setDescription("Contains a row per MaxQuant experiment loaded in this folder.");
 
