@@ -44,8 +44,8 @@ public class ExperimentGroupTable extends DefaultMqTable
         setDeleteURL(new DetailsURL(deleteUrl));
 
         ExpSchema expSchema = new ExpSchema(getUserSchema().getUser(), getContainer());
-        getMutableColumn("ExperimentRunLSID").setFk(QueryForeignKey.from(expSchema, cf).container(getContainer()).to("Runs", "LSID", null).raw(true));
-        getMutableColumn("DataId").setFk(QueryForeignKey.from(expSchema, cf).container(getContainer()).to("Data", "RowId", null));
+        getMutableColumn("ExperimentRunLSID").setFk(QueryForeignKey.from(expSchema, cf).to("Runs", "LSID", null).raw(true));
+        getMutableColumn("DataId").setFk(QueryForeignKey.from(expSchema, cf).to("Data", "RowId", null));
 
         BaseColumnInfo folderName = addWrapColumn("ParentFolderName", getRealTable().getColumn("LocationOnFileSystem"));
         folderName.setDisplayColumnFactory(colInfo -> new DataColumn(colInfo)
