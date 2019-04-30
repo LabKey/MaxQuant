@@ -128,7 +128,7 @@ public class MqExperimentImporter
             updateRunStatus(IMPORT_STARTED, STATUS_RUNNING);
             _log.info("Starting to import MaxQuant results from " + experimentDirectory);
 
-            // Parse the "ExperimentDesignTemplate.txt" in the given directory
+            // Parse the "Summary.txt" in the given directory
             if(!summaryTemplatefile.exists())
             {
                 throw new MqParserException("Could not find file " + summaryTemplatefile.getName() + " in directory " + experimentDirectory + ".");
@@ -498,9 +498,12 @@ public class MqExperimentImporter
 
                 Integer experimentId = experimentNameToDbId.get(row.getExperiment());
                 if (experimentId == null)
-                    throw new IllegalArgumentException("Unable to find experiment with name:" + row.getExperiment());
+                    throw new IllegalArgumentException("Unable to find experiment with name '" + row.getExperiment() + "'. Expected values are: "+ experimentNameToDbId.keySet());
                 evidence.setExperimentId(experimentId);
-                evidence.setRawFileId(rawfileNameToDbId.get(row.getRawFile()));
+                Integer rawFileId = rawfileNameToDbId.get(row.getRawFile());
+                if (rawFileId == null)
+                        throw new IllegalArgumentException("Unable to find raw file with name '" + row.getRawFile() + "'. Expected values are: " + rawfileNameToDbId.keySet());
+                evidence.setRawFileId(rawFileId);
                 evidence.setMaxQuantId(row.getMaxQuantId());
                 evidence.setMsmsMz(row.getMsmsMz());
                 evidence.setCharge(row.getCharge());
