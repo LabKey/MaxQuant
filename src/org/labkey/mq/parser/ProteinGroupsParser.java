@@ -49,8 +49,8 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
         ProteinGroupRow pgRow = new ProteinGroupRow();
         pgRow.setProteinIds(getValue(row, ProteinIds));
         pgRow.setMajorityProteinIds(getValue(row, MajorityProteinIds));
-        pgRow.setProteinNames(getValue(row, ProteinNames));
-        pgRow.setGeneNames(getValue(row, GeneNames));
+        pgRow.setProteinNames(tryGetValue(row, ProteinNames));
+        pgRow.setGeneNames(tryGetValue(row, GeneNames));
         pgRow.setFastaHeaders(getValue(row, FastaHeaders));
         pgRow.setProteinCount(getIntValue(row, NumProteins));
         pgRow.setPeptideCount(getIntValue(row, NumPeptides));
