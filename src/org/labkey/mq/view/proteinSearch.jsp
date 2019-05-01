@@ -19,7 +19,7 @@
                   value="<%=h(bean.getIdentifier())%>"
                   label="Protein label *"
                   forceSmallContext="true"
-                  contextContent="Search within the following fields of the Protein Group table: Protein ID, Majority Protein ID, Protein Name, and Gene Name. You can enter a comma separated list for multiple value search."
+                  contextContent="Search within the following fields of the Protein Group table: Protein ID, Majority Protein ID, Protein Name, Gene Name, and Fasta Headers. You can enter a comma separated list for multiple value search."
     />
     <labkey:input type="checkbox"
                   id="includeSubfoldersInput"
