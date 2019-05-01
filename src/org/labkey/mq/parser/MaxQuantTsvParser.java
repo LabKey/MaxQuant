@@ -198,6 +198,10 @@ public class MaxQuantTsvParser extends TsvParser
 
         // starting with 0, look for reporter intensity columns by tag number (until we get to a tag number that doesn't exist)
         int tagNumber = 0;
+        if(row.getValue(TMT_REPORTER_INTENSITY_PREFIX + tagNumber) == null)
+        {
+            tagNumber = 1; // Some datasets start with tag number 1.
+        }
         while (row.getValue(TMT_REPORTER_INTENSITY_PREFIX + tagNumber) != null)
         {
             // Issue 34088: look for the experiment name specific columns, and fall back to the summary columns if no experiment columnns exist

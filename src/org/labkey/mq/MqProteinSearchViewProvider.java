@@ -57,6 +57,7 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
                 sql.append(" OR ").append(getProteinLabelCondition("pg.MajorityProteinIds", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
                 sql.append(" OR ").append(getProteinLabelCondition("pg.ProteinNames", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
                 sql.append(" OR ").append(getProteinLabelCondition("pg.GeneNames", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
+                sql.append(" OR ").append(getProteinLabelCondition("pg.FastaHeaders", getProteinLabels(form.getIdentifier()), form.isExactMatch(), likeOperator));
                 sql.append(")");
                 result.addCondition(sql);
 
