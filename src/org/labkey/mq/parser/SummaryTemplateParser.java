@@ -44,7 +44,7 @@ public class SummaryTemplateParser
             while ((line = reader.readLine()) != null){
                 fileLines.add(line);
             }
-            String[] fileLinesArray = fileLines.toArray(new String[fileLines.size()]);
+            String[] fileLinesArray = fileLines.toArray(new String[0]);
             validateFileHeader(fileLinesArray);
             Map<String, Experiment> experimentMap = getStringExperimentMap(fileLinesArray);
             ExperimentGroup expGroup = new ExperimentGroup(file.getParent());
@@ -172,8 +172,8 @@ public class SummaryTemplateParser
                     "fake\t\t1111\t22222\t0\t33333\t44444\t0\t55555\t6666\t7777\t0\t888\t99.99\t10.10\tNaN\t2.22" +
                     "\t1212\t13131\t14141\t5.55\t1515\t7.77\t15151\t16161\t17171\t88.88\t99.99\t1818\t19.19\t" +
                     "-\t0.12345\t0.4587\t20202\t212121\t\n";
-            String endLine1 = "experimentdat";
-            String endLine2 = "total";
+            String endLine1 = "experimentdat\t \t \t";
+            String endLine2 = "Total\t \t \t";
 
             String[] fileLines = new String[]{fileHeader,experiment, endLine1, endLine2};
 
