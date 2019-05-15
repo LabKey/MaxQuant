@@ -33,7 +33,7 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
     @Override
     public QueryView createView(ViewContext viewContext, ProteinService.ProteinSearchForm form, BindException errors)
     {
-        if (! viewContext.getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule(MqModule.class)))
+        if (!viewContext.getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule(MqModule.class)))
             return null;  // only enable this view if the MqModule is active
 
         QuerySettings settings = new QuerySettings(viewContext, getDataRegionName(), TABLE_PROTEIN_GROUP);
@@ -46,7 +46,8 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
             @Override
             protected TableInfo createTable()
             {
-                FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
+//                FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
+                FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) getSchema().getTable(getSettings().getQueryName(), getContainerFilter(), true, true);
                 String likeOperator = result.getSqlDialect().getCaseInsensitiveLikeOperator();
 
                 // Apply a filter to restrict to the set of matching proteins
@@ -68,7 +69,8 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
                     visibleColumns.add(FieldKey.fromParts("Container"));
                 }
                 visibleColumns.addAll(defaultVisible);
-                result.setDefaultVisibleColumns(visibleColumns);
+                // TODO: Avoids mutating the TableInfo, but probably should be moved outside of new QueryView()
+                settings.setFieldKeys(visibleColumns);
 
                 return result;
             }

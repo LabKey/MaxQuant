@@ -1,6 +1,7 @@
 package org.labkey.mq.query;
 
-import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.BaseColumnInfo;
+import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.query.ExprColumn;
@@ -16,17 +17,17 @@ import java.util.ArrayList;
  */
 public class PeptideTable extends DefaultMqTable
 {
-    public PeptideTable(MqSchema schema)
+    public PeptideTable(MqSchema schema, ContainerFilter cf)
     {
-        super(MqManager.getTableInfoPeptide(), schema);
+        super(MqManager.getTableInfoPeptide(), schema, cf);
 
-        getColumn("ExperimentGroupId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
+        getMutableColumn("ExperimentGroupId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_EXPERIMENT_GROUP, "ExperimentGroup", "ExperimentGroup"));
 
         SQLFragment sql = new SQLFragment("(").append("SELECT COUNT(e.Id) FROM ");
         sql.append(MqManager.getTableInfoEvidence(), "e");
         sql.append(" WHERE e.PeptideId=");
         sql.append(ExprColumn.STR_TABLE_ALIAS + ".Id").append(")");
-        ColumnInfo countCol = new ExprColumn(this, "EvidenceCount", sql, JdbcType.INTEGER);
+        BaseColumnInfo countCol = new ExprColumn(this, "EvidenceCount", sql, JdbcType.INTEGER);
         countCol.setFormat("#,###");
         countCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_EVIDENCE, "Id", "PeptideId"));
         addColumn(countCol);

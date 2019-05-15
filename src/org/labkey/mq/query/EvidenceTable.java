@@ -1,7 +1,8 @@
 package org.labkey.mq.query;
 
 import org.jetbrains.annotations.NotNull;
-import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.BaseColumnInfo;
+import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.query.ExprColumn;
@@ -18,17 +19,17 @@ import java.util.List;
  */
 public class EvidenceTable extends DefaultMqTable
 {
-    public EvidenceTable(MqSchema schema)
+    public EvidenceTable(MqSchema schema, ContainerFilter cf)
     {
-        super(MqManager.getTableInfoEvidence(), schema);
+        super(MqManager.getTableInfoEvidence(), schema, cf);
 
-        getColumn("ExperimentId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_EXPERIMENT, "Id", "ExperimentName"));
-        getColumn("RawFileId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_RAW_FILE, "Id", "Name"));
-        getColumn("PeptideId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
-        getColumn("ModifiedPeptideId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_MODIFIED_PEPTIDE, "Id", "Sequence"));
+        getMutableColumn("ExperimentId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_EXPERIMENT, "Id", "ExperimentName"));
+        getMutableColumn("RawFileId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_RAW_FILE, "Id", "Name"));
+        getMutableColumn("PeptideId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
+        getMutableColumn("ModifiedPeptideId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_MODIFIED_PEPTIDE, "Id", "Sequence"));
 
-        getColumn("PeptideId").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PEPTIDE, "PeptideId", "Id"));
-        getColumn("ModifiedPeptideId").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_MODIFIED_PEPTIDE, "ModifiedPeptideId", "Id"));
+        getMutableColumn("PeptideId").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_PEPTIDE, "PeptideId", "Id"));
+        getMutableColumn("ModifiedPeptideId").setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_MODIFIED_PEPTIDE, "ModifiedPeptideId", "Id"));
 
         addColumn(makeSilacIntensityColumn('H'));
         addColumn(makeSilacIntensityColumn('M'));
@@ -56,7 +57,7 @@ public class EvidenceTable extends DefaultMqTable
     }
 
     @NotNull
-    private ColumnInfo makeSilacIntensityColumn(char labelType)
+    private BaseColumnInfo makeSilacIntensityColumn(char labelType)
     {
         SQLFragment sql = new SQLFragment("(").append("SELECT Intensity FROM ");
         sql.append(MqManager.getTableInfoEvidenceIntensitySilac(), "eis");
@@ -66,13 +67,13 @@ public class EvidenceTable extends DefaultMqTable
         sql.add(labelType);
         sql.append(")");
 
-        ColumnInfo intensityHCol = new ExprColumn(this, "Intensity " + labelType, sql, JdbcType.INTEGER);
+        BaseColumnInfo intensityHCol = new ExprColumn(this, "Intensity " + labelType, sql, JdbcType.INTEGER);
         intensityHCol.setFormat("#,###,###,###");
         return intensityHCol;
     }
 
     @NotNull
-    private ColumnInfo makeSilacRatioColumn(String ratioType, String columnName)
+    private BaseColumnInfo makeSilacRatioColumn(String ratioType, String columnName)
     {
         SQLFragment sql = new SQLFragment("(").append("SELECT ").append(columnName).append(" FROM ");
         sql.append(MqManager.getTableInfoEvidenceRatioSilac(), "ers");
@@ -82,7 +83,7 @@ public class EvidenceTable extends DefaultMqTable
         sql.add(ratioType);
         sql.append(")");
 
-        ColumnInfo ratioColumn = new ExprColumn(this, columnName + " " + ratioType, sql, JdbcType.DOUBLE);
+        BaseColumnInfo ratioColumn = new ExprColumn(this, columnName + " " + ratioType, sql, JdbcType.DOUBLE);
         ratioColumn.setFormat("0.0000");
         return ratioColumn;
     }

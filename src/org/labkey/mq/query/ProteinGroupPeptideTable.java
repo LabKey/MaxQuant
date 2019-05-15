@@ -1,6 +1,6 @@
 package org.labkey.mq.query;
 
-import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.BaseColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
@@ -21,19 +21,19 @@ public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
 {
     private static final FieldKey CONTAINER_FAKE_COLUMN_NAME = FieldKey.fromParts("Container");
 
-    public ProteinGroupPeptideTable(MqSchema schema)
+    public ProteinGroupPeptideTable(MqSchema schema, ContainerFilter cf)
     {
-        super(MqManager.getTableInfoProteinGroupPeptide(), schema);
+        super(MqManager.getTableInfoProteinGroupPeptide(), schema, cf);
         wrapAllColumns(true);
 
-        getColumn("ProteinGroupId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PROTEIN_GROUP, "Id", "ProteinIds"));
-        getColumn("PeptideId").setFk(new QueryForeignKey(schema, null, MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
+        getMutableColumn("ProteinGroupId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_PROTEIN_GROUP, "Id", "ProteinIds"));
+        getMutableColumn("PeptideId").setFk(QueryForeignKey.from(schema, cf).to(MqSchema.TABLE_PEPTIDE, "Id", "Sequence"));
 
         SQLFragment sql = new SQLFragment("(").append("SELECT COUNT(e.Id) FROM ");
         sql.append(MqManager.getTableInfoEvidence(), "e");
         sql.append(" WHERE e.PeptideId=");
         sql.append(ExprColumn.STR_TABLE_ALIAS + ".PeptideId").append(")");
-        ColumnInfo countCol = new ExprColumn(this, "EvidenceCount", sql, JdbcType.INTEGER);
+        BaseColumnInfo countCol = new ExprColumn(this, "EvidenceCount", sql, JdbcType.INTEGER);
         countCol.setFormat("#,###");
         countCol.setDisplayColumnFactory(new QueryLinkDisplayColumnFactory(MqSchema.TABLE_EVIDENCE, "PeptideId", "PeptideId"));
         addColumn(countCol);
@@ -63,7 +63,7 @@ public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
         addCondition(createContainerFilterSQL(filter, _userSchema.getContainer()), CONTAINER_FAKE_COLUMN_NAME);
     }
 
-    private  SQLFragment createContainerFilterSQL(ContainerFilter filter, Container container)
+    private SQLFragment createContainerFilterSQL(ContainerFilter filter, Container container)
     {
         SQLFragment sql = new SQLFragment("ProteinGroupId IN (SELECT Id FROM ");
         sql.append(MqManager.getTableInfoProteinGroup(), "pg");

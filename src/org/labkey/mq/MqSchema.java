@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.collections.CaseInsensitiveHashSet;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
+import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.DbSchemaType;
@@ -51,7 +52,7 @@ import java.util.Set;
 public class MqSchema extends SimpleUserSchema
 {
     public static final String NAME = "mq";
-    public static final String SCHEMA_DESCR = "Contains data imported from MaxQuant results";
+    private static final String SCHEMA_DESCR = "Contains data imported from MaxQuant results";
 
     // Tables
     public static final String TABLE_EXPERIMENT_GROUP = "ExperimentGroup";
@@ -84,7 +85,7 @@ public class MqSchema extends SimpleUserSchema
 
     private ExpSchema _expSchema;
 
-    static public void register(Module module)
+    static void register(Module module)
     {
         DefaultSchema.registerProvider(NAME, new DefaultSchema.SchemaProvider(module)
         {
@@ -101,7 +102,7 @@ public class MqSchema extends SimpleUserSchema
         _expSchema = new ExpSchema(user, container);
     }
 
-    public static DbSchema getSchema()
+    static DbSchema getSchema()
     {
         return DbSchema.get(NAME, DbSchemaType.Module);
     }
@@ -113,7 +114,7 @@ public class MqSchema extends SimpleUserSchema
 
     @Nullable
     @Override
-    public TableInfo createTable(String name)
+    public TableInfo createTable(String name, ContainerFilter cf)
     {
         if (TABLE_EXPERIMENT_GROUP.equalsIgnoreCase(name) || "Runs".equalsIgnoreCase(name))
         {
@@ -121,30 +122,30 @@ public class MqSchema extends SimpleUserSchema
         }
         else if (TABLE_EXPERIMENT_GROUP_DETAILS.equalsIgnoreCase(name))
         {
-            return new ExperimentGroupTable(this);
+            return new ExperimentGroupTable(this, cf);
         }
         else if (TABLE_PROTEIN_GROUP.equalsIgnoreCase(name))
         {
-            return new ProteinGroupTable(this);
+            return new ProteinGroupTable(this, cf);
         }
-        else if(TABLE_PROTEIN_GROUP_PEPTIDE.equalsIgnoreCase(name))
+        else if (TABLE_PROTEIN_GROUP_PEPTIDE.equalsIgnoreCase(name))
         {
-            return new ProteinGroupPeptideTable(this);
+            return new ProteinGroupPeptideTable(this, cf);
         }
-        else if(TABLE_PEPTIDE.equalsIgnoreCase(name))
+        else if (TABLE_PEPTIDE.equalsIgnoreCase(name))
         {
-            return new PeptideTable(this);
+            return new PeptideTable(this, cf);
         }
-        else if(TABLE_EVIDENCE.equalsIgnoreCase(name))
+        else if (TABLE_EVIDENCE.equalsIgnoreCase(name))
         {
-            return new EvidenceTable(this);
+            return new EvidenceTable(this, cf);
         }
         else if (!getTableNames().contains(name))
         {
             return null;
         }
 
-        SimpleUserSchema.SimpleTable<MqSchema> table = new SimpleUserSchema.SimpleTable<>(this, createSourceTable(name)).init();
+        SimpleUserSchema.SimpleTable<MqSchema> table = new SimpleUserSchema.SimpleTable<>(this, createSourceTable(name), cf).init();
         table.setReadOnly(true);
 
         if (TABLE_PROTEIN_GROUP_EXPERIMENT_INFO.equalsIgnoreCase(name) || TABLE_PROTEIN_GROUP_RATIOS_SILAC.equalsIgnoreCase(name)
@@ -166,10 +167,10 @@ public class MqSchema extends SimpleUserSchema
         return table;
     }
 
-    public ExpRunTable getRunsTable()
+    private ExpRunTable getRunsTable()
     {
         // Start with a standard experiment run table
-        ExpRunTable result = _expSchema.getRunsTable();
+        ExpRunTable result = _expSchema.getRunsTable(true);
 
         result.setDescription("Contains a row per MaxQuant experiment loaded in this folder.");
 
