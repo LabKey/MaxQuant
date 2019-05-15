@@ -46,7 +46,8 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
             @Override
             protected TableInfo createTable()
             {
-                FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
+//                FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
+                FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) getSchema().getTable(getSettings().getQueryName(), getContainerFilter(), true, true);
                 String likeOperator = result.getSqlDialect().getCaseInsensitiveLikeOperator();
 
                 // Apply a filter to restrict to the set of matching proteins
