@@ -1,18 +1,15 @@
-
-<%@ page import="org.labkey.api.util.PageFlowUtil" %>
 <%@ page import="org.labkey.api.ms2.MS2Urls" %>
 <%@ page import="org.labkey.api.protein.ProteinService" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
-
 <%
     JspView<ProteinService.ProteinSearchForm> me = (JspView<ProteinService.ProteinSearchForm>) HttpView.currentView();
     ProteinService.ProteinSearchForm bean = me.getModelBean();
 %>
 
-<labkey:form layout="horizontal" action="<%= h(PageFlowUtil.urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer())) %>">
+<labkey:form layout="horizontal" action="<%= h(urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer())) %>">
     <labkey:input type="text"
                   id="identifierInput"
                   name="identifier"
