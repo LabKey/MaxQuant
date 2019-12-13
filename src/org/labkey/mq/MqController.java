@@ -111,7 +111,7 @@ public class MqController extends SpringActionController
 
         public NavTree appendNavTrail(NavTree root)
         {
-            return root;
+            return root.addChild("Max Quant Main Page");
         }
     }
 
@@ -346,7 +346,7 @@ public class MqController extends SpringActionController
                 root.addChild("MaxQuant Runs", getShowRunsUrl());
                 root.addChild("Protein Groups for Experiment Group " + _experimentGroup.getId());
             }
-            return root;
+            return (null == getPageConfig().getTitle() ? root.addChild("Protein Groups") : root);
         }
 
         @Override
@@ -404,7 +404,7 @@ public class MqController extends SpringActionController
                 root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroup.getId()));
                 root.addChild("Peptides for Experiment Group " + _experimentGroup.getId());
             }
-            return root;
+            return (null == getPageConfig().getTitle() ? root.addChild("Peptides") : root);
         }
 
         @Override
