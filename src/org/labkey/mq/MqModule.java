@@ -35,7 +35,6 @@ import org.labkey.api.query.UserSchema;
 import org.labkey.api.services.ServiceRegistry;
 import org.labkey.api.view.BaseWebPartFactory;
 import org.labkey.api.view.HtmlView;
-import org.labkey.api.view.JspView;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
@@ -67,7 +66,7 @@ public class MqModule extends DefaultModule
     }
 
     @Override
-    public double getVersion()
+    public @Nullable Double getSchemaVersion()
     {
         return 20.000;
     }
