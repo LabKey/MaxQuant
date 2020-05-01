@@ -47,7 +47,7 @@ public class ExperimentGroupTable extends DefaultMqTable
         getMutableColumn("ExperimentRunLSID").setFk(QueryForeignKey.from(expSchema, cf).to("Runs", "LSID", null).raw(true));
         getMutableColumn("DataId").setFk(QueryForeignKey.from(expSchema, cf).to("Data", "RowId", null));
 
-        BaseColumnInfo folderName = addWrapColumn("ParentFolderName", getRealTable().getColumn("LocationOnFileSystem"));
+        var folderName = addWrapColumn("ParentFolderName", getRealTable().getColumn("LocationOnFileSystem"));
         folderName.setDisplayColumnFactory(colInfo -> new DataColumn(colInfo)
         {
             @Override
