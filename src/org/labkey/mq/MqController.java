@@ -109,9 +109,9 @@ public class MqController extends SpringActionController
             return new JspView("/org/labkey/mq/view/hello.jsp");
         }
 
-        public NavTree appendNavTrail(NavTree root)
+        public void addNavTrail(NavTree root)
         {
-            return root.addChild("Max Quant Main Page");
+            root.addChild("Max Quant Main Page");
         }
     }
 
@@ -249,9 +249,8 @@ public class MqController extends SpringActionController
             return null;
         }
 
-        public NavTree appendNavTrail(NavTree root)
+        public void addNavTrail(NavTree root)
         {
-            return root;
         }
     }
 
@@ -339,14 +338,15 @@ public class MqController extends SpringActionController
         private ExperimentGroup _experimentGroup;
 
         @Override
-        public NavTree appendNavTrail(NavTree root)
+        public void addNavTrail(NavTree root)
         {
             if (_experimentGroup != null)
             {
                 root.addChild("MaxQuant Runs", getShowRunsUrl());
                 root.addChild("Protein Groups for Experiment Group " + _experimentGroup.getId());
             }
-            return (null == getPageConfig().getTitle() ? root.addChild("Protein Groups") : root);
+            if (null == getPageConfig().getTitle())
+                root.addChild("Protein Groups");
         }
 
         @Override
@@ -396,7 +396,7 @@ public class MqController extends SpringActionController
         private ExperimentGroup _experimentGroup;
 
         @Override
-        public NavTree appendNavTrail(NavTree root)
+        public void addNavTrail(NavTree root)
         {
             if (_experimentGroup != null)
             {
@@ -404,7 +404,8 @@ public class MqController extends SpringActionController
                 root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroup.getId()));
                 root.addChild("Peptides for Experiment Group " + _experimentGroup.getId());
             }
-            return (null == getPageConfig().getTitle() ? root.addChild("Peptides") : root);
+            if (null == getPageConfig().getTitle())
+                root.addChild("Peptides");
         }
 
         @Override
@@ -455,7 +456,7 @@ public class MqController extends SpringActionController
         private ProteinGroup _proteinGroup;
 
         @Override
-        public NavTree appendNavTrail(NavTree root)
+        public void addNavTrail(NavTree root)
         {
             if (_proteinGroup != null)
             {
@@ -463,7 +464,6 @@ public class MqController extends SpringActionController
                 root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroupId));
                 root.addChild("Peptides for Protein Group " + _proteinGroup.getId());
             }
-            return root;
         }
 
         @Override
@@ -516,7 +516,7 @@ public class MqController extends SpringActionController
         private ProteinGroup _proteinGroup;
 
         @Override
-        public NavTree appendNavTrail(NavTree root)
+        public void addNavTrail(NavTree root)
         {
             if (_proteinGroup != null)
             {
@@ -524,7 +524,6 @@ public class MqController extends SpringActionController
                 root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroupId));
                 root.addChild("Experiment Details for Protein Group " + _proteinGroup.getId());
             }
-            return root;
         }
 
         @Override
@@ -611,7 +610,7 @@ public class MqController extends SpringActionController
         private Peptide _peptide;
 
         @Override
-        public NavTree appendNavTrail(NavTree root)
+        public void addNavTrail(NavTree root)
         {
             if (_peptide != null)
             {
@@ -619,7 +618,6 @@ public class MqController extends SpringActionController
                 root.addChild("Experiment Protein Groups", getProteinGroupsUrl(_experimentGroupId));
                 root.addChild("Evidence for Peptide " + _peptide.getId());
             }
-            return null;
         }
 
         @Override
