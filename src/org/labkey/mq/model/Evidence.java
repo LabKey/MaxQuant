@@ -50,6 +50,7 @@ public class Evidence extends MqEntity
         _maxQuantBestMsmsId = row.getBestMsMsId();
     }
 
+    @Override
     public int getId()
     {
         return _id;

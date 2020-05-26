@@ -31,11 +31,13 @@ public class Peptide extends MqEntity
         _mass = row.getMass();
     }
 
+    @Override
     public int getId()
     {
         return _id;
     }
 
+    @Override
     public void setId(int id)
     {
         _id = id;

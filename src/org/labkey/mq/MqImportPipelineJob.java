@@ -40,6 +40,7 @@ public class MqImportPipelineJob extends PipelineJob
         setLogFile(FT_LOG.newFile(_expData.getFile().getParentFile(), basename));
     }
 
+    @Override
     public ActionURL getStatusHref()
     {
 //        if (_runInfo.getRunId() > 0)
@@ -49,11 +50,13 @@ public class MqImportPipelineJob extends PipelineJob
         return null;
     }
 
+    @Override
     public String getDescription()
     {
         return "MaxQuant import - " + _expData.getFile().getName();
     }
 
+    @Override
     public void run()
     {
         if (!setStatus("LOADING"))

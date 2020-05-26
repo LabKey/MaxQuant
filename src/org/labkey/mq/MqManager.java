@@ -219,6 +219,7 @@ public class MqManager
         {
             XarSource source = new AbstractFileXarSource("Wrap MaxQuant Run", container, user)
             {
+                @Override
                 public File getLogFile() throws IOException
                 {
                     throw new UnsupportedOperationException();

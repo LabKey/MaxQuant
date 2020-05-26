@@ -34,6 +34,7 @@ public class MqPipelineProvider extends PipelineProvider
         return Collections.singletonList(new PipelineActionConfig(actionId, PipelineActionConfig.displayState.toolbar, ACTION_LABEL, true));
     }
 
+    @Override
     public void updateFileProperties(ViewContext context, PipeRoot pr, PipelineDirectory directory, boolean includeAll)
     {
         if (!context.getContainer().hasPermission(context.getUser(), InsertPermission.class))
@@ -48,6 +49,7 @@ public class MqPipelineProvider extends PipelineProvider
 
     public static class UploadFileFilter extends FileEntryFilter
     {
+        @Override
         public boolean accept(File file)
         {
             return file.getName().equalsIgnoreCase(SummaryTemplateParser.FILE);

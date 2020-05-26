@@ -53,11 +53,13 @@ public class ProteinGroup extends MqEntity
         _contaminant = row.isContaminant();
     }
 
+    @Override
     public int getId()
     {
         return _id;
     }
 
+    @Override
     public void setId(int id)
     {
         _id = id;

@@ -104,11 +104,13 @@ public class MqController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public class BeginAction extends SimpleViewAction
     {
+        @Override
         public ModelAndView getView(Object o, BindException errors)
         {
             return new JspView("/org/labkey/mq/view/hello.jsp");
         }
 
+        @Override
         public void addNavTrail(NavTree root)
         {
             root.addChild("Max Quant Main Page");
@@ -179,6 +181,7 @@ public class MqController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public class DownloadFileAction extends SimpleViewAction<DownloadFileForm>
     {
+        @Override
         public ModelAndView getView(DownloadFileForm form, BindException errors) throws Exception
         {
             if (form.getExperimentGroupId() < 0)
@@ -249,6 +252,7 @@ public class MqController extends SpringActionController
             return null;
         }
 
+        @Override
         public void addNavTrail(NavTree root)
         {
         }

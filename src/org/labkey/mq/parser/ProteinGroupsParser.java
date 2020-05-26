@@ -393,6 +393,7 @@ public class ProteinGroupsParser extends MaxQuantTsvParser
             _ratioCount = ratioCount;
         }
 
+        @Override
         public boolean hasRatioVals()
         {
             return super.hasRatioVals() || _ratioCount != null;

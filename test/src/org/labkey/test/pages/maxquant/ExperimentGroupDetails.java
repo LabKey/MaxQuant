@@ -38,6 +38,7 @@ public class ExperimentGroupDetails extends BaseDetailsPage<ExperimentGroupDetai
         return getGrid("ProteinGroups");
     }
 
+    @Override
     protected ElementCache newElementCache()
     {
         return new ElementCache();
