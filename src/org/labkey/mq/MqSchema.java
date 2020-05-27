@@ -89,6 +89,7 @@ public class MqSchema extends SimpleUserSchema
     {
         DefaultSchema.registerProvider(NAME, new DefaultSchema.SchemaProvider(module)
         {
+            @Override
             public QuerySchema createSchema(DefaultSchema schema, Module module)
             {
                 return new MqSchema(schema.getUser(), schema.getContainer());
@@ -219,6 +220,7 @@ public class MqSchema extends SimpleUserSchema
         }
     }
 
+    @Override
     public Set<String> getTableNames()
     {
         CaseInsensitiveHashSet hs = new CaseInsensitiveHashSet();

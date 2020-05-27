@@ -97,6 +97,7 @@ public class MqModule extends DefaultModule
 
         ExperimentService.get().registerExperimentRunTypeSource(new ExperimentRunTypeSource()
         {
+            @Override
             @NotNull
             public Set<ExperimentRunType> getExperimentRunTypes(@Nullable Container container)
             {
