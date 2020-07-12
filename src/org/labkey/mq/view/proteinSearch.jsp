@@ -13,7 +13,7 @@
     <labkey:input type="text"
                   id="identifierInput"
                   name="identifier"
-                  value="<%=h(bean.getIdentifier())%>"
+                  value="<%=bean.getIdentifier()%>"
                   label="Protein label *"
                   forceSmallContext="true"
                   contextContent="Search within the following fields of the Protein Group table: Protein ID, Majority Protein ID, Protein Name, and Gene Name. You can enter a comma separated list for multiple value search."
