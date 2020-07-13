@@ -3,7 +3,8 @@ package org.labkey.mq;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.data.SqlExecutor;
@@ -33,11 +34,11 @@ import org.labkey.mq.model.RawFile;
 import org.labkey.mq.model.TMTChannel;
 import org.labkey.mq.model.TMTInfo;
 import org.labkey.mq.parser.EvidenceParser;
-import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.parser.ModifiedPeptidesParser;
 import org.labkey.mq.parser.MqParserException;
 import org.labkey.mq.parser.PeptidesParser;
 import org.labkey.mq.parser.ProteinGroupsParser;
+import org.labkey.mq.parser.SummaryTemplateParser;
 import org.labkey.mq.query.ModifiedPeptideManager;
 
 import java.io.File;
@@ -68,7 +69,7 @@ public class MqExperimentImporter
     private PipelineJob _contextJob;
 
     // Use system logger for bugs & system problems, and in cases where we don't have a pipeline logger
-    protected static Logger _systemLog = Logger.getLogger(MqExperimentImporter.class);
+    protected static Logger _systemLog = LogManager.getLogger(MqExperimentImporter.class);
     protected final XarContext _context;
 
     public static final int STATUS_RUNNING = 0;
