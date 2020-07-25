@@ -9,7 +9,7 @@
     ProteinService.ProteinSearchForm bean = me.getModelBean();
 %>
 
-<labkey:form layout="horizontal" action="<%= h(urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer())) %>">
+<labkey:form layout="horizontal" action="<%=urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer())%>">
     <labkey:input type="text"
                   id="identifierInput"
                   name="identifier"
