@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-/* mq-18.10-18.11.sql */
+/* mq-15.20-15.30.sql */
+
+CREATE SCHEMA mq;
+GO
+
+/* mq-18.10-18.20.sql */
 
 -- ExperimentGroup table
 CREATE TABLE mq.ExperimentGroup
@@ -341,13 +346,9 @@ CREATE TABLE mq.EvidenceRatioSilac
 CREATE INDEX IX_EvidenceRatioSilac_EvidenceId
   ON mq.EvidenceRatioSilac (EvidenceId);
 
-/* mq-18.11-18.12.sql */
-
 ALTER TABLE mq.Evidence  ALTER COLUMN ModifiedPeptideId INT NULL;
 ALTER TABLE mq.Evidence  ALTER COLUMN MassErrorPpm DOUBLE PRECISION NULL;
 ALTER TABLE mq.Evidence  ALTER COLUMN UncalibratedMassErrorPpm DOUBLE PRECISION NULL;
-
-/* mq-18.12-18.13.sql */
 
 CREATE TABLE mq.TMTChannel
 (
@@ -449,8 +450,6 @@ CREATE TABLE mq.ModifiedPeptideTMT
 CREATE INDEX IX_ModifiedPeptideTMT_ModifiedPeptideId ON mq.ModifiedPeptideTMT (ModifiedPeptideId);
 CREATE INDEX IX_ModifiedPeptideTMT_TMTChannelId ON mq.ModifiedPeptideTMT (TMTChannelId);
 CREATE INDEX IX_ModifiedPeptideTMT_ExperimentId ON mq.ModifiedPeptideTMT (ExperimentId);
-
-/* mq-18.13-18.14.sql */
 
 DROP INDEX IX_TMTChannel_ExperimentGroupId ON mq.TMTChannel;
 DROP INDEX IX_ProteinGroupTMT_ProteinGroupId ON mq.ProteinGroupTMT;
