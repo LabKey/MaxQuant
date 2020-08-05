@@ -1,12 +1,13 @@
 package org.labkey.mq.model;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Created by vsharma on 2/3/2016.
  */
 public class ExperimentGroupManager
 {
-    private static Logger _log = Logger.getLogger(ExperimentGroupManager.class);
+    private static Logger _log = LogManager.getLogger(ExperimentGroupManager.class);
 
 }

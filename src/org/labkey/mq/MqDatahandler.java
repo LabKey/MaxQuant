@@ -1,6 +1,6 @@
 package org.labkey.mq;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.exp.ExperimentException;

@@ -16,7 +16,8 @@
 
 package org.labkey.mq;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
 import org.fhcrc.cpas.exp.xml.ExperimentArchiveDocument;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +63,7 @@ import java.util.Map;
 
 public class MqManager
 {
-    private static Logger _log = Logger.getLogger(MqManager.class);
+    private static Logger _log = LogManager.getLogger(MqManager.class);
 
     private MqManager()
     {
