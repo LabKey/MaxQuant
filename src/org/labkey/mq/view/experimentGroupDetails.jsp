@@ -12,7 +12,7 @@
     <table>
         <tr>
             <td class="lk-form-label">Created:</td>
-            <td><%=h(bean.getCreated())%></td>
+            <td><%=formatDateTime(bean.getCreated())%></td>
         </tr>
         <tr>
             <td class="lk-form-label">Created By:</td>
