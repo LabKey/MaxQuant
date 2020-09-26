@@ -1,6 +1,5 @@
 package org.labkey.mq.query;
 
-import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.DisplayColumn;
@@ -24,19 +23,12 @@ public class QueryLinkDisplayColumnFactory implements DisplayColumnFactory
     private final String _tableName;
     private final String fkColumnName;
     private final String _valueColumnName;
-    private final String _displayValue;
 
     public QueryLinkDisplayColumnFactory(String tableName, String valueColumn, String fkColumnName)
-    {
-        this(tableName, valueColumn, fkColumnName, null);
-    }
-
-    public QueryLinkDisplayColumnFactory(String tableName, String valueColumn, String fkColumnName, String displayValue)
     {
         _tableName = tableName;
         _valueColumnName = valueColumn;
         this.fkColumnName = fkColumnName;
-        _displayValue = displayValue;
     }
 
     @Override
@@ -79,13 +71,6 @@ public class QueryLinkDisplayColumnFactory implements DisplayColumnFactory
                     url.addParameter("query." + fkColumnName + "~eq", fkValue);
                 }
                 return url.getLocalURIString();
-            }
-
-            @NotNull
-            @Override
-            public String getFormattedValue(RenderContext ctx)
-            {
-                return _displayValue == null ? super.getFormattedValue(ctx) : _displayValue;
             }
         };
     }

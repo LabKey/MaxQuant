@@ -18,6 +18,7 @@ import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.Permission;
+import org.labkey.api.util.HtmlString;
 import org.labkey.api.view.ActionURL;
 import org.labkey.mq.MqController;
 import org.labkey.mq.MqManager;
@@ -52,10 +53,10 @@ public class ExperimentGroupTable extends DefaultMqTable
         {
             @Override
             @NotNull
-            public String getFormattedValue(RenderContext ctx)
+            public HtmlString getFormattedHtml(RenderContext ctx)
             {
-                String result = h(getValue(ctx));
-                return new File(result).getParentFile().getName();
+                String result = (String)getValue(ctx);
+                return HtmlString.of(new File(result).getParentFile().getName());
             }
         });
 
