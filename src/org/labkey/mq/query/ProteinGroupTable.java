@@ -13,6 +13,9 @@ import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.util.HtmlString;
+import org.labkey.api.util.HtmlStringBuilder;
+import org.labkey.api.util.Link;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.ActionURL;
 import org.labkey.mq.MqController;
@@ -54,20 +57,20 @@ public class ProteinGroupTable extends DefaultMqTable
             {
                 // The HTML encoded value
                 @Override @NotNull
-                public String getFormattedValue(RenderContext ctx)
+                public HtmlString getFormattedHtml(RenderContext ctx)
                 {
                     String multiValues = (String)getValue(ctx);
 
                     String[] values = multiValues.split(";");
-                    StringBuilder sb = new StringBuilder();
-                    String separator = "";
+                    HtmlStringBuilder sb = HtmlStringBuilder.of();
+                    HtmlString separator = HtmlString.EMPTY_STRING;
                     for(String value: values)
                     {
                         sb.append(separator);
-                        sb.append(PageFlowUtil.filter(value));
-                        separator = "<br>";
+                        sb.append(value);
+                        separator = HtmlString.unsafe("<br>");
                     }
-                    return sb.toString();
+                    return sb.getHtmlString();
                 }
             };
         }
@@ -82,26 +85,22 @@ public class ProteinGroupTable extends DefaultMqTable
         {
             return new DataColumn(colInfo)
             {
-                private String _separator = "<br>";
+                private HtmlString _separator = HtmlString.unsafe("<br>");
                 // The HTML encoded value
                 @Override @NotNull
-                public String getFormattedValue(RenderContext ctx)
+                public HtmlString getFormattedHtml(RenderContext ctx)
                 {
                     String multiValues = (String)getValue(ctx);
 
                     String[] values = multiValues.split(";");
-                    StringBuilder sb = new StringBuilder();
-                    String separator = "";
+                    HtmlStringBuilder sb = HtmlStringBuilder.of();
+                    HtmlString separator = HtmlString.EMPTY_STRING;
                     for(String value: values)
                     {
                         sb.append(separator);
-                        value = PageFlowUtil.filter(value);
                         if(UniprotAccPattern.matcher(value).matches())
                         {
-                            sb.append("<a href=\"http://www.uniprot.org/uniprot/");
-                            sb.append(value);
-                            sb.append("\">").append(value);
-                            sb.append("</a>");
+                            sb.append(new Link.LinkBuilder(value).clearClasses().href("http://www.uniprot.org/uniprot/" + value));
                         }
                         else
                         {
@@ -109,13 +108,13 @@ public class ProteinGroupTable extends DefaultMqTable
                         }
                         separator = _separator;
                     }
-                    return sb.toString();
+                    return sb.getHtmlString();
                 }
 
                 @Override
                 public void renderDetailsCellContents(RenderContext ctx, Writer out) throws IOException
                 {
-                    _separator = ", ";
+                    _separator = HtmlString.of(", ");
                     super.renderDetailsCellContents(ctx, out);
                 }
             };
