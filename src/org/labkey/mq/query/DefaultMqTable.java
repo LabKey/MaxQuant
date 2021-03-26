@@ -14,9 +14,5 @@ class DefaultMqTable extends FilteredTable<MqSchema>
     {
         super(table, schema, cf);
         wrapAllColumns(true);
-
-        ContainerForeignKey.initColumn(getMutableColumn("Container"), schema);
-        UserIdQueryForeignKey.initColumn(schema.getUser(), getContainer(), getMutableColumn("CreatedBy"), true);
-        UserIdQueryForeignKey.initColumn(schema.getUser(), getContainer(), getMutableColumn("ModifiedBy"), true);
     }
 }
