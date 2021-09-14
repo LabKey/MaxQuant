@@ -54,6 +54,7 @@ import org.labkey.mq.parser.SummaryTemplateParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
@@ -230,6 +231,12 @@ public class MqManager
                 public File getRoot()
                 {
                     return file.getParentFile();
+                }
+
+                @Override
+                public Path getRootPath()
+                {
+                    return getRoot().toPath();
                 }
 
                 @Override
