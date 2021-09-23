@@ -11,6 +11,7 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.mq.parser.SummaryTemplateParser;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,11 +45,17 @@ public class MqPipelineProvider extends PipelineProvider
 
         String actionId = createActionId(MqController.MaxQuantUploadAction.class, ACTION_LABEL);
         addAction(actionId, MqController.MaxQuantUploadAction.class, ACTION_LABEL,
-            directory, directory.listFiles(new UploadFileFilter()), true, false, includeAll);
+            directory, directory.listPaths(new UploadFileFilter()), true, false, includeAll);
     }
 
     public static class UploadFileFilter extends FileEntryFilter
     {
+        @Override
+        public boolean accept(Path file)
+        {
+            return file.getFileName().toString().equalsIgnoreCase(SummaryTemplateParser.FILE);
+        }
+
         @Override
         public boolean accept(File file)
         {
