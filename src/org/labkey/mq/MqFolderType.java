@@ -17,7 +17,6 @@
 package org.labkey.mq;
 
 import org.labkey.api.module.MultiPortalFolderType;
-import org.labkey.api.util.HelpTopic;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 
@@ -51,9 +50,9 @@ public class MqFolderType extends MultiPortalFolderType
     }
 
     @Override
-    public HelpTopic getHelpTopic()
+    public String getHelpTopic()
     {
-        return new HelpTopic("MaxQuant");
+        return "MaxQuant";
     }
 
     @Override
