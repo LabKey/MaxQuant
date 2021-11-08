@@ -18,6 +18,7 @@ import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.Permission;
+import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.view.ActionURL;
 import org.labkey.mq.MqController;
@@ -110,7 +111,9 @@ public class ExperimentGroupTable extends DefaultMqTable
     @Override
     public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
     {
-        return perm.equals(DeletePermission.class) && getContainer().hasPermission(user, perm);
+        if (perm.equals(ReadPermission.class) || perm.equals(DeletePermission.class))
+            return getContainer().hasPermission(user, perm);
+        return false;
     }
 
     @Override
