@@ -11,6 +11,7 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
+import org.labkey.api.query.QueryViewProvider;
 import org.labkey.api.view.ViewContext;
 import org.springframework.validation.BindException;
 
@@ -21,7 +22,7 @@ import java.util.List;
 
 import static org.labkey.mq.MqSchema.TABLE_PROTEIN_GROUP;
 
-public class MqProteinSearchViewProvider implements ProteinService.QueryViewProvider<ProteinService.ProteinSearchForm>
+public class MqProteinSearchViewProvider implements QueryViewProvider<ProteinService.ProteinSearchForm>
 {
     @Override
     public String getDataRegionName()
@@ -46,7 +47,6 @@ public class MqProteinSearchViewProvider implements ProteinService.QueryViewProv
             @Override
             protected TableInfo createTable()
             {
-//                FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) super.createTable();
                 FilteredTable<MqSchema> result = (FilteredTable<MqSchema>) getSchema().getTable(getSettings().getQueryName(), getContainerFilter(), true, true);
                 String likeOperator = result.getSqlDialect().getCaseInsensitiveLikeOperator();
 
