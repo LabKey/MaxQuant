@@ -16,9 +16,7 @@
 
 package org.labkey.mq;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.xmlbeans.XmlException;
 import org.fhcrc.cpas.exp.xml.ExperimentArchiveDocument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +37,6 @@ import org.labkey.api.exp.XarContext;
 import org.labkey.api.exp.XarFormatException;
 import org.labkey.api.exp.XarSource;
 import org.labkey.api.exp.api.ExpData;
-import org.labkey.api.exp.api.ExpMaterial;
 import org.labkey.api.exp.api.ExpProtocol;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
@@ -48,6 +45,7 @@ import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
+import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.mq.model.ExperimentGroup;
 import org.labkey.mq.parser.SummaryTemplateParser;
@@ -64,7 +62,7 @@ import java.util.Map;
 
 public class MqManager
 {
-    private static Logger _log = LogManager.getLogger(MqManager.class);
+    private static final Logger _log = LogHelper.getLogger(MqManager.class, "MaxQuant utility code");
 
     private MqManager()
     {
@@ -222,25 +220,19 @@ public class MqManager
             XarSource source = new AbstractFileXarSource("Wrap MaxQuant Run", container, user)
             {
                 @Override
-                public File getLogFile() throws IOException
+                public Path getLogFilePath()
                 {
                     throw new UnsupportedOperationException();
                 }
 
                 @Override
-                public File getRoot()
-                {
-                    return file.getParentFile();
-                }
-
-                @Override
                 public Path getRootPath()
                 {
-                    return getRoot().toPath();
+                    return file.getParentFile().toPath();
                 }
 
                 @Override
-                public ExperimentArchiveDocument getDocument() throws XmlException, IOException
+                public ExperimentArchiveDocument getDocument()
                 {
                     throw new UnsupportedOperationException();
                 }
@@ -310,11 +302,11 @@ public class MqManager
             outputDatas.put(expData, SummaryTemplateParser.FILE);
 
             expRun = ExperimentService.get().saveSimpleExperimentRun(expRun,
-                    Collections.<ExpMaterial, String>emptyMap(),
+                    Collections.emptyMap(),
                     inputDatas,
-                    Collections.<ExpMaterial, String>emptyMap(),
+                    Collections.emptyMap(),
                     outputDatas,
-                    Collections.<ExpData, String>emptyMap(),
+                    Collections.emptyMap(),
                     info, _log, false);
 
             run.setExperimentRunLSID(expRun.getLSID());
