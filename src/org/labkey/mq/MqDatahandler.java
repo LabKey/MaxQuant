@@ -59,12 +59,6 @@ public class MqDatahandler extends AbstractExperimentDataHandler
         MqManager.purgeDeletedExperimentGroups();
     }
 
-    @Override
-    public void runMoved(ExpData newData, Container container, Container targetContainer, String oldRunLSID, String newRunLSID, User user, int oldDataRowID) throws ExperimentException
-    {
-
-    }
-
     @Nullable
     @Override
     public Priority getPriority(ExpData data)
