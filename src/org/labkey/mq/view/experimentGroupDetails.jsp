@@ -1,4 +1,3 @@
-
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.mq.model.ExperimentGroup" %>
@@ -33,7 +32,7 @@
     </table>
 </form>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
     +function ($) {
         LABKEY.Query.selectRows({
             schemaName: 'mq',
