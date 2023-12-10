@@ -373,7 +373,7 @@ public class MqController extends SpringActionController
             fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
 
             // Details of the Experiment group
-            JspView exptDetailsView = getExperimentGroupDetailsView(_experimentGroup);
+            JspView<ExperimentGroup> exptDetailsView = getExperimentGroupDetailsView(_experimentGroup);
             VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Experiment Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
@@ -432,7 +432,7 @@ public class MqController extends SpringActionController
             fileDownloadView.setFrame(WebPartView.FrameType.PORTAL);
 
             // Details of the Experiment group
-            JspView exptDetailsView = getExperimentGroupDetailsView(_experimentGroup);
+            JspView<ExperimentGroup> exptDetailsView = getExperimentGroupDetailsView(_experimentGroup);
             VBox detailsBox = new VBox(exptDetailsView, fileDownloadView);
             detailsBox.setTitle("Experiment Group Details");
             detailsBox.setFrame(WebPartView.FrameType.PORTAL);
@@ -746,7 +746,7 @@ public class MqController extends SpringActionController
     }
 
     @NotNull
-    private JspView getExperimentGroupDetailsView(ExperimentGroup experimentGroup)
+    private JspView<ExperimentGroup> getExperimentGroupDetailsView(ExperimentGroup experimentGroup)
     {
         return new JspView<>("/org/labkey/mq/view/experimentGroupDetails.jsp", experimentGroup);
     }
