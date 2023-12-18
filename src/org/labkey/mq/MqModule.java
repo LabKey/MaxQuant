@@ -33,6 +33,7 @@ import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.services.ServiceRegistry;
+import org.labkey.api.util.HtmlString;
 import org.labkey.api.view.BaseWebPartFactory;
 import org.labkey.api.view.HtmlView;
 import org.labkey.api.view.Portal;
@@ -153,7 +154,7 @@ public class MqModule extends DefaultModule
             {
                 UserSchema schema = QueryService.get().getUserSchema(portalCtx.getUser(), portalCtx.getContainer(), MqSchema.NAME);
                 if (null == schema)
-                    return new HtmlView(EXPERIMENT_GROUPS_WEBPART_NAME, "Schema 'mq' could not be found.");
+                    return new HtmlView(EXPERIMENT_GROUPS_WEBPART_NAME, HtmlString.of("Schema 'mq' could not be found."));
 
                 BindException errors = new BindException(new Object(), "dummy");
                 QuerySettings settings = new QuerySettings(portalCtx, "ExperimentGroups", TABLE_EXPERIMENT_GROUP_DETAILS);
