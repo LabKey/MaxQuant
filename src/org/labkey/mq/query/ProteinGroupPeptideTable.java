@@ -1,7 +1,6 @@
 package org.labkey.mq.query;
 
 import org.labkey.api.data.BaseColumnInfo;
-import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
@@ -60,15 +59,15 @@ public class ProteinGroupPeptideTable extends FilteredTable<MqSchema>
     protected void applyContainerFilter(ContainerFilter filter)
     {
         clearConditions(CONTAINER_FAKE_COLUMN_NAME);
-        addCondition(createContainerFilterSQL(filter, _userSchema.getContainer()), CONTAINER_FAKE_COLUMN_NAME);
+        addCondition(createContainerFilterSQL(filter), CONTAINER_FAKE_COLUMN_NAME);
     }
 
-    private SQLFragment createContainerFilterSQL(ContainerFilter filter, Container container)
+    private SQLFragment createContainerFilterSQL(ContainerFilter filter)
     {
         SQLFragment sql = new SQLFragment("ProteinGroupId IN (SELECT Id FROM ");
         sql.append(MqManager.getTableInfoProteinGroup(), "pg");
         sql.append(" WHERE ");
-        sql.append(filter.getSQLFragment(getSchema(), new SQLFragment("Container"), container));
+        sql.append(filter.getSQLFragment(getSchema(), new SQLFragment("Container")));
         sql.append(")");
         return sql;
     }
