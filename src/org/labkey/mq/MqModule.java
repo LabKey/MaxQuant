@@ -69,7 +69,7 @@ public class MqModule extends DefaultModule
     @Override
     public @Nullable Double getSchemaVersion()
     {
-        return 23.000;
+        return 24.000;
     }
 
     @Override
